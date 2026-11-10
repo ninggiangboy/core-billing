@@ -2,6 +2,7 @@ package io.corebilling.boot.web;
 
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.money.api.InsufficientFundsException;
 import io.corebilling.platform.api.AccessDeniedException;
 import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.platform.application.RateLimitExceededException;
@@ -36,6 +37,11 @@ class ApiExceptionHandler {
     ProblemDetail integrity(DataIntegrityViolationException e) {
         LOG.warn("data integrity violation: {}", e.getMostSpecificCause().getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "The request refers to something that does not exist here, or clashes with existing data.");
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    ProblemDetail insufficientFunds(InsufficientFundsException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.PAYMENT_REQUIRED, "The wallet cannot cover this amount.");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

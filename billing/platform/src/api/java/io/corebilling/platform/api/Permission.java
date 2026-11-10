@@ -23,7 +23,14 @@ public enum Permission {
     CREDENTIAL_MANAGE("credential:manage", false, true, false),
 
     CUSTOMER_READ("customer:read", false, true, true),
-    CUSTOMER_WRITE("customer:write", false, true, true);
+    CUSTOMER_WRITE("customer:write", false, true, true),
+
+    WALLET_READ("wallet:read", false, true, true),
+    WALLET_MANAGE("wallet:manage", false, true, true),
+    RESERVATION_MANAGE("reservation:manage", false, true, true),
+    CHARGE_CREATE("charge:create", false, true, true),
+    /** Corrects the ledger. Administrators only: never granted to a Tenant System. */
+    LEDGER_REVERSE("ledger:reverse", false, true, false);
 
     private final String code;
     private final boolean platform;

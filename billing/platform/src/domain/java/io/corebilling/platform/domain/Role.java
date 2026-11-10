@@ -60,6 +60,15 @@ public final class Role {
         replacement.forEach(this::add);
     }
 
+    /** Brings a default role up to the permissions it now ships with, for example after the catalog grew. */
+    public void syncDefaultPermissions(Set<Permission> defaults) {
+        if (!system) {
+            throw new IllegalStateException("only a default role is synchronised");
+        }
+        permissions.clear();
+        defaults.forEach(this::add);
+    }
+
     private void add(Permission permission) {
         if (!permission.validIn(scope)) {
             throw new IllegalArgumentException(permission.code() + " is not valid in " + scope + " scope");

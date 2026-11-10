@@ -26,6 +26,14 @@ class ArchitectureTest {
         assertThat(production.contain("io.corebilling.sharedkernel.Money")).isTrue();
     }
 
+    @org.junit.jupiter.api.Test
+    void theMoneyUseCaseRuleHasSubjects() {
+        long useCases = production.stream()
+                .filter(c -> c.getPackageName().equals(ROOT + ".money.application") && c.getSimpleName().endsWith("UseCase") && !c.isInterface())
+                .count();
+        assertThat(useCases).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(8);
+    }
+
     static Stream<ArchitectureRules.NamedRule> rules() {
         return ArchitectureRules.all(ROOT).stream();
     }

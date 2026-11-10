@@ -2,6 +2,7 @@ package io.corebilling.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -39,6 +40,7 @@ final class ArchitectureRules {
                 new NamedRule("persistence-types-in-adapter", persistenceTypesInAdapter(root)),
                 new NamedRule("money-use-cases-use-unit-of-work", moneyUseCasesUseUnitOfWork(root)),
                 new NamedRule("api-exposes-no-internals", apiExposesNoInternals(root)),
+                new NamedRule("ledger-repository-is-append-only", ledgerRepositoryIsAppendOnly()),
                 new NamedRule("datasource-and-transactions-only-in-infrastructure", datasourceOnlyInInfrastructure(root)),
                 new NamedRule("no-jpa", noJpa()),
                 new NamedRule("shared-kernel-is-independent", sharedKernelIsIndependent(root)));
@@ -102,6 +104,13 @@ final class ArchitectureRules {
                 .orShould().dependOnClassesThat().resideInAnyPackage(
                         "org.springframework.transaction..", "org.springframework.jdbc.datasource..")
                 .because("the UnitOfWork is the only owner of transactions and the tenant setting");
+    }
+
+    /** The ledger's repository port can append and read; a method that changes or removes an entry cannot exist. */
+    private static ArchRule ledgerRepositoryIsAppendOnly() {
+        return noMethods().that().areDeclaredInClassesThat().haveSimpleName("LedgerRepository")
+                .should().haveNameMatching("(update|delete|remove|save|set|merge|upsert|truncate).*")
+                .because("the ledger is append-only: corrections are reversal entries, never edits");
     }
 
     private static ArchRule noJpa() {

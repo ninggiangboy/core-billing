@@ -34,3 +34,9 @@ billing:
     # Optional: creates the first Platform administrator on start when the email is set and unused.
     platform-admin-email: ${BILLING_BOOTSTRAP_ADMIN_EMAIL:}
     platform-admin-temporary-password: ${BILLING_BOOTSTRAP_ADMIN_TEMPORARY_PASSWORD:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

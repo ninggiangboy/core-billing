@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** Creates the default roles of the current scope when they are missing. Runs when a Platform or Tenant starts. */
+/** Creates the default roles of the current scope when missing and keeps their permissions current. */
 public class SeedDefaultRolesUseCase {
 
     public static final String PLATFORM_ADMIN = "Platform Admin";
@@ -42,8 +42,14 @@ public class SeedDefaultRolesUseCase {
             RequestScope current = tenantContext.current();
             PermissionScope scope = current instanceof RequestScope.Platform ? PermissionScope.PLATFORM : PermissionScope.TENANT;
             defaults(scope).forEach((name, permissions) -> {
-                if (roles.findByName(name).isEmpty()) {
+                var existing = roles.findByName(name);
+                if (existing.isEmpty()) {
                     roles.add(Role.create(new RoleId(ids.newId()), current.dataTenantId(), scope, name, true, permissions, clock.now()));
+                } else if (existing.get().isSystem() && !existing.get().permissions().equals(permissions)) {
+                    // The catalog grew since this tenant was created: its default role gets the new rights.
+                    Role role = existing.get();
+                    role.syncDefaultPermissions(permissions);
+                    roles.update(role);
                 }
             });
         });

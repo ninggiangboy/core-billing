@@ -34,6 +34,8 @@ public class PostgresContainerConfig {
             registry.add("spring.flyway.user", POSTGRES::getUsername);
             registry.add("spring.flyway.password", POSTGRES::getPassword);
             registry.add("spring.flyway.placeholders.appDbPassword", () -> APP_PASSWORD);
+            // Tests drive the background jobs directly and deterministically.
+            registry.add("billing.jobs.enabled", () -> "false");
         };
     }
 

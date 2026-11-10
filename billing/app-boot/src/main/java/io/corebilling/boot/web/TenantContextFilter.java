@@ -34,8 +34,10 @@ class TenantContextFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        Optional<RequestScope> scope = tenantContext.callAs(
-                RequestScope.platform(), () -> resolveHost.execute(request.getServerName()));
+        // Health probes reach the pod by IP or an internal name, so they cannot be tied to a tenant hostname.
+        Optional<RequestScope> scope = request.getRequestURI().startsWith("/actuator/health")
+                ? Optional.of(RequestScope.platform())
+                : tenantContext.callAs(RequestScope.platform(), () -> resolveHost.execute(request.getServerName()));
         if (scope.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.setContentType("application/json");

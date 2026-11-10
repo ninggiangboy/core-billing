@@ -6,6 +6,7 @@ import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
 import io.corebilling.platform.application.EnsurePlatformDomainUseCase;
 import io.corebilling.platform.application.SeedDefaultRolesUseCase;
 import io.corebilling.platform.application.SeedPermissionsUseCase;
+import io.corebilling.platform.application.TenantQueries;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -19,6 +20,7 @@ class PlatformBootstrap implements ApplicationRunner {
     private final SeedPermissionsUseCase seedPermissions;
     private final SeedDefaultRolesUseCase seedDefaultRoles;
     private final BootstrapPlatformAdminUseCase bootstrapAdmin;
+    private final TenantQueries tenantQueries;
     private final TenantContext tenantContext;
     private final String baseDomain;
     private final String adminEmail;
@@ -29,6 +31,7 @@ class PlatformBootstrap implements ApplicationRunner {
             SeedPermissionsUseCase seedPermissions,
             SeedDefaultRolesUseCase seedDefaultRoles,
             BootstrapPlatformAdminUseCase bootstrapAdmin,
+            TenantQueries tenantQueries,
             TenantContext tenantContext,
             @Value("${billing.tenancy.base-domain}") String baseDomain,
             @Value("${billing.bootstrap.platform-admin-email:}") String adminEmail,
@@ -37,6 +40,7 @@ class PlatformBootstrap implements ApplicationRunner {
         this.seedPermissions = seedPermissions;
         this.seedDefaultRoles = seedDefaultRoles;
         this.bootstrapAdmin = bootstrapAdmin;
+        this.tenantQueries = tenantQueries;
         this.tenantContext = tenantContext;
         this.baseDomain = baseDomain;
         this.adminEmail = adminEmail;
@@ -49,6 +53,9 @@ class PlatformBootstrap implements ApplicationRunner {
             seedPermissions.execute();
             ensurePlatformDomain.execute("platform." + baseDomain);
             seedDefaultRoles.execute();
+            // Tenants created before a permission existed get it on their default roles.
+            tenantQueries.list().stream().filter(io.corebilling.platform.domain.Tenant::isActive).forEach(tenant ->
+                    tenantContext.runAs(RequestScope.tenant(tenant.id()), seedDefaultRoles::execute));
             if (!adminEmail.isBlank()) {
                 bootstrapAdmin.execute(adminEmail, "Platform Administrator", adminTemporaryPassword.isBlank() ? null : adminTemporaryPassword);
             }

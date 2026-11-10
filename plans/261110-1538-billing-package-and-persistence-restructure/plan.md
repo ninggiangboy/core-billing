@@ -1,7 +1,7 @@
 ---
 title: "Billing package, persistence and CQRS restructure"
 description: "Group every billing module's packages by feature then role, split each module into a command (write) side with Row-based persistence and a query (read) side with read models, and enforce it with ArchUnit."
-status: pending
+status: in-progress
 priority: P1
 effort: 15d
 branch: dev

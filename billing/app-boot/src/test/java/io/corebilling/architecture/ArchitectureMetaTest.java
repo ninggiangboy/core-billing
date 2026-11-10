@@ -7,6 +7,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ArchitectureMetaTest {
 
     private static final String FIXTURE_ROOT = "archfixtures";
+
+    /**
+     * The fixture contexts. Every one is treated as fully converted, so all three context sets are
+     * exercised and no new rule can pass vacuously.
+     */
+    private static final Set<String> FIXTURE_CONTEXTS = Set.of("alpha", "beta", "money", "payment", "webhook", "layout", "split");
 
     /** Each rule and the fixture class that must be named in its failure report. */
     private static final Map<String, String> CULPRIT_BY_RULE_ID = new LinkedHashMap<>();
@@ -38,6 +45,15 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("stripe-types-stay-in-the-stripe-adapter", "UsesStripeDirectly");
         CULPRIT_BY_RULE_ID.put("no-jpa", "JpaEntity");
         CULPRIT_BY_RULE_ID.put("shared-kernel-is-independent", "KernelKnowsAContext");
+        CULPRIT_BY_RULE_ID.put("role-package-not-layer-root", "StrayRoleClass");
+        CULPRIT_BY_RULE_ID.put("use-cases-and-queries-in-command-or-query", "MisplacedUseCase");
+        CULPRIT_BY_RULE_ID.put("ports-in-port-or-query", "MisplacedReadRepository");
+        CULPRIT_BY_RULE_ID.put("table-rows-in-adapter-persistence", "TableInApplication");
+        CULPRIT_BY_RULE_ID.put("persistence-maps-without-row-mapper", "DomainRowMapper");
+        CULPRIT_BY_RULE_ID.put("write-side-does-not-depend-on-query", "CommandReachesQuery");
+        CULPRIT_BY_RULE_ID.put("read-side-does-not-depend-on-write", "QueryReachesWritePort");
+        CULPRIT_BY_RULE_ID.put("query-side-uses-no-domain-aggregates", "QueryReachesAggregate");
+        CULPRIT_BY_RULE_ID.put("write-ports-serve-no-reads", "WritePort");
     }
 
     private static JavaClasses fixtures;
@@ -49,12 +65,13 @@ class ArchitectureMetaTest {
     }
 
     static Stream<ArchitectureRules.NamedRule> rules() {
-        return ArchitectureRules.all(FIXTURE_ROOT).stream();
+        return ArchitectureRules.all(FIXTURE_ROOT, ArchitectureRules.ContextSets.every(FIXTURE_CONTEXTS)).stream();
     }
 
     @Test
     void ruleSetIsExactlyTheExpectedOne() {
-        assertThat(ArchitectureRules.all(FIXTURE_ROOT)).extracting(ArchitectureRules.NamedRule::id)
+        assertThat(ArchitectureRules.all(FIXTURE_ROOT, ArchitectureRules.ContextSets.every(FIXTURE_CONTEXTS)))
+                .extracting(ArchitectureRules.NamedRule::id)
                 .containsExactlyElementsOf(CULPRIT_BY_RULE_ID.keySet());
     }
 

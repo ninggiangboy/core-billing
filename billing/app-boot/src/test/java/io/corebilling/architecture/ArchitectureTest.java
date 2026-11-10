@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,6 +15,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ArchitectureTest {
 
     static final String ROOT = "io.corebilling";
+
+    // A context joins one of these sets only once it has adopted that part of the target architecture.
+    private static final Set<String> LAYOUT = Set.of();
+    private static final Set<String> PERSISTENCE = Set.of();
+    private static final Set<String> READ_WRITE = Set.of();
 
     private static JavaClasses production;
 
@@ -29,7 +35,7 @@ class ArchitectureTest {
     @org.junit.jupiter.api.Test
     void theMoneyUseCaseRuleHasSubjects() {
         long useCases = production.stream()
-                .filter(c -> c.getPackageName().equals(ROOT + ".money.application") && c.getSimpleName().endsWith("UseCase") && !c.isInterface())
+                .filter(c -> c.getPackageName().startsWith(ROOT + ".money.application") && c.getSimpleName().endsWith("UseCase") && !c.isInterface())
                 .count();
         assertThat(useCases).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(8);
     }
@@ -65,13 +71,13 @@ class ArchitectureTest {
     void theStripeAdapterIsWhereTheSdkIsUsed() {
         long users = production.stream()
                 .filter(c -> c.getDirectDependenciesFromSelf().stream().anyMatch(d -> d.getTargetClass().getPackageName().startsWith("com.stripe")))
-                .filter(c -> c.getPackageName().equals(ROOT + ".payment.adapter.stripe"))
+                .filter(c -> c.getPackageName().startsWith(ROOT + ".payment.adapter.stripe"))
                 .count();
         assertThat(users).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(1);
     }
 
     static Stream<ArchitectureRules.NamedRule> rules() {
-        return ArchitectureRules.all(ROOT).stream();
+        return ArchitectureRules.all(ROOT, new ArchitectureRules.ContextSets(LAYOUT, PERSISTENCE, READ_WRITE)).stream();
     }
 
     @ParameterizedTest(name = "{0}")

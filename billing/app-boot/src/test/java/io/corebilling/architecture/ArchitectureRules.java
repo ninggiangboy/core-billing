@@ -4,35 +4,73 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.CompositeArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.lang.syntax.elements.GivenClassesConjunction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
  * The architecture rules, parameterised by root package so the same set runs against production
- * code and against the deliberately violating fixtures. ArchUnit owns layer, purity and import
- * rules; Spring Modulith owns module verification (see ModulithVerificationTest).
+ * code and against the deliberately violating fixtures. ArchUnit owns layer, purity, layout,
+ * persistence and read/write rules; Spring Modulith owns module verification (see
+ * ModulithVerificationTest).
  *
  * <p>Package convention: {@code <root>.<context>.{domain,application,adapter,api}}. A context is
- * any direct sub-package of the root except the kernel and the wiring package.
+ * any direct sub-package of the root except the kernel and the wiring package. Inside a context,
+ * packages are grouped by feature and then by role: {@code command}, {@code query}, {@code port}.
+ *
+ * <p>The three {@link ContextSets} let a refactor turn the new rules on one module at a time: a
+ * context appears in a set only once it has adopted that part of the target architecture.
  */
 final class ArchitectureRules {
 
     record NamedRule(String id, ArchRule rule) {}
 
+    /** Contexts that have adopted each part of the target architecture. */
+    record ContextSets(Set<String> layout, Set<String> persistence, Set<String> readWrite) {
+
+        static ContextSets none() {
+            return new ContextSets(Set.of(), Set.of(), Set.of());
+        }
+
+        static ContextSets every(Set<String> contexts) {
+            return new ContextSets(contexts, contexts, contexts);
+        }
+    }
+
     private static final Set<String> NON_CONTEXT = Set.of("sharedkernel", "boot");
     private static final String JAVA = "java..";
+    private static final List<String> LAYERS = List.of("domain", "application", "adapter", "api");
+    private static final List<String> READ_METHOD_PREFIXES = List.of("list", "page", "search");
+
+    /** Interfaces in application whose name ends in one of these are outbound (write-side) ports. */
+    private static final Set<String> OUTBOUND_PORT_SUFFIXES = Set.of(
+            "Repository", "Port", "Provider", "Access", "Sender", "Signer", "Cipher", "Writer", "Store", "Keys", "Limiter",
+            "Units", "Registry");
+
+    /**
+     * Domain types a read model may name besides enums. Read models are shaped for the caller, so they
+     * use primitives where they can; this list is kept short and reviewed whenever it grows.
+     */
+    private static final Set<String> ALLOWED_QUERY_DOMAIN_TYPES = Set.of();
 
     private ArchitectureRules() {}
 
-    static List<NamedRule> all(String root) {
+    static List<NamedRule> all(String root, ContextSets sets) {
         return List.of(
                 new NamedRule("layer-direction", layerDirection(root)),
                 new NamedRule("inner-layer-purity", innerLayerPurity(root)),
@@ -45,7 +83,16 @@ final class ArchitectureRules {
                 new NamedRule("outbound-http-only-through-the-guarded-sender", outboundHttpOnlyThroughTheGuardedSender(root)),
                 new NamedRule("stripe-types-stay-in-the-stripe-adapter", stripeTypesStayInTheStripeAdapter(root)),
                 new NamedRule("no-jpa", noJpa()),
-                new NamedRule("shared-kernel-is-independent", sharedKernelIsIndependent(root)));
+                new NamedRule("shared-kernel-is-independent", sharedKernelIsIndependent(root)),
+                new NamedRule("role-package-not-layer-root", rolePackageNotLayerRoot(root, sets.layout())),
+                new NamedRule("use-cases-and-queries-in-command-or-query", useCasesAndQueriesInCommandOrQuery(root, sets.layout())),
+                new NamedRule("ports-in-port-or-query", portsInPortOrQuery(root, sets.layout())),
+                new NamedRule("table-rows-in-adapter-persistence", tableRowsInAdapterPersistence(root, sets.layout())),
+                new NamedRule("persistence-maps-without-row-mapper", persistenceMapsWithoutRowMapper(root, sets.persistence())),
+                new NamedRule("write-side-does-not-depend-on-query", writeSideDoesNotDependOnQuery(root, sets.readWrite())),
+                new NamedRule("read-side-does-not-depend-on-write", readSideDoesNotDependOnWrite(root, sets.readWrite())),
+                new NamedRule("query-side-uses-no-domain-aggregates", querySideUsesNoDomainAggregates(root, sets.readWrite())),
+                new NamedRule("write-ports-serve-no-reads", writePortsServeNoReads(root, sets.readWrite())));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -150,6 +197,238 @@ final class ArchitectureRules {
         return classes().that().resideInAPackage(root + ".sharedkernel..")
                 .should().onlyDependOnClassesThat().resideInAnyPackage(JAVA, root + ".sharedkernel..")
                 .because("the kernel takes no module dependency");
+    }
+
+    /**
+     * Inside a converted context no class sits directly in a layer root package: every package is grouped by
+     * feature and then by role, so a reader sees one job per package. {@code package-info} declarations stay.
+     */
+    private static ArchRule rolePackageNotLayerRoot(String root, Set<String> contexts) {
+        List<String> roots = new ArrayList<>();
+        for (String context : contexts) {
+            for (String layer : LAYERS) {
+                roots.add(root + "." + context + "." + layer);
+            }
+        }
+        return classes().that().resideInAnyPackage(packagesOrPlaceholder(root, roots))
+                .and().doNotHaveSimpleName("package-info")
+                .should(never("must not sit directly in a layer root package: group it under a feature and role package"))
+                .because("a converted context groups packages by feature and then by role");
+    }
+
+    /** A use case belongs to the command side and a query class to the query side. */
+    private static ArchRule useCasesAndQueriesInCommandOrQuery(String root, Set<String> contexts) {
+        return classes().that().resideInAnyPackage(packagesOrPlaceholder(root, applicationPackages(root, contexts)))
+                .should(new ArchCondition<>("be in a command or query package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String name = item.getSimpleName();
+                        String packageName = item.getPackageName();
+                        if (name.endsWith("UseCase") && !hasSegment(packageName, "command")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a use case but does not live in a ..command.. package"));
+                        }
+                        if (name.endsWith("Queries") && !hasSegment(packageName, "query")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a query class but does not live in a ..query.. package"));
+                        }
+                    }
+                })
+                .because("the command side owns use cases and the query side owns query classes");
+    }
+
+    /** Outbound write ports live in port/, read ports in query/. A read port is named *ReadRepository. */
+    private static ArchRule portsInPortOrQuery(String root, Set<String> contexts) {
+        return classes().that().resideInAnyPackage(packagesOrPlaceholder(root, applicationPackages(root, contexts)))
+                .and().areInterfaces()
+                .should(new ArchCondition<>("be in a port or query package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String name = item.getSimpleName();
+                        String packageName = item.getPackageName();
+                        if (name.endsWith("ReadRepository")) {
+                            if (!hasSegment(packageName, "query")) {
+                                events.add(SimpleConditionEvent.violated(item,
+                                        item.getFullName() + " is a read port but does not live in a ..query.. package"));
+                            }
+                        } else if (isOutboundPort(name) && !hasSegment(packageName, "port")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a write port but does not live in a ..port.. package"));
+                        }
+                    }
+                })
+                .because("write ports live with the command side and read ports with the query side");
+    }
+
+    /** A Spring Data row is an adapter detail and lives next to its write repository. */
+    private static ArchRule tableRowsInAdapterPersistence(String root, Set<String> contexts) {
+        List<String> persistence = persistencePackages(root, contexts);
+        return classes().that().areAnnotatedWith(Table.class)
+                .and().resideInAnyPackage(packagesOrPlaceholder(root, contextPackages(root, contexts)))
+                .should().resideInAnyPackage(packagesOrPlaceholder(root, persistence))
+                .because("a @Table row lives in adapter.persistence next to the repository that uses it");
+    }
+
+    /**
+     * Persistence maps result sets through {@code query(Class)} into a Row or a view. A RowMapper would let a
+     * result set flow straight into a domain type again, which is the shape this refactor removes.
+     */
+    private static ArchRule persistenceMapsWithoutRowMapper(String root, Set<String> contexts) {
+        return noClasses().that().resideInAnyPackage(packagesOrPlaceholder(root, persistencePackages(root, contexts)))
+                .should().callMethodWhere(new DescribedPredicate<>("call JdbcClient.query(RowMapper)") {
+                    @Override
+                    public boolean test(JavaMethodCall call) {
+                        return queriesWithARowMapper(call);
+                    }
+                })
+                .because("persistence maps through query(Class); a RowMapper could map straight into a domain type")
+                .allowEmptyShould(true);
+    }
+
+    /** The command side never reads through the query side; a use case that must read decides with its own port. */
+    private static ArchRule writeSideDoesNotDependOnQuery(String root, Set<String> contexts) {
+        return noClasses().that().resideInAnyPackage(packagesOrPlaceholder(root, rolePackages(root, contexts, "command", "port")))
+                .should().dependOnClassesThat().resideInAnyPackage(packagesOrPlaceholder(root, rolePackages(root, contexts, "query")))
+                .because("the write side decides with its own ports and never through a read model")
+                .allowEmptyShould(true);
+    }
+
+    /**
+     * The query side names views and read ports only. It never reaches into the command side and never depends
+     * on a write port, so a read cannot accidentally drive a write.
+     */
+    private static ArchRule readSideDoesNotDependOnWrite(String root, Set<String> contexts) {
+        List<String> queryPackages = rolePackages(root, contexts, "query");
+        List<String> writePackages = rolePackages(root, contexts, "command", "port");
+        ArchRule byPackage = noClasses().that().resideInAnyPackage(packagesOrPlaceholder(root, queryPackages))
+                .should().dependOnClassesThat().resideInAnyPackage(packagesOrPlaceholder(root, writePackages))
+                .because("a query class reads through a read port and never through the write side");
+        ArchRule byName = noClasses().that().resideInAnyPackage(packagesOrPlaceholder(root, contextPackages(root, contexts)))
+                .and().haveSimpleNameStartingWith("Jdbc").and().haveSimpleNameEndingWith("ReadRepository")
+                .should().dependOnClassesThat().resideInAnyPackage(packagesOrPlaceholder(root, writePackages))
+                .because("a read repository selects into a view and never into the write side")
+                .allowEmptyShould(true);
+        return CompositeArchRule.of(byPackage).and(byName).allowEmptyShould(true);
+    }
+
+    /**
+     * A read model is never a domain aggregate. Should a read need a value object or an enum, the explicit
+     * allowlist records it for review instead of letting the domain leak in silently.
+     */
+    private static ArchRule querySideUsesNoDomainAggregates(String root, Set<String> contexts) {
+        List<String> domainPackages = new ArrayList<>();
+        for (String context : contexts) {
+            domainPackages.add(root + "." + context + ".domain");
+        }
+        return classes().that().resideInAnyPackage(packagesOrPlaceholder(root, rolePackages(root, contexts, "query")))
+                .should(new ArchCondition<>("not use a domain aggregate") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        for (Dependency dependency : item.getDirectDependenciesFromSelf()) {
+                            JavaClass target = dependency.getTargetClass();
+                            if (isInAny(target.getPackageName(), domainPackages, true)
+                                    && !target.isEnum()
+                                    && !ALLOWED_QUERY_DOMAIN_TYPES.contains(target.getFullName())) {
+                                events.add(SimpleConditionEvent.violated(item,
+                                        item.getFullName() + " depends on domain type " + target.getFullName()));
+                            }
+                        }
+                    }
+                })
+                .because("a read model is shaped for its caller and is never a domain aggregate");
+    }
+
+    /** The write side never serves reads: a port has no list, page or search method. */
+    private static ArchRule writePortsServeNoReads(String root, Set<String> contexts) {
+        return noMethods().that().areDeclaredInClassesThat()
+                .resideInAnyPackage(packagesOrPlaceholder(root, rolePackages(root, contexts, "port")))
+                .and().areDeclaredInClassesThat().areInterfaces()
+                .should().haveNameMatching("(list|page|search).*")
+                .because("the write side never serves reads; a list, page or search method belongs to a read port")
+                .allowEmptyShould(true);
+    }
+
+    private static boolean queriesWithARowMapper(JavaMethodCall call) {
+        if (!call.getTarget().getName().equals("query")) {
+            return false;
+        }
+        if (!call.getTarget().getOwner().isAssignableTo(JdbcClient.StatementSpec.class)) {
+            return false;
+        }
+        return Arrays.stream(call.getTarget().getRawParameterTypes().toArray(JavaClass[]::new))
+                .anyMatch(type -> type.isAssignableTo(RowMapper.class));
+    }
+
+    private static boolean isOutboundPort(String simpleName) {
+        return OUTBOUND_PORT_SUFFIXES.stream().anyMatch(simpleName::endsWith);
+    }
+
+    private static List<String> contextPackages(String root, Set<String> contexts) {
+        List<String> packages = new ArrayList<>();
+        for (String context : contexts) {
+            packages.add(root + "." + context + "..");
+        }
+        return packages;
+    }
+
+    private static List<String> applicationPackages(String root, Set<String> contexts) {
+        List<String> packages = new ArrayList<>();
+        for (String context : contexts) {
+            packages.add(root + "." + context + ".application..");
+        }
+        return packages;
+    }
+
+    private static List<String> persistencePackages(String root, Set<String> contexts) {
+        List<String> packages = new ArrayList<>();
+        for (String context : contexts) {
+            packages.add(root + "." + context + ".adapter.persistence..");
+        }
+        return packages;
+    }
+
+    private static List<String> rolePackages(String root, Set<String> contexts, String... roles) {
+        List<String> packages = new ArrayList<>();
+        for (String context : contexts) {
+            for (String role : roles) {
+                packages.add(root + "." + context + ".." + role + "..");
+            }
+        }
+        return packages;
+    }
+
+    private static String[] packagesOrPlaceholder(String root, List<String> packages) {
+        if (packages.isEmpty()) {
+            return new String[] {root + ".__not_converted__"};
+        }
+        return new LinkedHashSet<>(packages).toArray(String[]::new);
+    }
+
+    private static boolean hasSegment(String packageName, String segment) {
+        for (String part : packageName.split("\\.")) {
+            if (part.equals(segment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isInAny(String packageName, List<String> packages, boolean includeSubPackages) {
+        for (String candidate : packages) {
+            if (packageName.equals(candidate) || (includeSubPackages && packageName.startsWith(candidate + "."))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ArchCondition<JavaClass> never(String reason) {
+        return new ArchCondition<>("not exist: " + reason) {
+            @Override
+            public void check(JavaClass item, ConditionEvents events) {
+                events.add(SimpleConditionEvent.violated(item, item.getFullName() + " " + reason));
+            }
+        };
     }
 
     private static ArchCondition<JavaClass> notReachIntoOtherContexts(String root) {

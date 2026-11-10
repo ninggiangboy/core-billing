@@ -1,0 +1,681 @@
+openapi: 3.1.0
+info:
+  title: Core Billing API
+  version: v1
+servers:
+- url: /
+  description: "Any Billing hostname: platform.<base-domain> or <tenant-code>.<base-domain>"
+paths:
+  /api/v1/users/{id}/roles/{roleId}:
+    put:
+      tags:
+      - user-controller
+      operationId: assignRole
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: roleId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+      x-required-permission: user:manage
+    delete:
+      tags:
+      - user-controller
+      operationId: unassignRole
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: roleId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+      x-required-permission: user:manage
+  /api/v1/roles/{id}/permissions:
+    put:
+      tags:
+      - role-controller
+      operationId: setPermissions
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPermissionsRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+      x-required-permission: role:manage
+  /api/v1/users:
+    get:
+      tags:
+      - user-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+      x-required-permission: user:read
+    post:
+      tags:
+      - user-controller
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+      x-required-permission: user:manage
+  /api/v1/tenants:
+    get:
+      tags:
+      - tenant-controller
+      operationId: list_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantResponse"
+      x-required-permission: tenant:read
+    post:
+      tags:
+      - tenant-controller
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantResponse"
+      x-required-permission: tenant:create
+  /api/v1/tenants/{id}/domains:
+    get:
+      tags:
+      - tenant-controller
+      operationId: domains
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DomainResponse"
+      x-required-permission: tenant:read
+    post:
+      tags:
+      - tenant-controller
+      operationId: addDomain
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddDomainRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DomainResponse"
+      x-required-permission: tenant-domain:manage
+  /api/v1/tenants/{id}/deactivate:
+    post:
+      tags:
+      - tenant-controller
+      operationId: deactivate
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantResponse"
+      x-required-permission: tenant:deactivate
+  /api/v1/tenant-systems:
+    get:
+      tags:
+      - tenant-system-controller
+      operationId: list_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SystemResponse"
+      x-required-permission: tenant-system:read
+    post:
+      tags:
+      - tenant-system-controller
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSystemRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SystemResponse"
+      x-required-permission: tenant-system:manage
+  /api/v1/tenant-systems/{id}/credentials:
+    get:
+      tags:
+      - tenant-system-controller
+      operationId: listCredentials
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CredentialResponse"
+      x-required-permission: credential:manage
+    post:
+      tags:
+      - tenant-system-controller
+      operationId: createCredential
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCredentialRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IssuedCredentialResponse"
+      x-required-permission: credential:manage
+  /api/v1/tenant-systems/{id}/credentials/rotate:
+    post:
+      tags:
+      - tenant-system-controller
+      operationId: rotate
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IssuedCredentialResponse"
+      x-required-permission: credential:manage
+  /api/v1/roles:
+    get:
+      tags:
+      - role-controller
+      operationId: list_3
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoleResponse"
+      x-required-permission: role:read
+    post:
+      tags:
+      - role-controller
+      operationId: create_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoleRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+      x-required-permission: role:manage
+  /api/v1/users/{id}:
+    get:
+      tags:
+      - user-controller
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+      x-required-permission: user:read
+  /api/v1/tenants/{id}:
+    get:
+      tags:
+      - tenant-controller
+      operationId: get_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TenantResponse"
+      x-required-permission: tenant:read
+  /api/v1/tenant-systems/{id}:
+    get:
+      tags:
+      - tenant-system-controller
+      operationId: get_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SystemResponse"
+      x-required-permission: tenant-system:read
+  /api/v1/roles/{id}:
+    get:
+      tags:
+      - role-controller
+      operationId: get_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+      x-required-permission: role:read
+  /api/v1/permissions:
+    get:
+      tags:
+      - role-controller
+      operationId: catalog
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+      x-required-permission: role:read
+  /api/v1/me:
+    get:
+      tags:
+      - me-controller
+      operationId: me
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+  /api/v1/tenant-systems/{systemId}/credentials/{credentialId}:
+    delete:
+      tags:
+      - tenant-system-controller
+      operationId: revoke
+      parameters:
+      - name: systemId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: credentialId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CredentialResponse"
+      x-required-permission: credential:manage
+components:
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        directPermissions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        createdAt:
+          type: string
+          format: date-time
+    SetPermissionsRequest:
+      type: object
+      properties:
+        permissions:
+          type: array
+          items:
+            type: string
+    RoleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        system:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        createdAt:
+          type: string
+          format: date-time
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        displayName:
+          type: string
+        temporaryPassword:
+          type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+    CreateTenantRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        adminEmail:
+          type: string
+        adminDisplayName:
+          type: string
+        adminTemporaryPassword:
+          type: string
+    TenantResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    AddDomainRequest:
+      type: object
+      properties:
+        hostname:
+          type: string
+    DomainResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        hostname:
+          type: string
+        kind:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateSystemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+    SystemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateCredentialRequest:
+      type: object
+      properties:
+        label:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+    CredentialResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        keyId:
+          type: string
+        label:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+    IssuedCredentialResponse:
+      type: object
+      properties:
+        credential:
+          $ref: "#/components/schemas/CredentialResponse"
+        key:
+          type: string
+    RotateRequest:
+      type: object
+      properties:
+        overlapMinutes:
+          type: integer
+          format: int64
+    CreateRoleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    MeResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        tenantId:
+          type: string
+        scope:
+          type: string
+        displayName:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+  securitySchemes:
+    oidc:
+      type: http
+      description: Billing User signed in through Keycloak
+      scheme: bearer
+      bearerFormat: JWT
+    apiKey:
+      type: http
+      description: Tenant System credential issued by Billing
+      scheme: bearer
+      bearerFormat: cbk_<key-id>_<secret>

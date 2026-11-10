@@ -1,6 +1,7 @@
 package io.corebilling.sharedkernel;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 /** A fact that happened inside a bounded context; delivered through the transactional outbox. */
@@ -18,4 +19,10 @@ public interface DomainEvent {
     String aggregate();
 
     Instant occurredAt();
+
+    /**
+     * The integration contract of the event: JSON-compatible values only (String, Number, Boolean,
+     * nested Map and List). It is stored in the outbox exactly as given, so it never carries secrets.
+     */
+    Map<String, Object> payload();
 }

@@ -1,0 +1,16 @@
+# Versions were resolved from Maven Central on 2026-11-10 and are mutually compatible:
+# Spring Boot 4.1 manages Spring Data JDBC, Flyway, PostgreSQL driver and Testcontainers.
+[versions]
+spring-boot = "4.1.2"
+spring-modulith = "2.1.2"
+archunit = "1.5.1"
+jdk = "25"
+
+[libraries]
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
+spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "spring-modulith" }
+spring-modulith-api = { module = "org.springframework.modulith:spring-modulith-api" }
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+
+[plugins]

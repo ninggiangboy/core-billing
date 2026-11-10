@@ -33,7 +33,13 @@ public enum Permission {
     LEDGER_REVERSE("ledger:reverse", false, true, false),
 
     WEBHOOK_READ("webhook:read", false, true, true),
-    WEBHOOK_MANAGE("webhook:manage", false, true, true);
+    WEBHOOK_MANAGE("webhook:manage", false, true, true),
+
+    PRICING_READ("pricing:read", false, true, true),
+    /** Creates, versions and retires pricing plans. Administrators only: a plan sets what customers are charged. */
+    PRICING_MANAGE("pricing:manage", false, true, false),
+    USAGE_RECORD("usage:record", false, true, true),
+    USAGE_READ("usage:read", false, true, true);
 
     private final String code;
     private final boolean platform;

@@ -126,6 +126,93 @@ paths:
               schema:
                 $ref: "#/components/schemas/CustomerResponse"
       x-required-permission: customer:write
+  /api/v1/webhook-endpoints:
+    get:
+      tags:
+      - webhook-controller
+      operationId: listEndpoints
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EndpointResponse"
+      x-required-permission: webhook:read
+    post:
+      tags:
+      - webhook-controller
+      operationId: createEndpoint
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEndpointRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EndpointWithSecretResponse"
+      x-required-permission: webhook:manage
+  /api/v1/webhook-endpoints/{id}/rotate-secret:
+    post:
+      tags:
+      - webhook-controller
+      operationId: rotateSecret
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EndpointWithSecretResponse"
+      x-required-permission: webhook:manage
+  /api/v1/webhook-deliveries/{id}/resend:
+    post:
+      tags:
+      - webhook-controller
+      operationId: resend
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Accepted
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryResponse"
+      x-required-permission: webhook:manage
   /api/v1/wallets:
     get:
       tags:
@@ -204,6 +291,93 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserResponse"
       x-required-permission: user:manage
+  /api/v1/usage-events:
+    get:
+      tags:
+      - usage-controller
+      operationId: history
+      parameters:
+      - name: customerId
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: metric
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageEventResponse"
+      x-required-permission: usage:read
+    post:
+      tags:
+      - usage-controller
+      operationId: recordOne
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsageEventRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecordedResponse"
+      x-required-permission: usage:record
+  /api/v1/usage-events/batch:
+    post:
+      tags:
+      - usage-controller
+      operationId: recordBatch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BatchResponse"
+      x-required-permission: usage:record
   /api/v1/tenants:
     get:
       tags:
@@ -510,6 +684,168 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChargeResponse"
       x-required-permission: charge:create
+  /api/v1/pricing/usage-charges:
+    post:
+      tags:
+      - pricing-controller
+      operationId: chargeUsage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChargeUsageRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RatingResponse"
+      x-required-permission: charge:create
+  /api/v1/pricing/reservations:
+    post:
+      tags:
+      - pricing-controller
+      operationId: reserveEstimate
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReserveRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReserveResponse"
+      x-required-permission: reservation:manage
+  /api/v1/pricing/estimates:
+    post:
+      tags:
+      - pricing-controller
+      operationId: estimate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstimateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EstimateResponse"
+      x-required-permission: pricing:read
+  /api/v1/pricing-plans:
+    get:
+      tags:
+      - pricing-controller
+      operationId: listPlans
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlanResponse"
+      x-required-permission: pricing:read
+    post:
+      tags:
+      - pricing-controller
+      operationId: createPlan
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlanRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlanResponse"
+      x-required-permission: pricing:manage
+  /api/v1/pricing-plans/{id}/versions:
+    post:
+      tags:
+      - pricing-controller
+      operationId: publishVersion
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VersionRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VersionResponse"
+      x-required-permission: pricing:manage
+  /api/v1/pricing-plans/{id}/retire:
+    post:
+      tags:
+      - pricing-controller
+      operationId: retire
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlanResponse"
+      x-required-permission: pricing:manage
   /api/v1/ledger-entries/{id}/reverse:
     post:
       tags:
@@ -628,6 +964,111 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChargeResponse"
       x-required-permission: charge:create
+  /api/v1/webhook-endpoints/{id}:
+    get:
+      tags:
+      - webhook-controller
+      operationId: getEndpoint
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EndpointResponse"
+      x-required-permission: webhook:read
+    patch:
+      tags:
+      - webhook-controller
+      operationId: updateEndpoint
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEndpointRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EndpointResponse"
+      x-required-permission: webhook:manage
+  /api/v1/webhook-deliveries:
+    get:
+      tags:
+      - webhook-controller
+      operationId: listDeliveries
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: endpointId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryResponse"
+      x-required-permission: webhook:read
+  /api/v1/webhook-deliveries/{id}:
+    get:
+      tags:
+      - webhook-controller
+      operationId: getDelivery
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeliveryDetailResponse"
+      x-required-permission: webhook:read
   /api/v1/wallets/{id}:
     get:
       tags:
@@ -701,6 +1142,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserResponse"
       x-required-permission: user:read
+  /api/v1/usage-aggregates:
+    get:
+      tags:
+      - usage-controller
+      operationId: aggregates
+      parameters:
+      - name: customerId
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: metric
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TotalResponse"
+      x-required-permission: usage:read
   /api/v1/tenants/{id}:
     get:
       tags:
@@ -777,6 +1258,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/ReservationResponse"
       x-required-permission: wallet:read
+  /api/v1/pricing/usage-charges/{id}:
+    get:
+      tags:
+      - pricing-controller
+      operationId: getRating
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RatingResponse"
+      x-required-permission: pricing:read
+  /api/v1/pricing-plans/{id}:
+    get:
+      tags:
+      - pricing-controller
+      operationId: getPlan
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PlanResponse"
+      x-required-permission: pricing:read
   /api/v1/permissions:
     get:
       tags:
@@ -953,6 +1472,82 @@ components:
           type: string
         externalUserId:
           type: string
+    CreateEndpointRequest:
+      type: object
+      properties:
+        url:
+          type: string
+        description:
+          type: string
+        eventTypes:
+          type: array
+          items:
+            type: string
+    EndpointResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        eventTypes:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        keyId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        secretRotatedAt:
+          type: string
+          format: date-time
+    EndpointWithSecretResponse:
+      type: object
+      properties:
+        endpoint:
+          $ref: "#/components/schemas/EndpointResponse"
+        signingSecret:
+          type: string
+    DeliveryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        endpointId:
+          type: string
+        eventId:
+          type: string
+        eventType:
+          type: string
+        status:
+          type: string
+        attempts:
+          type: integer
+          format: int32
+        nextAttemptAt:
+          type: string
+          format: date-time
+        resendOf:
+          type: string
+        lastStatusCode:
+          type: integer
+          format: int32
+        lastError:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
     OpenWalletRequest:
       type: object
       properties:
@@ -1013,6 +1608,74 @@ components:
           type: array
           items:
             type: string
+    UsageEventRequest:
+      type: object
+      properties:
+        customerId:
+          type: string
+        metric:
+          type: string
+        quantity:
+          type: string
+        unit:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        idempotencyKey:
+          type: string
+        resourceRef:
+          type: string
+        sourceEventId:
+          type: string
+    RecordedResponse:
+      type: object
+      properties:
+        event:
+          $ref: "#/components/schemas/UsageEventResponse"
+        replayed:
+          type: boolean
+    UsageEventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        metric:
+          type: string
+        quantity:
+          type: string
+        unit:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        recordedAt:
+          type: string
+          format: date-time
+        idempotencyKey:
+          type: string
+        tenantSystemId:
+          type: string
+        resourceRef:
+          type: string
+        sourceEventId:
+          type: string
+    BatchRequest:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/UsageEventRequest"
+    BatchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecordedResponse"
     CreateTenantRequest:
       type: object
       properties:
@@ -1198,6 +1861,264 @@ components:
           type: string
         reference:
           type: string
+    ChargeUsageRequest:
+      type: object
+      properties:
+        customerId:
+          type: string
+        walletId:
+          type: string
+        planId:
+          type: string
+        version:
+          type: integer
+          format: int32
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+    AmountDto:
+      type: object
+      properties:
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    LineResponse:
+      type: object
+      properties:
+        description:
+          type: string
+        metric:
+          type: string
+        quantity:
+          type: string
+        amount:
+          type: string
+    RatingResponse:
+      type: object
+      properties:
+        outcome:
+          type: string
+        id:
+          type: string
+        planId:
+          type: string
+        planVersion:
+          type: integer
+          format: int32
+        amount:
+          $ref: "#/components/schemas/AmountDto"
+        chargeId:
+          type: string
+        failureReason:
+          type: string
+        usageCount:
+          type: integer
+          format: int32
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineResponse"
+        replayed:
+          type: boolean
+    UsageInput:
+      type: object
+      properties:
+        metric:
+          type: string
+        quantity:
+          type: string
+        events:
+          type: integer
+          format: int64
+    EstimateResponse:
+      type: object
+      properties:
+        planId:
+          type: string
+        planCode:
+          type: string
+        planVersion:
+          type: integer
+          format: int32
+        amount:
+          $ref: "#/components/schemas/AmountDto"
+        exactAmount:
+          type: string
+        adjustment:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineResponse"
+    ReservationDto:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        amount:
+          $ref: "#/components/schemas/AmountDto"
+        expiresAt:
+          type: string
+          format: date-time
+        replayed:
+          type: boolean
+    ReserveResponse:
+      type: object
+      properties:
+        estimate:
+          $ref: "#/components/schemas/EstimateResponse"
+        reservation:
+          $ref: "#/components/schemas/ReservationDto"
+    EstimateRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+        version:
+          type: integer
+          format: int32
+        at:
+          type: string
+          format: date-time
+        usage:
+          type: array
+          items:
+            $ref: "#/components/schemas/UsageInput"
+    CreatePlanRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        currency:
+          type: string
+        model:
+          type: string
+        version:
+          $ref: "#/components/schemas/VersionRequest"
+    RuleDto:
+      type: object
+      properties:
+        model:
+          type: string
+        metric:
+          type: string
+        unit:
+          type: string
+        unitPrice:
+          type: string
+        increment:
+          type: string
+        mode:
+          type: string
+        tiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TierDto"
+        executionFee:
+          type: string
+        fixedPrice:
+          type: string
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleDto"
+    TierDto:
+      type: object
+      properties:
+        upTo:
+          type: string
+        unitPrice:
+          type: string
+    VersionRequest:
+      type: object
+      properties:
+        rule:
+          $ref: "#/components/schemas/RuleDto"
+        billingCycle:
+          type: string
+        minCharge:
+          type: integer
+          format: int64
+        maxCharge:
+          type: integer
+          format: int64
+        rounding:
+          type: string
+        validFrom:
+          type: string
+          format: date-time
+        validUntil:
+          type: string
+          format: date-time
+    PlanResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        model:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        retiredAt:
+          type: string
+          format: date-time
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/VersionResponse"
+    VersionResponse:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int32
+        rule:
+          $ref: "#/components/schemas/RuleDto"
+        billingCycle:
+          type: string
+        minCharge:
+          type: integer
+          format: int64
+        maxCharge:
+          type: integer
+          format: int64
+        rounding:
+          type: string
+        validFrom:
+          type: string
+          format: date-time
+        validUntil:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
     ReplacementRequest:
       type: object
       properties:
@@ -1278,6 +2199,61 @@ components:
           type: string
         reference:
           type: string
+    UpdateEndpointRequest:
+      type: object
+      properties:
+        url:
+          type: string
+        description:
+          type: string
+        eventTypes:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+    AttemptResponse:
+      type: object
+      properties:
+        attemptNo:
+          type: integer
+          format: int32
+        statusCode:
+          type: integer
+          format: int32
+        error:
+          type: string
+        responseExcerpt:
+          type: string
+        latencyMs:
+          type: integer
+          format: int64
+        attemptedAt:
+          type: string
+          format: date-time
+    DeliveryDetailResponse:
+      type: object
+      properties:
+        delivery:
+          $ref: "#/components/schemas/DeliveryResponse"
+        body:
+          type: string
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptResponse"
+    TotalResponse:
+      type: object
+      properties:
+        metric:
+          type: string
+        unit:
+          type: string
+        quantity:
+          type: string
+        events:
+          type: integer
+          format: int64
     MeResponse:
       type: object
       properties:

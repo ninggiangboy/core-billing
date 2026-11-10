@@ -112,14 +112,15 @@ The Stripe Platform Account serves Connect. A Tenant's Stripe accounts are eithe
 
 ### Module boundaries
 
-Bounded contexts follow the functional areas in [overview-and-scope.md](overview-and-scope.md): tenancy and customers, identity and authorization, pricing, usage, wallet and ledger, reservation, charge, invoice, payment and refund, subscription, billing session, and webhooks. The build files will own the exact module names and dependency rules once they exist.
+Bounded contexts follow the functional areas in [overview-and-scope.md](overview-and-scope.md): tenancy and customers, identity and authorization, pricing, usage, wallet and ledger, reservation, charge, invoice, payment and refund, subscription, billing session, and webhooks. `billing/settings.gradle.kts` lists the modules that exist and the build files own the dependency rules.
 
-Decided before code exists:
+Decisions:
 
 - The module set is `platform`, `customer`, `pricing`, `usage`, `money`, `invoicing`, `payment`, `webhook`, plus `shared-kernel` and `app-boot`.
 - `money` owns Wallet, Ledger, Reservation and Charge, so the whole money path commits in one transaction that includes its outbox row.
 - `shared-kernel` holds value objects and framework-free technical ports only. It takes no module dependency and stays small; a growing kernel is split, not extended.
 - A module exposes a public `api` package. Another context may depend only on that package, and only the money path may call another context's business operations synchronously.
+- Charging from usage is orchestrated in `pricing`, which is the one place that adds a synchronous edge to the money path: it reads quantities through the read-only `usage.api` and calls `money.api`, including the read-only `WalletLookup` that lets it check a wallet's owner and currency. `usage` never depends on `pricing`; the metric-unit catalog `usage` needs reaches `pricing` through a port wired in `app-boot`, so the graph stays one-directional.
 - `platform.api` is the exception that every context uses: the request scope, the authenticated actor and its permissions, idempotency, audit and the shared not-found and conflict errors. It carries no business operation, so depending on it does not couple contexts.
 - Inside a module the dependency direction is `adapter → application → domain`. `app-boot` only wires and never holds business rules.
 - Persistence row types live in the adapter, not in the domain. A domain type never carries Spring Data annotations.

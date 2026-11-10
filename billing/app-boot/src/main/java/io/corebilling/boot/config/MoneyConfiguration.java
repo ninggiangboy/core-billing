@@ -6,6 +6,7 @@ import io.corebilling.money.adapter.persistence.JdbcLedgerRepository;
 import io.corebilling.money.adapter.persistence.JdbcLedgerVerifier;
 import io.corebilling.money.adapter.persistence.JdbcReservationRepository;
 import io.corebilling.money.adapter.persistence.JdbcWalletRepository;
+import io.corebilling.money.api.WalletLookup;
 import io.corebilling.money.application.ChargeRepository;
 import io.corebilling.money.application.ChargeUseCase;
 import io.corebilling.money.application.CreditWalletUseCase;
@@ -19,6 +20,7 @@ import io.corebilling.money.application.ReservationRepository;
 import io.corebilling.money.application.ReserveBudgetUseCase;
 import io.corebilling.money.application.ReverseEntryUseCase;
 import io.corebilling.money.application.VerifyLedgerUseCase;
+import io.corebilling.money.application.WalletLookupService;
 import io.corebilling.money.application.WalletQueries;
 import io.corebilling.money.application.WalletRepository;
 import io.corebilling.platform.api.AuditLog;
@@ -117,6 +119,11 @@ class MoneyConfiguration {
     VerifyLedgerUseCase verifyLedgerUseCase(
             UnitOfWork unitOfWork, LedgerVerifier verifier, AuditLog auditLog, TenantContext tenantContext, Clock clock) {
         return new VerifyLedgerUseCase(unitOfWork, verifier, auditLog, tenantContext, clock);
+    }
+
+    @Bean
+    WalletLookup walletLookup(UnitOfWork unitOfWork, WalletRepository wallets) {
+        return new WalletLookupService(unitOfWork, wallets);
     }
 
     @Bean

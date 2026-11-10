@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/pricing-plan.version-published.schema.json",
+  "title": "Pricing plan version published",
+  "description": "A pricing plan has a new version: the first version of a newly created plan, or a later one. Earlier versions and the charges that used them are unchanged. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "planId",
+    "code",
+    "model",
+    "currency",
+    "version",
+    "billingCycle",
+    "validFrom",
+    "validUntil"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "planId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "code": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "TIME_BASED",
+        "USAGE_BASED",
+        "WORKLOAD_BASED",
+        "EVENT_BASED",
+        "SUBSCRIPTION",
+        "HYBRID"
+      ]
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "billingCycle": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "DAILY",
+            "WEEKLY",
+            "MONTHLY",
+            "QUARTERLY",
+            "YEARLY"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "validUntil": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

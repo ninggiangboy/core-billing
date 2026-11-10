@@ -34,6 +34,19 @@ class ArchitectureTest {
         assertThat(useCases).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(8);
     }
 
+    /**
+     * What makes a new pricing model a change inside pricing only: nothing that moves or records money, usage or
+     * deliveries knows the pricing context exists.
+     */
+    @org.junit.jupiter.api.Test
+    void moneyUsageAndWebhookDoNotKnowPricing() {
+        com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses()
+                .that().resideInAnyPackage(ROOT + ".money..", ROOT + ".usage..", ROOT + ".webhook..", ROOT + ".customer..")
+                .should().dependOnClassesThat().resideInAPackage(ROOT + ".pricing..")
+                .because("pricing sits above money and usage; the arrow never points back")
+                .check(production);
+    }
+
     static Stream<ArchitectureRules.NamedRule> rules() {
         return ArchitectureRules.all(ROOT).stream();
     }

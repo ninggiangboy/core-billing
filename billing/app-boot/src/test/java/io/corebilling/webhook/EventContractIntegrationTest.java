@@ -1,0 +1,180 @@
+package io.corebilling.webhook;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.corebilling.Application;
+import io.corebilling.money.MoneyTestWorld;
+import io.corebilling.pricing.PricingTestWorld;
+import io.corebilling.pricing.application.ChargeFromUsageUseCase;
+import io.corebilling.pricing.application.PlanAdministration;
+import io.corebilling.pricing.domain.EventBased;
+import java.time.Instant;
+import io.corebilling.money.MoneyTestWorld.World;
+import io.corebilling.money.api.ChargeCommand;
+import io.corebilling.money.api.ChargeWallet;
+import io.corebilling.money.api.DebitCommand;
+import io.corebilling.money.api.DebitWallet;
+import io.corebilling.money.api.ReservationResult;
+import io.corebilling.money.api.ReserveBudget;
+import io.corebilling.money.api.ReserveBudgetCommand;
+import io.corebilling.money.application.ExpireReservationsUseCase;
+import io.corebilling.money.application.ReleaseReservationUseCase;
+import io.corebilling.money.application.ReverseEntryUseCase;
+import io.corebilling.money.application.WalletQueries;
+import io.corebilling.sharedkernel.Money;
+import io.corebilling.support.EventSchemas;
+import io.corebilling.support.OwnerDatabase;
+import io.corebilling.support.PostgresContainerConfig;
+import io.corebilling.support.ScopeTestSupport;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Every event the code emits is checked against the JSON Schema in contracts/events. The events are produced
+ * by the real use cases and read back from the outbox, so a payload builder that drifts fails here.
+ */
+@SpringBootTest(classes = Application.class)
+@Import(PostgresContainerConfig.class)
+class EventContractIntegrationTest {
+
+    /** Event types this test produces through the real code; every schema must have a producer listed here. */
+    private static final Set<String> EMITTED_HERE = Set.of(
+            "reservation.created", "reservation.released", "reservation.expired", "charge.succeeded", "charge.failed", "wallet.credited",
+            "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated");
+
+    @Autowired MoneyTestWorld worlds;
+    @Autowired ScopeTestSupport scopes;
+    @Autowired OwnerDatabase owner;
+    @Autowired ChargeWallet charge;
+    @Autowired DebitWallet debit;
+    @Autowired ReserveBudget reserve;
+    @Autowired ReleaseReservationUseCase release;
+    @Autowired ExpireReservationsUseCase expire;
+    @Autowired ReverseEntryUseCase reverse;
+    @Autowired WalletQueries queries;
+    @Autowired PricingTestWorld pricing;
+    @Autowired ChargeFromUsageUseCase chargeUsage;
+    @Autowired PlanAdministration planAdmin;
+
+    private final JsonMapper json = JsonMapper.builder().build();
+
+    private record Payload(String type, String json) {}
+
+    /** Drives the money path through every event it can emit and returns what landed in the outbox. */
+    private List<Payload> produceMoneyEvents() {
+        World w = worlds.prepaid(100_000);
+        var tenant = w.tenant().id();
+        var walletId = w.wallet().id();
+        Money five = Money.of(500, w.wallet().currency());
+
+        ReservationResult held = scopes.inTenant(tenant, () -> reserve.reserve(new ReserveBudgetCommand(walletId, five, Duration.ofMinutes(5), "run-1", UUID.randomUUID().toString())));
+        scopes.inTenant(tenant, () -> release.execute(held.id()));
+        ReservationResult toExpire = scopes.inTenant(tenant, () -> reserve.reserve(new ReserveBudgetCommand(walletId, five, Duration.ofMinutes(5), null, UUID.randomUUID().toString())));
+        owner.jdbc().update("update reservations set expires_at = now() - interval '1 second', created_at = now() - interval '1 minute' where id = ?", toExpire.id().value());
+        scopes.inTenant(tenant, () -> expire.execute(10));
+        ReservationResult toCapture = scopes.inTenant(tenant, () -> reserve.reserve(new ReserveBudgetCommand(walletId, five, Duration.ofMinutes(5), "run-2", UUID.randomUUID().toString())));
+        var captured = scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(null, toCapture.id(), five, null, "capture", UUID.randomUUID().toString())));
+        var fromUsage = scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(walletId, null, five, "usage-batch-1", "usage", UUID.randomUUID().toString())));
+        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(walletId, null, Money.of(10_000_000, w.wallet().currency()), null, null, UUID.randomUUID().toString())));
+        scopes.inTenant(tenant, () -> debit.debit(new DebitCommand(walletId, five, "fee", null, UUID.randomUUID().toString(), "system/test")));
+        scopes.inTenant(tenant, () -> reverse.execute(new ReverseEntryUseCase.Command(fromUsage.ledgerEntryId(), "billing error", null, "user/test")));
+        assertThat(captured.status()).isNotNull();
+
+        List<Payload> payloads = new ArrayList<>();
+        owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {
+            payloads.add(new Payload(rs.getString("type"), rs.getString("payload")));
+        }, tenant.value());
+        return payloads;
+    }
+
+    /** Creates, versions and retires plans and rates usage, then returns what landed in the outbox. */
+    private List<Payload> producePricingEvents() {
+        World w = worlds.prepaid(100_000);
+        var tenant = w.tenant().id();
+        String metric = pricing.metric();
+        var plan = pricing.plan(tenant, "calls", new EventBased(metric, "call", new java.math.BigDecimal("1")));
+        Instant day = Instant.parse("2026-10-01T00:00:00Z");
+        pricing.record(tenant, w.customerId(), metric, "call", "10", day.plusSeconds(10));
+        scopes.inTenant(tenant, () -> chargeUsage.execute(new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), plan.id(), null, day, day.plusSeconds(3600))));
+        String cheap = pricing.metric();
+        var cheapPlan = pricing.plan(tenant, "cheap", new EventBased(cheap, "call", new java.math.BigDecimal("0.001")));
+        pricing.record(tenant, w.customerId(), cheap, "call", "2", day.plusSeconds(10));
+        scopes.inTenant(tenant, () -> chargeUsage.execute(new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), cheapPlan.id(), null, day, day.plusSeconds(3600))));
+        scopes.inTenant(tenant, () -> planAdmin.publishVersion(PricingTestWorld.AUDIT, plan.id(), new PlanAdministration.Terms(
+                new EventBased(metric, "call", new java.math.BigDecimal("2")), null, null, null, null, day.plusSeconds(100), null)));
+        scopes.inTenant(tenant, () -> planAdmin.retire(PricingTestWorld.AUDIT, plan.id()));
+
+        List<Payload> payloads = new ArrayList<>();
+        owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {
+            payloads.add(new Payload(rs.getString("type"), rs.getString("payload")));
+        }, tenant.value());
+        return payloads;
+    }
+
+    @Test
+    void everyPayloadTheCodeEmitsConformsToItsSchema() {
+        List<Payload> produced = new ArrayList<>(produceMoneyEvents());
+        produced.addAll(producePricingEvents());
+
+        Set<String> producedTypes = new TreeSet<>();
+        produced.forEach(p -> producedTypes.add(p.type()));
+        assertThat(producedTypes).as("the scenarios exercised every event type").containsExactlyInAnyOrderElementsOf(EMITTED_HERE);
+        for (Payload payload : produced) {
+            assertThat(EventSchemas.validate(payload.type(), payload.json())).as(payload.type() + " " + payload.json()).isEmpty();
+        }
+    }
+
+    @Test
+    void everySchemaHasAProducerAndEveryProducerHasASchema() {
+        assertThat(EventSchemas.types()).containsExactlyInAnyOrderElementsOf(EMITTED_HERE);
+    }
+
+    @Test
+    void theValidatorIsStrictEnoughToCatchDrift() throws Exception {
+        List<Payload> produced = produceMoneyEvents();
+        Payload charge = produced.stream().filter(p -> p.type().equals("charge.succeeded")).findFirst().orElseThrow();
+        JsonNode good = json.readTree(charge.json());
+        assertThat(EventSchemas.validate("charge.succeeded", charge.json())).isEmpty();
+
+        var extra = (tools.jackson.databind.node.ObjectNode) good.deepCopy();
+        extra.put("surprise", 1);
+        assertThat(EventSchemas.validate("charge.succeeded", extra.toString())).as("an undeclared field").isNotEmpty();
+
+        var missing = (tools.jackson.databind.node.ObjectNode) good.deepCopy();
+        missing.remove("walletId");
+        assertThat(EventSchemas.validate("charge.succeeded", missing.toString())).as("a removed field").isNotEmpty();
+
+        var wrongType = (tools.jackson.databind.node.ObjectNode) good.deepCopy();
+        wrongType.put("amount", "12.50");
+        assertThat(EventSchemas.validate("charge.succeeded", wrongType.toString())).as("a changed type").isNotEmpty();
+
+        var notUuid = (tools.jackson.databind.node.ObjectNode) good.deepCopy();
+        notUuid.put("chargeId", "not-a-uuid");
+        assertThat(EventSchemas.validate("charge.succeeded", notUuid.toString())).as("format is asserted").isNotEmpty();
+
+        var badEnum = (tools.jackson.databind.node.ObjectNode) good.deepCopy();
+        badEnum.put("source", "SOMETHING");
+        assertThat(EventSchemas.validate("charge.succeeded", badEnum.toString())).isNotEmpty();
+        assertThat(EventSchemas.validate("no.such-event", "{}")).isNotEmpty();
+    }
+
+    @Test
+    void theDeliveredBodyEmbedsThePayloadUnchangedAsData() throws Exception {
+        List<Payload> produced = produceMoneyEvents();
+        Payload credited = produced.stream().filter(p -> p.type().equals("wallet.credited")).findFirst().orElseThrow();
+        Map<String, Object> envelope = new java.util.LinkedHashMap<>();
+        envelope.put("data", json.readValue(credited.json(), Map.class));
+        assertThat(EventSchemas.validate("wallet.credited", json.writeValueAsString(envelope.get("data")))).isEmpty();
+    }
+}

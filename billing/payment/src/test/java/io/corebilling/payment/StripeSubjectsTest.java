@@ -3,8 +3,8 @@ package io.corebilling.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.corebilling.payment.adapter.stripe.StripePaymentProvider;
-import io.corebilling.payment.application.PaymentProvider;
-import io.corebilling.payment.application.PaymentProvider.ProviderEvent;
+import io.corebilling.payment.application.payment.port.PaymentProvider;
+import io.corebilling.payment.application.payment.port.PaymentProvider.ProviderEvent;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 

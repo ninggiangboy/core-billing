@@ -39,6 +39,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import io.corebilling.payment.application.payment.port.PaymentRepository;
+import io.corebilling.payment.application.refund.port.RefundRepository;
+import io.corebilling.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
+import io.corebilling.payment.domain.payment.PaymentId;
+import io.corebilling.payment.domain.refund.Refund;
+import io.corebilling.payment.domain.refund.RefundId;
 
 /**
  * Every event the code emits is checked against the JSON Schema in contracts/events. The events are produced
@@ -68,9 +74,9 @@ class EventContractIntegrationTest {
     @Autowired ChargeFromUsageUseCase chargeUsage;
     @Autowired PlanAdministration planAdmin;
     @Autowired io.corebilling.payment.PaymentTestWorld payments;
-    @Autowired io.corebilling.payment.application.ReceiveStripeWebhookUseCase receive;
-    @Autowired io.corebilling.payment.application.PaymentRepository paymentRepository;
-    @Autowired io.corebilling.payment.application.RefundRepository refundRepository;
+    @Autowired io.corebilling.payment.application.stripe.command.ReceiveStripeWebhookUseCase receive;
+    @Autowired io.corebilling.payment.application.payment.port.PaymentRepository paymentRepository;
+    @Autowired io.corebilling.payment.application.refund.port.RefundRepository refundRepository;
     @Autowired io.corebilling.sharedkernel.UnitOfWork unitOfWork;
 
     private final JsonMapper json = JsonMapper.builder().build();
@@ -132,15 +138,15 @@ class EventContractIntegrationTest {
     private List<Payload> producePaymentEvents() {
         var w = payments.direct(0);
         var tenant = w.money().tenant().id();
-        var ok = payments.openPayment(w, new io.corebilling.payment.domain.PaymentId(UUID.randomUUID()), 5000);
+        var ok = payments.openPayment(w, new io.corebilling.payment.domain.payment.PaymentId(UUID.randomUUID()), 5000);
         deliver(w, io.corebilling.support.StripeEvents.paidCheckout(io.corebilling.support.StripeEvents.newEventId(), null, "cs_" + ok.id(), "pi_" + ok.id(),
                 ok.id().toString(), 5000));
-        var failing = payments.openPayment(w, new io.corebilling.payment.domain.PaymentId(UUID.randomUUID()), 700);
+        var failing = payments.openPayment(w, new io.corebilling.payment.domain.payment.PaymentId(UUID.randomUUID()), 700);
         deliver(w, io.corebilling.support.StripeEvents.checkout(io.corebilling.support.StripeEvents.newEventId(), "checkout.session.async_payment_failed", null,
                 "cs_" + failing.id(), "pi_" + failing.id(), failing.id().toString(), "complete", "unpaid", 700, "usd"));
         var settled = scopes.inTenant(tenant, () -> unitOfWork.transactional(() -> paymentRepository.findById(ok.id()).orElseThrow()));
         var refund = scopes.inTenant(tenant, () -> unitOfWork.transactional(() -> {
-            var r = io.corebilling.payment.domain.Refund.request(new io.corebilling.payment.domain.RefundId(UUID.randomUUID()), settled,
+            var r = io.corebilling.payment.domain.refund.Refund.request(new io.corebilling.payment.domain.refund.RefundId(UUID.randomUUID()), settled,
                     Money.of(1000, settled.amount().currency()), null, null, "user/test", "refund-" + UUID.randomUUID(), "hash", Instant.now());
             refundRepository.add(r);
             return r;

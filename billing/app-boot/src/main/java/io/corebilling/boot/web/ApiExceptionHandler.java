@@ -1,8 +1,8 @@
 package io.corebilling.boot.web;
 
-import io.corebilling.payment.application.InvalidSignatureException;
-import io.corebilling.payment.application.ProviderRejectedException;
-import io.corebilling.payment.application.ProviderUnavailableException;
+import io.corebilling.payment.application.stripe.command.InvalidSignatureException;
+import io.corebilling.payment.application.stripe.command.ProviderRejectedException;
+import io.corebilling.payment.application.stripe.command.ProviderUnavailableException;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.money.api.InsufficientFundsException;

@@ -1,11 +1,11 @@
 package io.corebilling.payment.adapter.persistence;
 
-import io.corebilling.payment.application.StripeEventRepository;
-import io.corebilling.payment.domain.EventAttempt;
-import io.corebilling.payment.domain.EventStatus;
-import io.corebilling.payment.domain.StoredEventId;
-import io.corebilling.payment.domain.StripeConfigurationId;
-import io.corebilling.payment.domain.StripeEvent;
+import io.corebilling.payment.application.stripe.port.StripeEventRepository;
+import io.corebilling.payment.domain.stripe.EventAttempt;
+import io.corebilling.payment.domain.stripe.EventStatus;
+import io.corebilling.payment.domain.stripe.StoredEventId;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
+import io.corebilling.payment.domain.stripe.StripeEvent;
 import io.corebilling.sharedkernel.TenantId;
 import java.time.Instant;
 import java.util.ArrayList;

@@ -20,7 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
  * port for it, so neither depends on the other's type. The master key id is stored so a later key rotation
  * can tell which key wrapped what; this class holds a single master key and refuses any other id.
  */
-public class AesGcmSecretCipher implements SecretCipher, io.corebilling.payment.application.SecretCipher {
+public class AesGcmSecretCipher implements SecretCipher, io.corebilling.payment.application.stripe.port.SecretCipher {
 
     private static final String VERSION = "v1";
     private static final int NONCE_BYTES = 12;

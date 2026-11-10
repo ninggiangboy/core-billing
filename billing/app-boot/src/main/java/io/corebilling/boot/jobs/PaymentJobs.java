@@ -1,7 +1,7 @@
 package io.corebilling.boot.jobs;
 
-import io.corebilling.payment.application.ReconcileStripeUseCase;
-import io.corebilling.payment.application.RetryStripeEventsUseCase;
+import io.corebilling.payment.application.stripe.command.ReconcileStripeUseCase;
+import io.corebilling.payment.application.stripe.command.RetryStripeEventsUseCase;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

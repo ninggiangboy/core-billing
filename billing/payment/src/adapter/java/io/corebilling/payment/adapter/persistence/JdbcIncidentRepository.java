@@ -1,9 +1,9 @@
 package io.corebilling.payment.adapter.persistence;
 
-import io.corebilling.payment.application.IncidentRepository;
-import io.corebilling.payment.domain.Incident;
-import io.corebilling.payment.domain.IncidentKind;
-import io.corebilling.payment.domain.StripeConfigurationId;
+import io.corebilling.payment.application.incident.port.IncidentRepository;
+import io.corebilling.payment.domain.incident.Incident;
+import io.corebilling.payment.domain.incident.IncidentKind;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
 import io.corebilling.sharedkernel.TenantId;
 import java.time.Instant;
 import java.util.List;

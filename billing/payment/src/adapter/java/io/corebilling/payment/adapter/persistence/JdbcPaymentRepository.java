@@ -1,11 +1,11 @@
 package io.corebilling.payment.adapter.persistence;
 
-import io.corebilling.payment.application.PaymentRepository;
-import io.corebilling.payment.domain.Payment;
-import io.corebilling.payment.domain.PaymentAttempt;
-import io.corebilling.payment.domain.PaymentId;
-import io.corebilling.payment.domain.PaymentStatus;
-import io.corebilling.payment.domain.StripeConfigurationId;
+import io.corebilling.payment.application.payment.port.PaymentRepository;
+import io.corebilling.payment.domain.payment.Payment;
+import io.corebilling.payment.domain.payment.PaymentAttempt;
+import io.corebilling.payment.domain.payment.PaymentId;
+import io.corebilling.payment.domain.payment.PaymentStatus;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.Money;

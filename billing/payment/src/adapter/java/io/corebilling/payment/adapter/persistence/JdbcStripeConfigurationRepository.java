@@ -1,11 +1,11 @@
 package io.corebilling.payment.adapter.persistence;
 
-import io.corebilling.payment.application.StripeConfigurationRepository;
-import io.corebilling.payment.domain.ConnectionStatus;
-import io.corebilling.payment.domain.IntegrationMode;
-import io.corebilling.payment.domain.StripeConfiguration;
-import io.corebilling.payment.domain.StripeConfigurationId;
-import io.corebilling.payment.domain.StripeEnvironment;
+import io.corebilling.payment.application.stripe.port.StripeConfigurationRepository;
+import io.corebilling.payment.domain.stripe.ConnectionStatus;
+import io.corebilling.payment.domain.stripe.IntegrationMode;
+import io.corebilling.payment.domain.stripe.StripeConfiguration;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
+import io.corebilling.payment.domain.stripe.StripeEnvironment;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.List;
 import java.util.Optional;

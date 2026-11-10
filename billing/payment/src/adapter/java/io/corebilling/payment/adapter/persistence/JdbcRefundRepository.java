@@ -1,10 +1,10 @@
 package io.corebilling.payment.adapter.persistence;
 
-import io.corebilling.payment.application.RefundRepository;
-import io.corebilling.payment.domain.PaymentId;
-import io.corebilling.payment.domain.Refund;
-import io.corebilling.payment.domain.RefundId;
-import io.corebilling.payment.domain.RefundStatus;
+import io.corebilling.payment.application.refund.port.RefundRepository;
+import io.corebilling.payment.domain.payment.PaymentId;
+import io.corebilling.payment.domain.refund.Refund;
+import io.corebilling.payment.domain.refund.RefundId;
+import io.corebilling.payment.domain.refund.RefundStatus;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.TenantId;

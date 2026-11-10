@@ -1,7 +1,7 @@
 package io.corebilling.payment.adapter.web;
 
-import io.corebilling.payment.application.ReceiveStripeWebhookUseCase;
-import io.corebilling.payment.domain.StripeConfigurationId;
+import io.corebilling.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
 import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.platform.api.PublicEndpoint;
 import jakarta.servlet.http.HttpServletRequest;

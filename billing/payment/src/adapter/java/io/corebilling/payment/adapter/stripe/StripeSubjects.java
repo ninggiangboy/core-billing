@@ -3,13 +3,13 @@ package io.corebilling.payment.adapter.stripe;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.corebilling.payment.application.PaymentProvider;
-import io.corebilling.payment.application.PaymentProvider.CheckoutPayment;
-import io.corebilling.payment.application.PaymentProvider.CheckoutStatus;
-import io.corebilling.payment.application.PaymentProvider.IntentState;
-import io.corebilling.payment.application.PaymentProvider.ProviderEvent;
-import io.corebilling.payment.application.PaymentProvider.RefundState;
-import io.corebilling.payment.application.PaymentProvider.Subject;
+import io.corebilling.payment.application.payment.port.PaymentProvider;
+import io.corebilling.payment.application.payment.port.PaymentProvider.CheckoutPayment;
+import io.corebilling.payment.application.payment.port.PaymentProvider.CheckoutStatus;
+import io.corebilling.payment.application.payment.port.PaymentProvider.IntentState;
+import io.corebilling.payment.application.payment.port.PaymentProvider.ProviderEvent;
+import io.corebilling.payment.application.payment.port.PaymentProvider.RefundState;
+import io.corebilling.payment.application.payment.port.PaymentProvider.Subject;
 import java.time.Instant;
 
 /**

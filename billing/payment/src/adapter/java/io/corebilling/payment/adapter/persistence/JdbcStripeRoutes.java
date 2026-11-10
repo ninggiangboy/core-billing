@@ -1,7 +1,7 @@
 package io.corebilling.payment.adapter.persistence;
 
-import io.corebilling.payment.application.StripeRoutes;
-import io.corebilling.payment.domain.StripeConfigurationId;
+import io.corebilling.payment.application.stripe.port.StripeRoutes;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.TenantId;
 import java.sql.Timestamp;

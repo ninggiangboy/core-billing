@@ -1,10 +1,10 @@
 package io.corebilling.support;
 
 import io.corebilling.payment.adapter.stripe.StripePaymentProvider;
-import io.corebilling.payment.application.PaymentProvider;
-import io.corebilling.payment.application.ProviderRejectedException;
-import io.corebilling.payment.application.ProviderUnavailableException;
-import io.corebilling.payment.domain.StripeEnvironment;
+import io.corebilling.payment.application.payment.port.PaymentProvider;
+import io.corebilling.payment.application.stripe.command.ProviderRejectedException;
+import io.corebilling.payment.application.stripe.command.ProviderUnavailableException;
+import io.corebilling.payment.domain.stripe.StripeEnvironment;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;

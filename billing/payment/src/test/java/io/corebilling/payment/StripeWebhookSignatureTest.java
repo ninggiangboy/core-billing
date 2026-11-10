@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.payment.adapter.stripe.StripePaymentProvider;
-import io.corebilling.payment.application.InvalidSignatureException;
-import io.corebilling.payment.application.PaymentProvider.ProviderEvent;
+import io.corebilling.payment.application.stripe.command.InvalidSignatureException;
+import io.corebilling.payment.application.payment.port.PaymentProvider.ProviderEvent;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;

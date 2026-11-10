@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import io.corebilling.Application;
 import io.corebilling.payment.PaymentTestWorld;
 import io.corebilling.payment.PaymentTestWorld.PayWorld;
-import io.corebilling.payment.domain.Payment;
-import io.corebilling.payment.domain.PaymentId;
+import io.corebilling.payment.domain.payment.Payment;
+import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.platform.api.RequestScope;
 import io.corebilling.support.FakeIdentityConfig;
 import io.corebilling.support.OwnerDatabase;

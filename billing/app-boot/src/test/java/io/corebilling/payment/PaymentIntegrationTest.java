@@ -9,24 +9,24 @@ import io.corebilling.money.api.ChargeWallet;
 import io.corebilling.money.api.WalletLookup;
 import io.corebilling.money.application.WalletQueries;
 import io.corebilling.payment.PaymentTestWorld.PayWorld;
-import io.corebilling.payment.application.Audit;
-import io.corebilling.payment.application.CreateTopUpUseCase;
-import io.corebilling.payment.application.PaymentProvider;
-import io.corebilling.payment.application.PaymentQueries;
-import io.corebilling.payment.application.ProviderRejectedException;
-import io.corebilling.payment.application.ProviderUnavailableException;
-import io.corebilling.payment.application.ReceiveStripeWebhookUseCase;
-import io.corebilling.payment.application.ReceiveStripeWebhookUseCase.Disposition;
-import io.corebilling.payment.application.ReconcileStripeUseCase;
-import io.corebilling.payment.application.RequestRefundUseCase;
-import io.corebilling.payment.application.RetryStripeEventsUseCase;
-import io.corebilling.payment.application.StripeEventAdministration;
-import io.corebilling.payment.domain.EventStatus;
-import io.corebilling.payment.domain.Payment;
-import io.corebilling.payment.domain.PaymentId;
-import io.corebilling.payment.domain.PaymentStatus;
-import io.corebilling.payment.domain.Refund;
-import io.corebilling.payment.domain.RefundStatus;
+import io.corebilling.payment.application.shared.command.Audit;
+import io.corebilling.payment.application.payment.command.CreateTopUpUseCase;
+import io.corebilling.payment.application.payment.port.PaymentProvider;
+import io.corebilling.payment.application.payment.query.PaymentQueries;
+import io.corebilling.payment.application.stripe.command.ProviderRejectedException;
+import io.corebilling.payment.application.stripe.command.ProviderUnavailableException;
+import io.corebilling.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
+import io.corebilling.payment.application.stripe.command.ReceiveStripeWebhookUseCase.Disposition;
+import io.corebilling.payment.application.stripe.command.ReconcileStripeUseCase;
+import io.corebilling.payment.application.refund.command.RequestRefundUseCase;
+import io.corebilling.payment.application.stripe.command.RetryStripeEventsUseCase;
+import io.corebilling.payment.application.stripe.command.StripeEventAdministration;
+import io.corebilling.payment.domain.stripe.EventStatus;
+import io.corebilling.payment.domain.payment.Payment;
+import io.corebilling.payment.domain.payment.PaymentId;
+import io.corebilling.payment.domain.payment.PaymentStatus;
+import io.corebilling.payment.domain.refund.Refund;
+import io.corebilling.payment.domain.refund.RefundStatus;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.sharedkernel.Money;
@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import io.corebilling.payment.application.stripe.command.StripeConfigurationService;
 
 /**
  * The payment flows against real PostgreSQL, with Stripe replaced by an in-memory provider (which keeps real
@@ -70,7 +71,7 @@ class PaymentIntegrationTest {
     @Autowired ReceiveStripeWebhookUseCase webhooks;
     @Autowired RetryStripeEventsUseCase retry;
     @Autowired ReconcileStripeUseCase reconcile;
-    @Autowired io.corebilling.payment.application.StripeConfigurationService configService;
+    @Autowired io.corebilling.payment.application.stripe.command.StripeConfigurationService configService;
     @Autowired io.corebilling.money.application.ExpireReservationsUseCase expireReservations;
     @Autowired StripeEventAdministration eventAdmin;
     @Autowired PaymentQueries queries;
@@ -358,7 +359,7 @@ class PaymentIntegrationTest {
             scopes.inTenant(w.money().tenant().id(), retry::runOnce);
         }
 
-        List<io.corebilling.payment.domain.StripeEvent> dead = scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.list(EventStatus.DEAD, null, 10));
+        List<io.corebilling.payment.domain.stripe.StripeEvent> dead = scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.list(EventStatus.DEAD, null, 10));
         assertThat(dead).hasSize(1);
         assertThat(dead.get(0).attempts()).isEqualTo(3);
         assertThat(dead.get(0).lastError()).contains("no payment");

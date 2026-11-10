@@ -1,0 +1,38 @@
+package io.corebilling.architecture;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+/** Runs every architecture rule against the production code. */
+class ArchitectureTest {
+
+    static final String ROOT = "io.corebilling";
+
+    private static JavaClasses production;
+
+    @BeforeAll
+    static void importProduction() {
+        production = new ClassFileImporter()
+                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                .importPackages(ROOT);
+        // Guards against an import that silently matches nothing and makes every rule pass.
+        assertThat(production.contain("io.corebilling.sharedkernel.Money")).isTrue();
+    }
+
+    static Stream<ArchitectureRules.NamedRule> rules() {
+        return ArchitectureRules.all(ROOT).stream();
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("rules")
+    void productionCodeObeysRule(ArchitectureRules.NamedRule rule) {
+        rule.rule().check(production);
+    }
+}

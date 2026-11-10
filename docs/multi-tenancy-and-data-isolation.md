@@ -23,6 +23,9 @@ Shared Database, Shared Schema, Tenant ID.
 - Relationships must make cross-Tenant references impossible, using composite foreign keys for important relations.
 - Unique constraints include `tenant_id` whenever the identifier is scoped to a Tenant.
 - PostgreSQL Row-Level Security is a further layer: the tenant is set once per transaction inside the transaction boundary, so no query can run outside a tenant scope.
+- The database has two roles. A migration owner owns every table; the application connects as a separate role that owns nothing and cannot bypass Row-Level Security. Policies are forced, so they also apply to the owner. A connection or code path that forgets the tenant fails closed and returns no rows.
+- Two kinds of table exist. Platform-owned tables (the Tenant list and its hostname mapping) are readable without a tenant, because the hostname has to be resolved before any Tenant Context exists, and they hold no financial data. Every other table carries `tenant_id` and enables Row-Level Security through one shared migration helper; a build test fails when a tenant-scoped table does not.
+- A request or job acts in exactly one scope: the Platform, or one Tenant. A Platform-scope transaction sets no tenant, so it cannot read tenant-scoped rows. Platform Administrators read Tenant data only by acting in that Tenant's explicit, audited context.
 - The Tenant Context reaches the domain as a value object; a raw `tenant_id` is never threaded through business code.
 
 ## Tenant resolution and domains
@@ -36,6 +39,7 @@ Each Tenant is reached through a subdomain.
 | `tenant-b.base-domain.com` | Tenant B |
 
 - The Tenant is resolved automatically from the request hostname.
+- An unknown hostname, or one that belongs to a deactivated Tenant, gets one generic not-found answer that does not reveal whether the Tenant exists.
 - A Tenant Context is built once and carried through every processing layer.
 - Background Jobs and Event Consumers carry the Tenant Context too.
 - A `tenant_id` supplied by a client is never trusted to determine access rights.

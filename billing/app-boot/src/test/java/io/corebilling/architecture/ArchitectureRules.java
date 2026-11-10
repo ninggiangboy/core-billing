@@ -39,6 +39,7 @@ final class ArchitectureRules {
                 new NamedRule("persistence-types-in-adapter", persistenceTypesInAdapter(root)),
                 new NamedRule("money-use-cases-use-unit-of-work", moneyUseCasesUseUnitOfWork(root)),
                 new NamedRule("api-exposes-no-internals", apiExposesNoInternals(root)),
+                new NamedRule("datasource-and-transactions-only-in-infrastructure", datasourceOnlyInInfrastructure(root)),
                 new NamedRule("no-jpa", noJpa()),
                 new NamedRule("shared-kernel-is-independent", sharedKernelIsIndependent(root)));
     }
@@ -89,6 +90,18 @@ final class ArchitectureRules {
         return api.should().onlyDependOnClassesThat()
                 .resideInAnyPackage(JAVA, root + ".sharedkernel..", root + ".*.api..")
                 .because("the api package must not leak domain or adapter types");
+    }
+
+    /**
+     * Only the unit of work may open transactions or reach the datasource. Anything else that touches the
+     * database runs outside a tenant-scoped transaction, where row-level security returns no rows.
+     */
+    private static ArchRule datasourceOnlyInInfrastructure(String root) {
+        return noClasses().that().resideOutsideOfPackage(root + ".boot.infrastructure..")
+                .should().dependOnClassesThat().haveFullyQualifiedName("javax.sql.DataSource")
+                .orShould().dependOnClassesThat().resideInAnyPackage(
+                        "org.springframework.transaction..", "org.springframework.jdbc.datasource..")
+                .because("the UnitOfWork is the only owner of transactions and the tenant setting");
     }
 
     private static ArchRule noJpa() {

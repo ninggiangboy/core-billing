@@ -3,7 +3,18 @@ spring:
     name: core-billing
   datasource:
     url: ${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}
-    username: ${BILLING_DB_USER:corebilling}
-    password: ${BILLING_DB_PASSWORD:corebilling}
+    username: ${BILLING_DB_USER:corebilling_app}
+    password: ${BILLING_DB_PASSWORD:corebilling_app}
   flyway:
     locations: classpath:db/migration
+    # Migrations run as the table owner; the application runs as corebilling_app.
+    url: ${BILLING_MIGRATION_DB_URL:${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}}
+    user: ${BILLING_MIGRATION_DB_USER:corebilling}
+    password: ${BILLING_MIGRATION_DB_PASSWORD:corebilling}
+    placeholders:
+      appDbPassword: ${BILLING_DB_PASSWORD:corebilling_app}
+
+billing:
+  tenancy:
+    # Platform Administration is platform.<base-domain>; a Tenant is <tenant-code>.<base-domain>.
+    base-domain: ${BILLING_BASE_DOMAIN:localhost}

@@ -1,5 +1,6 @@
 package io.corebilling.architecture;
 
+import com.tngtech.archunit.core.domain.JavaClass;
 import io.corebilling.Application;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
@@ -11,7 +12,9 @@ import org.springframework.modulith.docs.Documenter;
  */
 class ModulithVerificationTest {
 
-    private final ApplicationModules modules = ApplicationModules.of(Application.class);
+    // io.corebilling.boot is wiring and the HTTP boundary, not a bounded context.
+    private final ApplicationModules modules =
+            ApplicationModules.of(Application.class, JavaClass.Predicates.resideInAPackage("io.corebilling.boot.."));
 
     @Test
     void modulesAreWellFormed() {

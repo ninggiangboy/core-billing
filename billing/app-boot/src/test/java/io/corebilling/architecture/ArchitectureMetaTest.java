@@ -32,6 +32,7 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("persistence-types-in-adapter", "RowInDomain");
         CULPRIT_BY_RULE_ID.put("money-use-cases-use-unit-of-work", "ChargeUseCase");
         CULPRIT_BY_RULE_ID.put("api-exposes-no-internals", "LeaksDomain");
+        CULPRIT_BY_RULE_ID.put("datasource-and-transactions-only-in-infrastructure", "TouchesDataSource");
         CULPRIT_BY_RULE_ID.put("no-jpa", "JpaEntity");
         CULPRIT_BY_RULE_ID.put("shared-kernel-is-independent", "KernelKnowsAContext");
     }

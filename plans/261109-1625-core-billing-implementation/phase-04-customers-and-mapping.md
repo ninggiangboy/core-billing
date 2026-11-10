@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Customers and tenant mapping"
-status: pending
+status: completed
 priority: P1
 effort: "2d"
 dependencies: [3]
@@ -25,12 +25,19 @@ Source: [customers-and-tenant-mapping.md](../../docs/customers-and-tenant-mappin
 
 ## Tasks & Steps
 
-- [ ] 1. Schema: `customers(tenant_id, id, ...)` and `customer_mappings(tenant_id, tenant_system_id, external_user_id, customer_id)`. Unique `(tenant_id, tenant_system_id, external_user_id)`. Composite foreign keys to `customers(tenant_id, id)` and `tenant_systems(tenant_id, id)`. RLS enabled through the phase 2 helper.
-- [ ] 2. Domain: `Customer` aggregate with status; mapping rule that one external user maps to one customer within one tenant system.
-- [ ] 3. Use cases: create customer with mapping (idempotent by `Idempotency-Key`), get customer by external user id, list and update customers for administrators, deactivate.
-- [ ] 4. REST for Tenant Systems (API key principal) and for Tenant Users (OIDC principal, Permission-guarded).
-- [ ] 5. Publish `customer.created` through the outbox appender; no consumer yet.
-- [ ] 6. `customer.api` exposes the lookups that `money` and `payment` will need; nothing else is importable from other modules.
+- [x] 1. Schema: `customers(tenant_id, id, ...)` and `customer_mappings(tenant_id, tenant_system_id, external_user_id, customer_id)`. Unique `(tenant_id, tenant_system_id, external_user_id)`. Composite foreign keys to `customers(tenant_id, id)` and `tenant_systems(tenant_id, id)`. RLS enabled through the phase 2 helper.
+- [x] 2. Domain: `Customer` aggregate with status; mapping rule that one external user maps to one customer within one tenant system.
+- [x] 3. Use cases: create customer with mapping (idempotent by `Idempotency-Key`), get customer by external user id, list and update customers for administrators, deactivate.
+- [x] 4. REST for Tenant Systems (API key principal) and for Tenant Users (OIDC principal, Permission-guarded).
+- [x] 5. Publish `customer.created` through the outbox appender; no consumer yet.
+- [x] 6. `customer.api` exposes the lookups that `money` and `payment` will need; nothing else is importable from other modules.
+
+## Notes
+
+- The migration is `V5__customers.sql`. Mappings are part of the `Customer` aggregate (a child collection), so a customer update never loses them; the unique mapping key and both composite foreign keys are enforced by the database.
+- Idempotency stores the new customer's id as the response body, so a retry reloads the same customer instead of re-serialising a response.
+- `platform.api` now also holds `NotFoundException` and `ConflictException`, and `docs/architecture.md` records it as the shared contract every context may use.
+- A database integrity violation maps to a generic 409; the detail goes to the log only.
 
 ## Verification
 

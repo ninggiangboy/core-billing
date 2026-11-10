@@ -18,3 +18,5 @@ out/
 node_modules/
 # local agent config
 .commandcode/
+# kotlin tool cache
+.kotlin/

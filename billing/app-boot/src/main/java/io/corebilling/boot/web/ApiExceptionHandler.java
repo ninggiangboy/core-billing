@@ -1,0 +1,53 @@
+package io.corebilling.boot.web;
+
+import io.corebilling.platform.api.AccessDeniedException;
+import io.corebilling.platform.api.IdempotencyConflictException;
+import io.corebilling.platform.application.ConflictException;
+import io.corebilling.platform.application.NotFoundException;
+import io.corebilling.platform.application.RateLimitExceededException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+/** Turns application errors into RFC 9457 problem responses. Unexpected errors reveal nothing about the cause. */
+@RestControllerAdvice
+class ApiExceptionHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail notFound(NotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler({ConflictException.class, IdempotencyConflictException.class})
+    ProblemDetail conflict(RuntimeException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ProblemDetail forbidden(AccessDeniedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "You do not have permission to do this.");
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    ProblemDetail rateLimited(RateLimitExceededException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, "Too many requests.");
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class})
+    ProblemDetail badRequest(Exception e) {
+        String detail = e instanceof IllegalArgumentException ? e.getMessage() : "The request body is not valid.";
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    }
+
+    @ExceptionHandler(Exception.class)
+    ProblemDetail unexpected(Exception e) {
+        LOG.error("unexpected error", e);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong.");
+    }
+}

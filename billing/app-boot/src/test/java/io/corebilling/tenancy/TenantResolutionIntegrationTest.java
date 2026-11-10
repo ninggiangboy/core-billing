@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootTest(classes = {Application.class, TenantResolutionIntegrationTest.ScopeEcho.class})
+@SpringBootTest(classes = {Application.class, TenantResolutionIntegrationTest.ScopeEcho.class, TenantResolutionIntegrationTest.OpenTestPaths.class})
 @AutoConfigureMockMvc
 @Import(PostgresContainerConfig.class)
 class TenantResolutionIntegrationTest {
@@ -38,11 +38,23 @@ class TenantResolutionIntegrationTest {
         }
 
         @GetMapping("/test/scope")
+        @io.corebilling.platform.api.Authenticated
         String scope() {
             return switch (tenantContext.current()) {
                 case RequestScope.Platform platform -> "platform";
                 case RequestScope.Tenant tenant -> "tenant:" + tenant.tenantId();
             };
+        }
+    }
+
+    /** Opens only the echo path, so these tests exercise hostname resolution without authentication. */
+    @org.springframework.context.annotation.Configuration
+    static class OpenTestPaths {
+        @org.springframework.context.annotation.Bean
+        @org.springframework.core.annotation.Order(0)
+        org.springframework.security.web.SecurityFilterChain openEcho(org.springframework.security.config.annotation.web.builders.HttpSecurity http) {
+            http.securityMatcher("/test/**").authorizeHttpRequests(a -> a.anyRequest().permitAll()).csrf(c -> c.disable());
+            return http.build();
         }
     }
 

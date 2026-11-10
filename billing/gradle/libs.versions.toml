@@ -4,6 +4,7 @@
 spring-boot = "4.1.2"
 spring-modulith = "2.1.2"
 archunit = "1.5.1"
+springdoc = "3.2.0"
 jdk = "25"
 
 [libraries]
@@ -13,6 +14,7 @@ spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-b
 spring-modulith-api = { module = "org.springframework.modulith:spring-modulith-api" }
 spring-modulith-core = { module = "org.springframework.modulith:spring-modulith-core" }
 spring-modulith-docs = { module = "org.springframework.modulith:spring-modulith-docs" }
+springdoc-webmvc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 
 [plugins]

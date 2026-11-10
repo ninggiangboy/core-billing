@@ -1,18 +1,25 @@
 spring:
   application:
     name: core-billing
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/corebilling}
+          jwk-set-uri: ${BILLING_OIDC_JWK_SET_URI:${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/corebilling}/protocol/openid-connect/certs}
+          audiences: core-billing
   datasource:
     url: ${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}
     username: ${BILLING_DB_USER:corebilling_app}
-    password: ${BILLING_DB_PASSWORD:corebilling_app}
+    password: ${BILLING_DB_PASSWORD}
   flyway:
     locations: classpath:db/migration
     # Migrations run as the table owner; the application runs as corebilling_app.
     url: ${BILLING_MIGRATION_DB_URL:${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}}
     user: ${BILLING_MIGRATION_DB_USER:corebilling}
-    password: ${BILLING_MIGRATION_DB_PASSWORD:corebilling}
+    password: ${BILLING_MIGRATION_DB_PASSWORD}
     placeholders:
-      appDbPassword: ${BILLING_DB_PASSWORD:corebilling_app}
+      appDbPassword: ${BILLING_DB_PASSWORD}
 
 billing:
   tenancy:
@@ -22,4 +29,8 @@ billing:
     base-url: ${BILLING_KEYCLOAK_URL:http://localhost:8081}
     realm: corebilling
     admin-client-id: billing-admin
-    admin-client-secret: ${BILLING_KEYCLOAK_ADMIN_CLIENT_SECRET:}
+    admin-client-secret: ${BILLING_KEYCLOAK_ADMIN_CLIENT_SECRET}
+  bootstrap:
+    # Optional: creates the first Platform administrator on start when the email is set and unused.
+    platform-admin-email: ${BILLING_BOOTSTRAP_ADMIN_EMAIL:}
+    platform-admin-temporary-password: ${BILLING_BOOTSTRAP_ADMIN_TEMPORARY_PASSWORD:}

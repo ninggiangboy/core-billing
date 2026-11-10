@@ -1,0 +1,92 @@
+package io.corebilling.platform.adapter.web;
+
+import io.corebilling.platform.api.Permission;
+import io.corebilling.platform.api.RequiresPermission;
+import io.corebilling.platform.application.UserAdministration;
+import io.corebilling.platform.domain.BillingUser;
+import io.corebilling.platform.domain.RoleId;
+import io.corebilling.platform.domain.UserId;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+/** Billing Users of the current scope: Platform Users on the Platform, Tenant Users inside a Tenant. */
+@RestController
+@RequestMapping("/api/v1/users")
+public class UserController {
+
+    public record CreateUserRequest(String email, String displayName, String temporaryPassword, List<String> roleIds) {
+        @Override
+        public String toString() {
+            return "CreateUserRequest[email=" + email + "]";
+        }
+    }
+
+    public record UserResponse(
+            String id, String email, String displayName, String status, Set<String> roleIds, Set<String> directPermissions, Instant createdAt) {
+        static UserResponse of(BillingUser user) {
+            return new UserResponse(
+                    user.id().toString(),
+                    user.email(),
+                    user.displayName(),
+                    user.status().name(),
+                    user.roleIds().stream().map(RoleId::toString).collect(Collectors.toSet()),
+                    user.directPermissions().stream().map(Permission::code).collect(Collectors.toSet()),
+                    user.createdAt());
+        }
+    }
+
+    private final UserAdministration users;
+    private final CallerResolver callers;
+
+    public UserController(UserAdministration users, CallerResolver callers) {
+        this.users = users;
+        this.callers = callers;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequiresPermission(Permission.USER_MANAGE)
+    public UserResponse create(@RequestBody CreateUserRequest request) {
+        Set<RoleId> roleIds = request.roleIds() == null
+                ? Set.of()
+                : request.roleIds().stream().map(RoleId::of).collect(Collectors.toSet());
+        return UserResponse.of(users.create(
+                callers.current(), new UserAdministration.CreateUser(request.email(), request.displayName(), request.temporaryPassword(), roleIds)));
+    }
+
+    @GetMapping
+    @RequiresPermission(Permission.USER_READ)
+    public List<UserResponse> list() {
+        return users.list().stream().map(UserResponse::of).toList();
+    }
+
+    @GetMapping("/{id}")
+    @RequiresPermission(Permission.USER_READ)
+    public UserResponse get(@PathVariable String id) {
+        return UserResponse.of(users.get(UserId.of(id)));
+    }
+
+    @PutMapping("/{id}/roles/{roleId}")
+    @RequiresPermission(Permission.USER_MANAGE)
+    public UserResponse assignRole(@PathVariable String id, @PathVariable String roleId) {
+        return UserResponse.of(users.assignRole(callers.current(), UserId.of(id), RoleId.of(roleId)));
+    }
+
+    @DeleteMapping("/{id}/roles/{roleId}")
+    @RequiresPermission(Permission.USER_MANAGE)
+    public UserResponse unassignRole(@PathVariable String id, @PathVariable String roleId) {
+        return UserResponse.of(users.unassignRole(callers.current(), UserId.of(id), RoleId.of(roleId)));
+    }
+}

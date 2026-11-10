@@ -2,6 +2,7 @@ package io.corebilling.boot.config;
 
 import io.corebilling.platform.api.RequestScope;
 import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
 import io.corebilling.platform.application.EnsurePlatformDomainUseCase;
 import io.corebilling.platform.application.SeedDefaultRolesUseCase;
 import io.corebilling.platform.application.SeedPermissionsUseCase;
@@ -17,20 +18,29 @@ class PlatformBootstrap implements ApplicationRunner {
     private final EnsurePlatformDomainUseCase ensurePlatformDomain;
     private final SeedPermissionsUseCase seedPermissions;
     private final SeedDefaultRolesUseCase seedDefaultRoles;
+    private final BootstrapPlatformAdminUseCase bootstrapAdmin;
     private final TenantContext tenantContext;
     private final String baseDomain;
+    private final String adminEmail;
+    private final String adminTemporaryPassword;
 
     PlatformBootstrap(
             EnsurePlatformDomainUseCase ensurePlatformDomain,
             SeedPermissionsUseCase seedPermissions,
             SeedDefaultRolesUseCase seedDefaultRoles,
+            BootstrapPlatformAdminUseCase bootstrapAdmin,
             TenantContext tenantContext,
-            @Value("${billing.tenancy.base-domain}") String baseDomain) {
+            @Value("${billing.tenancy.base-domain}") String baseDomain,
+            @Value("${billing.bootstrap.platform-admin-email:}") String adminEmail,
+            @Value("${billing.bootstrap.platform-admin-temporary-password:}") String adminTemporaryPassword) {
         this.ensurePlatformDomain = ensurePlatformDomain;
         this.seedPermissions = seedPermissions;
         this.seedDefaultRoles = seedDefaultRoles;
+        this.bootstrapAdmin = bootstrapAdmin;
         this.tenantContext = tenantContext;
         this.baseDomain = baseDomain;
+        this.adminEmail = adminEmail;
+        this.adminTemporaryPassword = adminTemporaryPassword;
     }
 
     @Override
@@ -39,6 +49,9 @@ class PlatformBootstrap implements ApplicationRunner {
             seedPermissions.execute();
             ensurePlatformDomain.execute("platform." + baseDomain);
             seedDefaultRoles.execute();
+            if (!adminEmail.isBlank()) {
+                bootstrapAdmin.execute(adminEmail, "Platform Administrator", adminTemporaryPassword.isBlank() ? null : adminTemporaryPassword);
+            }
         });
     }
 }

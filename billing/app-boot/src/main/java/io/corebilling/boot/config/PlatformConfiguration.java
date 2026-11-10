@@ -13,6 +13,7 @@ import io.corebilling.platform.api.AuditLog;
 import io.corebilling.platform.api.TenantContext;
 import io.corebilling.platform.application.AddTenantDomainUseCase;
 import io.corebilling.platform.application.Authentication;
+import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
 import io.corebilling.platform.application.CredentialAdministration;
 import io.corebilling.platform.application.CredentialRepository;
 import io.corebilling.platform.application.IdentityProviderPort;
@@ -130,12 +131,11 @@ class PlatformConfiguration {
     @Bean
     @Lazy
     IdentityProviderPort identityProvider(
-            RestClient.Builder http,
             @Value("${billing.keycloak.base-url}") String baseUrl,
             @Value("${billing.keycloak.realm}") String realm,
             @Value("${billing.keycloak.admin-client-id}") String clientId,
             @Value("${billing.keycloak.admin-client-secret}") String clientSecret) {
-        return new KeycloakIdentityProvider(http, baseUrl, realm, clientId, clientSecret);
+        return new KeycloakIdentityProvider(RestClient.builder(), baseUrl, realm, clientId, clientSecret);
     }
 
     @Bean
@@ -222,5 +222,11 @@ class PlatformConfiguration {
             RoleRepository roles,
             TenantContext tenantContext) {
         return new ProvisionTenantUseCase(createTenant, seedDefaultRoles, users, unitOfWork, roles, tenantContext);
+    }
+
+    @Bean
+    BootstrapPlatformAdminUseCase bootstrapPlatformAdminUseCase(
+            UnitOfWork unitOfWork, UserRepository users, RoleRepository roles, UserAdministration userAdministration) {
+        return new BootstrapPlatformAdminUseCase(unitOfWork, users, roles, userAdministration);
     }
 }

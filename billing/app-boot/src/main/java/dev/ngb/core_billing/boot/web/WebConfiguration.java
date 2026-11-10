@@ -1,8 +1,11 @@
 package dev.ngb.core_billing.boot.web;
 
 import dev.ngb.core_billing.platform.adapter.web.CallerResolver;
+import dev.ngb.core_billing.platform.api.actor.Authenticated;
 import dev.ngb.core_billing.platform.api.actor.Authorizer;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
+import dev.ngb.core_billing.platform.api.actor.PermissionScope;
+import dev.ngb.core_billing.platform.api.actor.PublicEndpoint;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -54,6 +57,32 @@ class WebConfiguration implements WebMvcConfigurer {
             RequiresPermission required = handlerMethod.getMethodAnnotation(RequiresPermission.class);
             if (required != null) {
                 operation.addExtension("x-required-permission", required.value().code());
+            }
+            return operation;
+        };
+    }
+
+    /** Documents which principal may call each operation, derived from the same Permission the interceptor enforces. */
+    @Bean
+    OperationCustomizer allowedCallers() {
+        return (operation, handlerMethod) -> {
+            RequiresPermission required = handlerMethod.getMethodAnnotation(RequiresPermission.class);
+            if (required != null) {
+                List<String> callers = new java.util.ArrayList<>();
+                if (required.value().validIn(PermissionScope.PLATFORM)) {
+                    callers.add("platform-user");
+                }
+                if (required.value().validIn(PermissionScope.TENANT)) {
+                    callers.add("tenant-user");
+                }
+                if (required.value().grantableToTenantSystem()) {
+                    callers.add("tenant-system");
+                }
+                operation.addExtension("x-allowed-callers", callers);
+            } else if (handlerMethod.hasMethodAnnotation(Authenticated.class)) {
+                operation.addExtension("x-allowed-callers", List.of("platform-user", "tenant-user", "tenant-system"));
+            } else if (handlerMethod.hasMethodAnnotation(PublicEndpoint.class)) {
+                operation.addExtension("x-allowed-callers", List.of("public"));
             }
             return operation;
         };

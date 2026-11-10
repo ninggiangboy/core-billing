@@ -4,7 +4,6 @@ import io.corebilling.money.domain.wallet.Wallet;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.WalletId;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,6 +27,4 @@ public interface WalletRepository {
     Optional<Wallet> tryLockById(WalletId id);
 
     Optional<Wallet> findByCustomer(CustomerId customerId, Currency currency);
-
-    List<Wallet> listByCustomer(CustomerId customerId);
 }

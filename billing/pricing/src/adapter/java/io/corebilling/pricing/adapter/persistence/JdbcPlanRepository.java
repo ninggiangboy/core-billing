@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -20,21 +21,19 @@ public class JdbcPlanRepository implements PlanRepository {
     private static final String VERSION_COLUMNS = "plan_id, version, tenant_id, rule::text as rule, billing_cycle, min_charge, max_charge, rounding, "
             + "valid_from, valid_until, created_at, created_by";
 
+    private final JdbcAggregateOperations aggregates;
     private final JdbcClient jdbc;
     private final JsonMapper json;
 
-    public JdbcPlanRepository(JdbcClient jdbc, JsonMapper json) {
+    public JdbcPlanRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc, JsonMapper json) {
+        this.aggregates = aggregates;
         this.jdbc = jdbc;
         this.json = json;
     }
 
     @Override
     public void add(PricingPlan plan) {
-        PricingPlanRow row = PricingPlanRow.from(plan);
-        jdbc.sql("insert into pricing_plans (" + PLAN_COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                .params(row.id(), row.tenantId(), row.code(), row.name(), row.model(), row.currency(), row.status(),
-                        Timestamp.from(row.createdAt()), row.retiredAt() == null ? null : Timestamp.from(row.retiredAt()))
-                .update();
+        aggregates.insert(PricingPlanRow.from(plan));
         plan.versions().forEach(this::addVersion);
     }
 
@@ -51,17 +50,16 @@ public class JdbcPlanRepository implements PlanRepository {
 
     @Override
     public void update(PricingPlan plan) {
-        int updated = jdbc.sql("update pricing_plans set status = ?, retired_at = ? where id = ?")
-                .params(plan.status().name(), plan.retiredAt() == null ? null : Timestamp.from(plan.retiredAt()), plan.id().value())
-                .update();
-        if (updated != 1) {
-            throw new IllegalStateException("pricing plan " + plan.id() + " was not updated");
-        }
+        aggregates.update(PricingPlanRow.from(plan));
     }
 
     @Override
     public Optional<PricingPlan> findById(PlanId id) {
-        return load(jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where id = ?").param(id.value())).stream().findFirst();
+        PricingPlanRow row = aggregates.findById(id.value(), PricingPlanRow.class);
+        if (row == null) {
+            return Optional.empty();
+        }
+        return Optional.of(withVersions(List.of(row)).get(0));
     }
 
     @Override
@@ -75,7 +73,10 @@ public class JdbcPlanRepository implements PlanRepository {
     }
 
     private List<PricingPlan> load(JdbcClient.StatementSpec statement) {
-        List<PricingPlanRow> rows = statement.query(PricingPlanRow.class).list();
+        return withVersions(statement.query(PricingPlanRow.class).list());
+    }
+
+    private List<PricingPlan> withVersions(List<PricingPlanRow> rows) {
         if (rows.isEmpty()) {
             return List.of();
         }

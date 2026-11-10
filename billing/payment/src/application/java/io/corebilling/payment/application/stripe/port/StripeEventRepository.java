@@ -1,7 +1,5 @@
 package io.corebilling.payment.application.stripe.port;
 
-import io.corebilling.payment.domain.stripe.EventAttempt;
-import io.corebilling.payment.domain.stripe.EventStatus;
 import io.corebilling.payment.domain.stripe.StoredEventId;
 import io.corebilling.payment.domain.stripe.StripeEvent;
 import java.time.Instant;
@@ -26,10 +24,5 @@ public interface StripeEventRepository {
      */
     List<StoredEventId> due(Instant now, Instant receivedBefore, int limit);
 
-    /** Newest first; {@code before} is the id of the last event of the previous page. */
-    List<StripeEvent> list(EventStatus status, StoredEventId before, int limit);
-
     void addAttempt(StripeEvent event, int number, String outcome, String detail, Instant at);
-
-    List<EventAttempt> attempts(StoredEventId id);
 }

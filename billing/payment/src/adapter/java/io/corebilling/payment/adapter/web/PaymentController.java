@@ -8,21 +8,27 @@ import io.corebilling.payment.application.stripe.command.ReconcileStripeUseCase;
 import io.corebilling.payment.application.refund.command.RequestRefundUseCase;
 import io.corebilling.payment.application.stripe.command.StripeConfigurationService;
 import io.corebilling.payment.application.stripe.command.StripeEventAdministration;
-import io.corebilling.payment.domain.stripe.EventAttempt;
+import io.corebilling.payment.application.stripe.query.EventAttemptView;
+import io.corebilling.payment.application.stripe.query.StripeConfigurationQueries;
+import io.corebilling.payment.application.stripe.query.StripeConfigurationView;
+import io.corebilling.payment.application.stripe.query.StripeEventQueries;
+import io.corebilling.payment.application.stripe.query.StripeEventView;
+import io.corebilling.payment.application.incident.query.IncidentQueries;
+import io.corebilling.payment.application.incident.query.IncidentView;
+import io.corebilling.payment.application.payment.query.PaymentAttemptView;
+import io.corebilling.payment.application.payment.query.PaymentView;
+import io.corebilling.payment.application.refund.query.RefundQueries;
+import io.corebilling.payment.application.refund.query.RefundView;
 import io.corebilling.payment.domain.stripe.EventStatus;
-import io.corebilling.payment.domain.incident.Incident;
 import io.corebilling.payment.domain.stripe.IntegrationMode;
 import io.corebilling.payment.domain.payment.Payment;
-import io.corebilling.payment.domain.payment.PaymentAttempt;
 import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.payment.domain.payment.PaymentStatus;
 import io.corebilling.payment.domain.refund.Refund;
-import io.corebilling.payment.domain.refund.RefundId;
 import io.corebilling.payment.domain.stripe.StoredEventId;
 import io.corebilling.payment.domain.stripe.StripeConfiguration;
-import io.corebilling.payment.domain.stripe.StripeEvent;
+import io.corebilling.payment.domain.stripe.StripeConfigurationId;
 import io.corebilling.platform.api.actor.CurrentActor;
-import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.platform.api.actor.Permission;
 import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.sharedkernel.Currency;
@@ -98,10 +104,17 @@ public class PaymentController {
                     MoneyDto.of(p.refunded()), url, p.failureReason(), p.ledgerEntryId() == null ? null : p.ledgerEntryId().toString(), p.createdAt(),
                     p.updatedAt(), p.completedAt());
         }
+
+        static PaymentResponse ofView(PaymentView p) {
+            String url = p.status() == PaymentStatus.REQUIRES_ACTION ? p.checkoutUrl() : null;
+            return new PaymentResponse(p.id().toString(), p.walletId().toString(), p.customerId().toString(), p.status().name(), MoneyDto.of(p.amount()),
+                    MoneyDto.of(p.refunded()), url, p.failureReason(), p.ledgerEntryId() == null ? null : p.ledgerEntryId().toString(), p.createdAt(),
+                    p.updatedAt(), p.completedAt());
+        }
     }
 
     public record AttemptResponse(String failureCode, String failureMessage, Instant occurredAt) {
-        static AttemptResponse of(PaymentAttempt a) {
+        static AttemptResponse ofView(PaymentAttemptView a) {
             return new AttemptResponse(a.failureCode(), a.failureMessage(), a.occurredAt());
         }
     }
@@ -113,6 +126,11 @@ public class PaymentController {
             return new RefundResponse(r.id().toString(), r.paymentId().toString(), r.status().name(), MoneyDto.of(r.amount()), r.reason(),
                     r.failureReason(), r.ledgerEntryId() == null ? null : r.ledgerEntryId().toString(), r.createdAt(), r.completedAt());
         }
+
+        static RefundResponse ofView(RefundView r) {
+            return new RefundResponse(r.id().toString(), r.paymentId().toString(), r.status().name(), MoneyDto.of(r.amount()), r.reason(),
+                    r.failureReason(), r.ledgerEntryId() == null ? null : r.ledgerEntryId().toString(), r.createdAt(), r.completedAt());
+        }
     }
 
     public record PaymentDetailResponse(PaymentResponse payment, List<RefundResponse> refunds, List<AttemptResponse> failedAttempts) {}
@@ -120,15 +138,15 @@ public class PaymentController {
     public record EventResponse(
             String id, String stripeEventId, String type, String status, int attempts, Instant nextAttemptAt, String lastError, Instant receivedAt,
             Instant processedAt) {
-        static EventResponse of(StripeEvent e) {
+        static EventResponse ofView(StripeEventView e) {
             return new EventResponse(e.id().toString(), e.eventId(), e.type(), e.status().name(), e.attempts(), e.nextAttemptAt(), e.lastError(),
                     e.receivedAt(), e.processedAt());
         }
     }
 
     public record EventAttemptResponse(int attempt, String outcome, String detail, Instant attemptedAt) {
-        static EventAttemptResponse of(EventAttempt a) {
-            return new EventAttemptResponse(a.number(), a.outcome(), a.detail(), a.attemptedAt());
+        static EventAttemptResponse ofView(EventAttemptView a) {
+            return new EventAttemptResponse(a.attempt(), a.outcome(), a.detail(), a.attemptedAt());
         }
     }
 
@@ -136,7 +154,7 @@ public class PaymentController {
 
     public record IncidentResponse(
             String id, String kind, String subject, String detail, int occurrences, Instant createdAt, Instant lastSeenAt, Instant resolvedAt) {
-        static IncidentResponse of(Incident i) {
+        static IncidentResponse ofView(IncidentView i) {
             return new IncidentResponse(i.id().toString(), i.kind().name(), i.subject(), i.detail(), i.occurrences(), i.createdAt(), i.lastSeenAt(),
                     i.resolvedAt());
         }
@@ -145,22 +163,32 @@ public class PaymentController {
     public record ReconcileResponse(int checked, int corrected, int mismatches) {}
 
     private final StripeConfigurationService configuration;
+    private final StripeConfigurationQueries configurationQueries;
     private final CreateTopUpUseCase topUp;
     private final RequestRefundUseCase refund;
+    private final RefundQueries refundQueries;
     private final PaymentQueries queries;
     private final StripeEventAdministration eventAdmin;
+    private final StripeEventQueries eventQueries;
+    private final IncidentQueries incidentQueries;
     private final ReconcileStripeUseCase reconcile;
     private final PaymentSettings settings;
     private final CurrentActor currentActor;
 
     public PaymentController(
-            StripeConfigurationService configuration, CreateTopUpUseCase topUp, RequestRefundUseCase refund, PaymentQueries queries,
-            StripeEventAdministration eventAdmin, ReconcileStripeUseCase reconcile, PaymentSettings settings, CurrentActor currentActor) {
+            StripeConfigurationService configuration, StripeConfigurationQueries configurationQueries, CreateTopUpUseCase topUp,
+            RequestRefundUseCase refund, RefundQueries refundQueries, PaymentQueries queries, StripeEventAdministration eventAdmin,
+            StripeEventQueries eventQueries, IncidentQueries incidentQueries, ReconcileStripeUseCase reconcile, PaymentSettings settings,
+            CurrentActor currentActor) {
         this.configuration = configuration;
+        this.configurationQueries = configurationQueries;
         this.topUp = topUp;
         this.refund = refund;
+        this.refundQueries = refundQueries;
         this.queries = queries;
         this.eventAdmin = eventAdmin;
+        this.eventQueries = eventQueries;
+        this.incidentQueries = incidentQueries;
         this.reconcile = reconcile;
         this.settings = settings;
         this.currentActor = currentActor;
@@ -204,7 +232,7 @@ public class PaymentController {
     @GetMapping("/stripe/configuration")
     @RequiresPermission(Permission.STRIPE_READ)
     public ConfigurationResponse getConfiguration() {
-        return configurationResponse(configuration.current().orElseThrow(() -> new NotFoundException("Stripe is not configured")));
+        return configurationResponse(configurationQueries.get());
     }
 
     @DeleteMapping("/stripe/configuration")
@@ -237,15 +265,15 @@ public class PaymentController {
             @RequestParam(required = false) String walletId, @RequestParam(required = false) String status, @RequestParam(required = false) String before,
             @RequestParam(defaultValue = "50") int limit) {
         return queries.list(walletId == null ? null : WalletId.of(walletId), status == null ? null : PaymentStatus.valueOf(status),
-                before == null ? null : PaymentId.of(before), limit).stream().map(PaymentResponse::of).toList();
+                before == null ? null : UUID.fromString(before), limit).stream().map(PaymentResponse::ofView).toList();
     }
 
     @GetMapping("/payments/{id}")
     @RequiresPermission(Permission.PAYMENT_READ)
     public PaymentDetailResponse payment(@PathVariable String id) {
-        PaymentQueries.PaymentDetail detail = queries.payment(PaymentId.of(id));
-        return new PaymentDetailResponse(PaymentResponse.of(detail.payment()), detail.refunds().stream().map(RefundResponse::of).toList(),
-                detail.attempts().stream().map(AttemptResponse::of).toList());
+        PaymentQueries.PaymentDetail detail = queries.payment(UUID.fromString(id));
+        return new PaymentDetailResponse(PaymentResponse.ofView(detail.payment()), detail.refunds().stream().map(RefundResponse::ofView).toList(),
+                detail.attempts().stream().map(AttemptResponse::ofView).toList());
     }
 
     /**
@@ -272,7 +300,7 @@ public class PaymentController {
     @GetMapping("/refunds/{id}")
     @RequiresPermission(Permission.PAYMENT_READ)
     public RefundResponse getRefund(@PathVariable String id) {
-        return RefundResponse.of(queries.refund(RefundId.of(id)));
+        return RefundResponse.ofView(refundQueries.get(UUID.fromString(id)));
     }
 
     /** Newest first. Pass the last {@code id} of a page as {@code before} for the next one. */
@@ -280,27 +308,28 @@ public class PaymentController {
     @RequiresPermission(Permission.STRIPE_READ)
     public List<EventResponse> events(
             @RequestParam(required = false) String status, @RequestParam(required = false) String before, @RequestParam(defaultValue = "50") int limit) {
-        return eventAdmin.list(status == null ? null : EventStatus.valueOf(status), before == null ? null : StoredEventId.of(before), limit).stream()
-                .map(EventResponse::of).toList();
+        return eventQueries.list(status == null ? null : EventStatus.valueOf(status),
+                before == null ? null : UUID.fromString(before), limit).stream().map(EventResponse::ofView).toList();
     }
 
     @GetMapping("/stripe/events/{id}")
     @RequiresPermission(Permission.STRIPE_READ)
     public EventDetailResponse event(@PathVariable String id) {
-        return eventDetail(eventAdmin.get(StoredEventId.of(id)));
+        return eventDetail(eventQueries.get(UUID.fromString(id)));
     }
 
     /** Tries an event that failed or gave up again, now. */
     @PostMapping("/stripe/events/{id}/retry")
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public EventDetailResponse retry(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return eventDetail(eventAdmin.retry(audit(requestId), StoredEventId.of(id)));
+        eventAdmin.retry(audit(requestId), StoredEventId.of(id));
+        return eventDetail(eventQueries.get(UUID.fromString(id)));
     }
 
     @GetMapping("/stripe/incidents")
     @RequiresPermission(Permission.STRIPE_READ)
     public List<IncidentResponse> incidents(@RequestParam(defaultValue = "true") boolean open, @RequestParam(defaultValue = "50") int limit) {
-        return eventAdmin.incidents(open, limit).stream().map(IncidentResponse::of).toList();
+        return incidentQueries.list(open, limit).stream().map(IncidentResponse::ofView).toList();
     }
 
     @PostMapping("/stripe/incidents/{id}/resolve")
@@ -324,12 +353,18 @@ public class PaymentController {
                 c.hasWebhookSecret(), c.cardPaymentsActive(), webhookUrl, c.createdAt(), c.updatedAt(), c.connectedAt(), c.lastVerifiedAt());
     }
 
+    private ConfigurationResponse configurationResponse(StripeConfigurationView c) {
+        String webhookUrl = c.mode() == IntegrationMode.DIRECT ? settings.directWebhookUrl(new StripeConfigurationId(c.id())) : null;
+        return new ConfigurationResponse(c.id().toString(), c.mode().name(), c.accountId(), c.environment().name(), c.status().name(), c.publishableKey(),
+                c.webhookSecretSet(), c.cardPaymentsActive(), webhookUrl, c.createdAt(), c.updatedAt(), c.connectedAt(), c.lastVerifiedAt());
+    }
+
     private ConnectionResponse connectionResponse(StripeConfigurationService.Connection connection) {
         return new ConnectionResponse(configurationResponse(connection.configuration()), connection.onboardingUrl());
     }
 
-    private static EventDetailResponse eventDetail(StripeEventAdministration.Detail detail) {
-        return new EventDetailResponse(EventResponse.of(detail.event()), detail.attempts().stream().map(EventAttemptResponse::of).toList());
+    private static EventDetailResponse eventDetail(StripeEventQueries.Detail detail) {
+        return new EventDetailResponse(EventResponse.ofView(detail.event()), detail.attempts().stream().map(EventAttemptResponse::ofView).toList());
     }
 
     private Audit audit(String requestId) {

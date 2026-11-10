@@ -1,8 +1,8 @@
 package io.corebilling.payment.application.stripe.command;
 
-import io.corebilling.payment.domain.stripe.EventAttempt;
-import io.corebilling.payment.domain.stripe.EventStatus;
-import io.corebilling.payment.domain.incident.Incident;
+import io.corebilling.payment.application.incident.port.IncidentRepository;
+import io.corebilling.payment.application.shared.command.Audit;
+import io.corebilling.payment.application.stripe.port.StripeEventRepository;
 import io.corebilling.payment.domain.stripe.StoredEventId;
 import io.corebilling.payment.domain.stripe.StripeEvent;
 import io.corebilling.platform.api.audit.AuditEntry;
@@ -12,16 +12,10 @@ import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
-import io.corebilling.payment.application.incident.port.IncidentRepository;
-import io.corebilling.payment.application.shared.command.Audit;
-import io.corebilling.payment.application.stripe.port.StripeEventRepository;
 
-/** What an administrator sees of Stripe webhook processing, and the retry button for an event that gave up. */
+/** The retry button for an event that gave up, and closing an incident. The history is read through queries. */
 public class StripeEventAdministration {
-
-    public record Detail(StripeEvent event, List<EventAttempt> attempts) {}
 
     private final UnitOfWork unitOfWork;
     private final StripeEventRepository events;
@@ -43,19 +37,8 @@ public class StripeEventAdministration {
         this.clock = clock;
     }
 
-    public List<StripeEvent> list(EventStatus status, StoredEventId before, int limit) {
-        return unitOfWork.transactional(() -> events.list(status, before, Math.max(1, Math.min(limit, 200))));
-    }
-
-    public Detail get(StoredEventId id) {
-        return unitOfWork.transactional(() -> {
-            StripeEvent event = events.findById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
-            return new Detail(event, events.attempts(id));
-        });
-    }
-
     /** Puts a failed or dead event back in line and tries it now. */
-    public Detail retry(Audit audit, StoredEventId id) {
+    public void retry(Audit audit, StoredEventId id) {
         unitOfWork.transactional(() -> {
             StripeEvent event = events.lockById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
             Instant now = clock.now();
@@ -65,11 +48,6 @@ public class StripeEventAdministration {
                     audit.requestId(), now));
         });
         processor.attempt(id);
-        return get(id);
-    }
-
-    public List<Incident> incidents(boolean openOnly, int limit) {
-        return unitOfWork.transactional(() -> incidents.list(openOnly, Math.max(1, Math.min(limit, 200))));
     }
 
     public void resolveIncident(Audit audit, UUID id) {

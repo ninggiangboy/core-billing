@@ -11,11 +11,25 @@ import io.corebilling.payment.adapter.persistence.JdbcRefundRepository;
 import io.corebilling.payment.adapter.persistence.JdbcStripeConfigurationRepository;
 import io.corebilling.payment.adapter.persistence.JdbcStripeEventRepository;
 import io.corebilling.payment.adapter.persistence.JdbcStripeRoutes;
+import io.corebilling.payment.adapter.persistence.incident.JdbcIncidentReadRepository;
+import io.corebilling.payment.adapter.persistence.payment.JdbcPaymentReadRepository;
+import io.corebilling.payment.adapter.persistence.refund.JdbcRefundReadRepository;
+import io.corebilling.payment.adapter.persistence.stripe.JdbcStripeConfigurationReadRepository;
+import io.corebilling.payment.adapter.persistence.stripe.JdbcStripeEventReadRepository;
 import io.corebilling.payment.adapter.stripe.StripePaymentProvider;
 import io.corebilling.payment.application.payment.command.CreateTopUpUseCase;
 import io.corebilling.payment.application.incident.port.IncidentRepository;
 import io.corebilling.payment.application.payment.port.PaymentProvider;
 import io.corebilling.payment.application.payment.query.PaymentQueries;
+import io.corebilling.payment.application.payment.query.PaymentReadRepository;
+import io.corebilling.payment.application.refund.query.RefundQueries;
+import io.corebilling.payment.application.refund.query.RefundReadRepository;
+import io.corebilling.payment.application.stripe.query.StripeConfigurationQueries;
+import io.corebilling.payment.application.stripe.query.StripeConfigurationReadRepository;
+import io.corebilling.payment.application.stripe.query.StripeEventQueries;
+import io.corebilling.payment.application.stripe.query.StripeEventReadRepository;
+import io.corebilling.payment.application.incident.query.IncidentQueries;
+import io.corebilling.payment.application.incident.query.IncidentReadRepository;
 import io.corebilling.payment.application.payment.port.PaymentRepository;
 import io.corebilling.payment.application.payment.command.PaymentSettings;
 import io.corebilling.payment.application.shared.command.PaymentSettlement;
@@ -44,6 +58,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Wires the payment module and its Stripe adapter. Holds no business rules. */
@@ -87,33 +102,58 @@ class PaymentConfiguration {
     }
 
     @Bean
-    StripeConfigurationRepository stripeConfigurationRepository(JdbcClient jdbc) {
-        return new JdbcStripeConfigurationRepository(jdbc);
+    StripeConfigurationRepository stripeConfigurationRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcStripeConfigurationRepository(aggregates, jdbc);
     }
 
     @Bean
-    StripeRoutes stripeRoutes(JdbcClient jdbc, Clock clock) {
-        return new JdbcStripeRoutes(jdbc, clock);
+    StripeRoutes stripeRoutes(JdbcAggregateOperations aggregates, JdbcClient jdbc, Clock clock) {
+        return new JdbcStripeRoutes(aggregates, jdbc, clock);
     }
 
     @Bean
-    PaymentRepository paymentRepository(JdbcClient jdbc) {
-        return new JdbcPaymentRepository(jdbc);
+    PaymentRepository paymentRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcPaymentRepository(aggregates, jdbc);
     }
 
     @Bean
-    RefundRepository refundRepository(JdbcClient jdbc) {
-        return new JdbcRefundRepository(jdbc);
+    RefundRepository refundRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcRefundRepository(aggregates, jdbc);
     }
 
     @Bean
-    StripeEventRepository stripeEventRepository(JdbcClient jdbc) {
-        return new JdbcStripeEventRepository(jdbc);
+    StripeEventRepository stripeEventRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcStripeEventRepository(aggregates, jdbc);
     }
 
     @Bean
     IncidentRepository incidentRepository(JdbcClient jdbc) {
         return new JdbcIncidentRepository(jdbc);
+    }
+
+    @Bean
+    PaymentReadRepository paymentReadRepository(JdbcClient jdbc) {
+        return new JdbcPaymentReadRepository(jdbc);
+    }
+
+    @Bean
+    RefundReadRepository refundReadRepository(JdbcClient jdbc) {
+        return new JdbcRefundReadRepository(jdbc);
+    }
+
+    @Bean
+    StripeConfigurationReadRepository stripeConfigurationReadRepository(JdbcClient jdbc) {
+        return new JdbcStripeConfigurationReadRepository(jdbc);
+    }
+
+    @Bean
+    StripeEventReadRepository stripeEventReadRepository(JdbcClient jdbc) {
+        return new JdbcStripeEventReadRepository(jdbc);
+    }
+
+    @Bean
+    IncidentReadRepository incidentReadRepository(JdbcClient jdbc) {
+        return new JdbcIncidentReadRepository(jdbc);
     }
 
     @Bean
@@ -186,7 +226,27 @@ class PaymentConfiguration {
     }
 
     @Bean
-    PaymentQueries paymentQueries(UnitOfWork unitOfWork, PaymentRepository payments, RefundRepository refunds) {
+    PaymentQueries paymentQueries(UnitOfWork unitOfWork, PaymentReadRepository payments, RefundReadRepository refunds) {
         return new PaymentQueries(unitOfWork, payments, refunds);
+    }
+
+    @Bean
+    RefundQueries refundQueries(UnitOfWork unitOfWork, RefundReadRepository refunds) {
+        return new RefundQueries(unitOfWork, refunds);
+    }
+
+    @Bean
+    StripeConfigurationQueries stripeConfigurationQueries(UnitOfWork unitOfWork, StripeConfigurationReadRepository configurations) {
+        return new StripeConfigurationQueries(unitOfWork, configurations);
+    }
+
+    @Bean
+    StripeEventQueries stripeEventQueries(UnitOfWork unitOfWork, StripeEventReadRepository events) {
+        return new StripeEventQueries(unitOfWork, events);
+    }
+
+    @Bean
+    IncidentQueries incidentQueries(UnitOfWork unitOfWork, IncidentReadRepository incidents) {
+        return new IncidentQueries(unitOfWork, incidents);
     }
 }

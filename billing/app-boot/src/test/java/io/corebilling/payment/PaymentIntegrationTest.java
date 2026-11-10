@@ -12,7 +12,14 @@ import io.corebilling.payment.PaymentTestWorld.PayWorld;
 import io.corebilling.payment.application.shared.command.Audit;
 import io.corebilling.payment.application.payment.command.CreateTopUpUseCase;
 import io.corebilling.payment.application.payment.port.PaymentProvider;
+import io.corebilling.payment.application.payment.port.PaymentRepository;
 import io.corebilling.payment.application.payment.query.PaymentQueries;
+import io.corebilling.payment.application.payment.query.PaymentView;
+import io.corebilling.payment.application.refund.query.RefundQueries;
+import io.corebilling.payment.application.refund.query.RefundView;
+import io.corebilling.payment.application.incident.query.IncidentQueries;
+import io.corebilling.payment.application.stripe.query.StripeEventQueries;
+import io.corebilling.payment.application.stripe.query.StripeEventView;
 import io.corebilling.payment.application.stripe.command.ProviderRejectedException;
 import io.corebilling.payment.application.stripe.command.ProviderUnavailableException;
 import io.corebilling.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
@@ -30,6 +37,7 @@ import io.corebilling.payment.domain.refund.RefundStatus;
 import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.platform.api.error.IdempotencyConflictException;
 import io.corebilling.sharedkernel.Money;
+import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.sharedkernel.WalletId;
 import io.corebilling.support.EventSchemas;
 import io.corebilling.support.FakePaymentProvider;
@@ -76,7 +84,12 @@ class PaymentIntegrationTest {
     @Autowired io.corebilling.payment.application.stripe.command.StripeConfigurationService configService;
     @Autowired io.corebilling.money.application.reservation.command.ExpireReservationsUseCase expireReservations;
     @Autowired StripeEventAdministration eventAdmin;
+    @Autowired StripeEventQueries eventQueries;
+    @Autowired IncidentQueries incidentQueries;
+    @Autowired RefundQueries refundQueries;
     @Autowired PaymentQueries queries;
+    @Autowired PaymentRepository paymentRepository;
+    @Autowired UnitOfWork unitOfWork;
     @Autowired WalletQueries wallets;
     @Autowired ChargeWallet charge;
     @Autowired WalletLookup walletLookup;
@@ -121,8 +134,8 @@ class PaymentIntegrationTest {
         return owner.count("select count(*) from outbox where tenant_id = ? and type = ?", w.money().tenant().id().value(), type);
     }
 
-    private Payment reload(PayWorld w, Payment p) {
-        return scopes.inTenant(w.money().tenant().id(), () -> queries.payment(p.id()).payment());
+    private PaymentView reload(PayWorld w, Payment p) {
+        return scopes.inTenant(w.money().tenant().id(), () -> queries.payment(p.id().value()).payment());
     }
 
     private Refund requestRefund(PayWorld w, Payment p, Long amount, String key) {
@@ -130,8 +143,8 @@ class PaymentIntegrationTest {
         return scopes.inTenant(w.money().tenant().id(), () -> refund.execute(new RequestRefundUseCase.Command(p.id(), money, "requested", key, AUDIT)).refund());
     }
 
-    private Refund reloadRefund(PayWorld w, Refund r) {
-        return scopes.inTenant(w.money().tenant().id(), () -> queries.refund(r.id()));
+    private RefundView reloadRefund(PayWorld w, Refund r) {
+        return scopes.inTenant(w.money().tenant().id(), () -> refundQueries.get(r.id().value()));
     }
 
     private void refundEvent(PayWorld w, Payment p, Refund r, String status) {
@@ -143,7 +156,8 @@ class PaymentIntegrationTest {
     private Payment settledPayment(PayWorld w, long amount) {
         Payment p = startTopUp(w, amount);
         assertThat(paid(w, p, StripeEvents.newEventId(), "pi_" + UUID.randomUUID().toString().replace("-", "")).disposition()).isEqualTo(Disposition.PROCESSED);
-        return reload(w, p);
+        assertThat(reload(w, p).status()).isEqualTo(PaymentStatus.SUCCEEDED);
+        return scopes.inTenant(w.money().tenant().id(), () -> unitOfWork.transactional(() -> paymentRepository.findById(p.id()).orElseThrow()));
     }
 
     // ---- creating a top-up ---------------------------------------------------------------------------------------
@@ -243,7 +257,7 @@ class PaymentIntegrationTest {
         assertThat(receipt.disposition()).isEqualTo(Disposition.PROCESSED);
         assertThat(balance(w)).isEqualTo(5000);
         assertThat(ledgerEntries(w)).isEqualTo(1);
-        Payment settled = reload(w, p);
+        PaymentView settled = reload(w, p);
         assertThat(settled.status()).isEqualTo(PaymentStatus.SUCCEEDED);
         assertThat(settled.ledgerEntryId()).isNotNull();
         assertThat(settled.paymentIntentId()).isEqualTo("pi_1" + sfx);
@@ -361,11 +375,11 @@ class PaymentIntegrationTest {
             scopes.inTenant(w.money().tenant().id(), retry::runOnce);
         }
 
-        List<io.corebilling.payment.domain.stripe.StripeEvent> dead = scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.list(EventStatus.DEAD, null, 10));
+        List<StripeEventView> dead = scopes.inTenant(w.money().tenant().id(), () -> eventQueries.list(EventStatus.DEAD, null, 10));
         assertThat(dead).hasSize(1);
         assertThat(dead.get(0).attempts()).isEqualTo(3);
         assertThat(dead.get(0).lastError()).contains("no payment");
-        assertThat(scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.incidents(true, 10))).hasSize(1);
+        assertThat(scopes.inTenant(w.money().tenant().id(), () -> incidentQueries.list(true, 10))).hasSize(1);
     }
 
     @Test
@@ -378,11 +392,15 @@ class PaymentIntegrationTest {
                     w.money().tenant().id().value());
             scopes.inTenant(w.money().tenant().id(), retry::runOnce);
         }
-        var dead = scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.list(EventStatus.DEAD, null, 10));
+        var dead = scopes.inTenant(w.money().tenant().id(), () -> eventQueries.list(EventStatus.DEAD, null, 10));
         assertThat(dead).hasSize(1);
 
         worlds.openPayment(w, late, 2000);
-        var detail = scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.retry(AUDIT, dead.get(0).id()));
+        scopes.inTenant(w.money().tenant().id(), () -> {
+            eventAdmin.retry(AUDIT, new io.corebilling.payment.domain.stripe.StoredEventId(dead.get(0).id()));
+            return null;
+        });
+        var detail = scopes.inTenant(w.money().tenant().id(), () -> eventQueries.get(dead.get(0).id()));
 
         assertThat(detail.event().status()).isEqualTo(EventStatus.PROCESSED);
         assertThat(detail.attempts()).extracting(a -> a.outcome()).contains("DEFERRED", "PROCESSED");
@@ -398,9 +416,9 @@ class PaymentIntegrationTest {
                 "pi_1" + sfx, p.id().toString(), "requires_payment_method", 5000, "insufficient_funds", "Your card has insufficient funds."));
 
         assertThat(declined.disposition()).isEqualTo(Disposition.PROCESSED);
-        Payment open = reload(w, p);
+        PaymentView open = reload(w, p);
         assertThat(open.status()).isEqualTo(PaymentStatus.REQUIRES_ACTION);
-        assertThat(scopes.inTenant(w.money().tenant().id(), () -> queries.payment(p.id()).attempts())).hasSize(1);
+        assertThat(scopes.inTenant(w.money().tenant().id(), () -> queries.payment(p.id().value()).attempts())).hasSize(1);
         assertThat(outbox(w, "payment.failed")).isZero();
 
         // The customer tries a second card and it works.
@@ -528,7 +546,7 @@ class PaymentIntegrationTest {
                 .isEqualTo(Disposition.PROCESSED);
         assertThat(balance(rotated)).isEqualTo(5000);
 
-        Refund requested = requestRefund(rotated, reload(rotated, p), 1000L, "rot-refund");
+        Refund requested = requestRefund(rotated, p, 1000L, "rot-refund");
         assertThat(requested.status()).isEqualTo(RefundStatus.PENDING);
         assertThat(stripe.refunds.get(0).access().secretKey()).as("refunded through the current key").isEqualTo(rotatedKey);
     }
@@ -633,7 +651,7 @@ class PaymentIntegrationTest {
 
         assertThat(report.corrected()).isEqualTo(1);
         assertThat(balance(w)).isEqualTo(5000);
-        assertThat(scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.incidents(true, 10))).extracting(i -> i.subject())
+        assertThat(scopes.inTenant(w.money().tenant().id(), () -> incidentQueries.list(true, 10))).extracting(i -> i.subject())
                 .anyMatch(subject -> subject.startsWith("checkout/" + unreadable.checkoutSessionId()));
     }
 
@@ -658,7 +676,7 @@ class PaymentIntegrationTest {
 
         assertThat(balance(w)).isZero();
         assertThat(held(w)).isZero();
-        Refund done = reloadRefund(w, requested);
+        RefundView done = reloadRefund(w, requested);
         assertThat(done.status()).isEqualTo(RefundStatus.SUCCEEDED);
         assertThat(done.ledgerEntryId()).isNotNull();
         assertThat(reload(w, p).refunded()).isEqualTo(Money.of(5000, p.amount().currency()));
@@ -810,7 +828,7 @@ class PaymentIntegrationTest {
         deliver(w, StripeEvents.refund(StripeEvents.newEventId(), null, "re_dashboard", p.paymentIntentId(), null, "succeeded", 1000));
 
         assertThat(balance(w)).as("Billing does not guess which wallet movement a foreign refund implies").isEqualTo(5000);
-        assertThat(scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.incidents(true, 10))).extracting(i -> i.kind().name())
+        assertThat(scopes.inTenant(w.money().tenant().id(), () -> incidentQueries.list(true, 10))).extracting(i -> i.kind().name())
                 .contains("RECONCILIATION_MISMATCH");
     }
 
@@ -829,7 +847,7 @@ class PaymentIntegrationTest {
         assertThat(reload(w, p).status()).isEqualTo(PaymentStatus.SUCCEEDED);
         assertThat(balance(w)).isEqualTo(5000);
         assertThat(outbox(w, "payment.succeeded")).isEqualTo(1);
-        assertThat(scopes.inTenant(w.money().tenant().id(), () -> eventAdmin.incidents(true, 10))).hasSize(1);
+        assertThat(scopes.inTenant(w.money().tenant().id(), () -> incidentQueries.list(true, 10))).hasSize(1);
 
         ReconcileStripeUseCase.Report again = scopes.inTenant(w.money().tenant().id(), reconcile::runOnce);
         assertThat(again.corrected()).isZero();
@@ -892,8 +910,8 @@ class PaymentIntegrationTest {
         paid(a, p, StripeEvents.newEventId(), "pi_1" + sfx);
 
         assertThat(scopes.inTenant(b.money().tenant().id(), () -> queries.list((WalletId) null, null, null, 50))).isEmpty();
-        assertThat(scopes.inTenant(b.money().tenant().id(), () -> eventAdmin.list(null, null, 50))).isEmpty();
-        assertThatThrownBy(() -> scopes.inTenant(b.money().tenant().id(), () -> queries.payment(p.id())))
+        assertThat(scopes.inTenant(b.money().tenant().id(), () -> eventQueries.list(null, null, 50))).isEmpty();
+        assertThatThrownBy(() -> scopes.inTenant(b.money().tenant().id(), () -> queries.payment(p.id().value())))
                 .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
     }
 
@@ -907,8 +925,8 @@ class PaymentIntegrationTest {
         Payment bad = startTopUp(w, 700);
         deliver(w, StripeEvents.checkout(StripeEvents.newEventId(), "checkout.session.async_payment_failed", null, bad.checkoutSessionId(), "pi_bad" + sfx,
                 bad.id().toString(), "complete", "unpaid", 700, "usd"));
-        Refund r = requestRefund(w, reload(w, ok), 1000L, "r-1");
-        refundEvent(w, reload(w, ok), r, "succeeded");
+        Refund r = requestRefund(w, ok, 1000L, "r-1");
+        refundEvent(w, ok, r, "succeeded");
 
         Map<String, String> payloads = new java.util.LinkedHashMap<>();
         owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ? and type in ('payment.succeeded','payment.failed','refund.succeeded')",

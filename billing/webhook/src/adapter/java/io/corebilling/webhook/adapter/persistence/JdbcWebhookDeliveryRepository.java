@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository {
@@ -22,9 +23,11 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
     private static final String COLUMNS = "d.id, d.tenant_id, d.endpoint_id, d.event_id, d.event_type, d.body, d.status, d.attempts, d.next_attempt_at, "
             + "d.resend_of, d.last_status_code, d.last_error, d.created_at, d.completed_at";
 
+    private final JdbcAggregateOperations aggregates;
     private final JdbcClient jdbc;
 
-    public JdbcWebhookDeliveryRepository(JdbcClient jdbc) {
+    public JdbcWebhookDeliveryRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        this.aggregates = aggregates;
         this.jdbc = jdbc;
     }
 
@@ -36,7 +39,7 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
 
     @Override
     public void add(WebhookDelivery d) {
-        insert(d, "");
+        aggregates.insert(WebhookDeliveryRow.from(d));
     }
 
     private int insert(WebhookDelivery d, String conflict) {
@@ -53,11 +56,7 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
 
     @Override
     public Optional<WebhookDelivery> findById(WebhookDeliveryId id) {
-        return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d where d.id = ?")
-                .param(id.value())
-                .query(WebhookDeliveryRow.class)
-                .optional()
-                .map(WebhookDeliveryRow::toDomain);
+        return Optional.ofNullable(aggregates.findById(id.value(), WebhookDeliveryRow.class)).map(WebhookDeliveryRow::toDomain);
     }
 
     @Override

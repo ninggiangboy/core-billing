@@ -27,8 +27,8 @@ import io.corebilling.money.application.reservation.command.ReleaseReservationUs
 import io.corebilling.money.application.ledger.command.ReverseEntryUseCase;
 import io.corebilling.money.application.ledger.command.VerifyLedgerUseCase;
 import io.corebilling.money.application.wallet.query.WalletQueries;
-import io.corebilling.money.domain.ledger.LedgerEntry;
-import io.corebilling.money.domain.wallet.Wallet;
+import io.corebilling.money.application.ledger.query.LedgerEntryView;
+import io.corebilling.money.application.wallet.query.WalletView;
 import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.platform.api.error.IdempotencyConflictException;
 import io.corebilling.sharedkernel.Money;
@@ -83,7 +83,7 @@ class MoneyIntegrationTest {
         return scopes.inTenant(w.tenant().id(), () -> charge.charge(new ChargeCommand(w.wallet().id(), null, usd(amount), null, "ref", key)));
     }
 
-    private Wallet wallet(World w) {
+    private WalletView wallet(World w) {
         return scopes.inTenant(w.tenant().id(), () -> queries.wallet(w.wallet().id()));
     }
 
@@ -119,7 +119,7 @@ class MoneyIntegrationTest {
                 })))
                 .hasMessageContaining("injected failure");
 
-        Wallet after = wallet(w);
+        WalletView after = wallet(w);
         assertThat(after.balance()).isEqualTo(usd(10_000));
         assertThat(after.lastSequence()).isEqualTo(1);
         assertThat(count("ledger_entries", w)).isEqualTo(ledgerBefore);
@@ -225,7 +225,7 @@ class MoneyIntegrationTest {
             assertThat(succeeded).isEqualTo(33);
             assertThat(failed).isEqualTo(27);
 
-            Wallet after = wallet(w);
+            WalletView after = wallet(w);
             assertThat(after.balance()).isEqualTo(usd(100));
             assertThat(after.balance().isNegative()).isFalse();
             List<Long> sequences = owner.jdbc().queryForList("select seq from ledger_entries where wallet_id = ? order by seq", Long.class, w.wallet().id().value());
@@ -281,13 +281,13 @@ class MoneyIntegrationTest {
                 wrong.ledgerEntryId(), "wrong_price",
                 new ReverseEntryUseCase.Replacement(EntryType.DEBIT, usd(30_000), "charge:corrected"), "user/admin")));
 
-        List<LedgerEntry> entries = scopes.inTenant(w.tenant().id(), () -> queries.ledger(w.wallet().id(), 0, 50));
-        assertThat(entries).extracting(LedgerEntry::type).containsExactly(EntryType.CREDIT, EntryType.DEBIT, EntryType.REVERSAL, EntryType.DEBIT);
+        List<LedgerEntryView> entries = scopes.inTenant(w.tenant().id(), () -> queries.ledger(w.wallet().id(), 0, 50));
+        assertThat(entries).extracting(LedgerEntryView::type).containsExactly(EntryType.CREDIT, EntryType.DEBIT, EntryType.REVERSAL, EntryType.DEBIT);
         assertThat(entries).extracting(e -> e.amount().minorUnits()).containsExactly(100_000L, -50_000L, 50_000L, -30_000L);
         assertThat(entries.get(2).reversalOf()).isEqualTo(entries.get(1).id());
         assertThat(entries.get(1).amount().plus(entries.get(2).amount()).isZero()).as("an entry and its reversal sum to zero").isTrue();
-        assertThat(entries.get(2).origin().reason()).isEqualTo("wrong_price");
-        assertThat(entries.get(2).origin().actor()).isEqualTo("user/admin");
+        assertThat(entries.get(2).reason()).isEqualTo("wrong_price");
+        assertThat(entries.get(2).actor()).isEqualTo("user/admin");
         assertThat(wallet(w).balance()).isEqualTo(usd(70_000));
         assertThat(result.replacement().amount()).isEqualTo(usd(-30_000));
         assertThat(outbox(w, "ledger.entry-reversed")).isEqualTo(1);
@@ -344,7 +344,7 @@ class MoneyIntegrationTest {
         ChargeResult captured = scopes.inTenant(w.tenant().id(),
                 () -> charge.charge(new ChargeCommand(null, held.id(), usd(250), null, "vm-1 final", "cap-1")));
         assertThat(captured.status()).isEqualTo(ChargeStatus.SUCCEEDED);
-        Wallet after = wallet(w);
+        WalletView after = wallet(w);
         assertThat(after.balance()).isEqualTo(usd(750));
         assertThat(after.held()).as("the unused 350 went back with the rest of the hold").isEqualTo(usd(0));
         assertThat(scopes.inTenant(w.tenant().id(), () -> queries.reservation(held.id())).status()).isEqualTo(ReservationStatus.CAPTURED);
@@ -426,12 +426,12 @@ class MoneyIntegrationTest {
         assertThat(over.status()).isEqualTo(ChargeStatus.FAILED);
         assertThat(over.failureReason()).isEqualTo("insufficient_funds");
 
-        Wallet debt = wallet(w);
+        WalletView debt = wallet(w);
         assertThat(debt.balance()).isEqualTo(usd(-5_000));
         assertThat(debt.outstanding()).isEqualTo(usd(5_000));
         assertThat(charge(w, 1, "p3").replayed()).as("the recorded failure is repeatable").isTrue();
 
-        worlds.credit(w.tenant(), debt, 2_000);
+        worlds.credit(w.tenant(), w.wallet(), 2_000);
         assertThat(wallet(w).outstanding()).isEqualTo(usd(3_000));
         assertThat(charge(w, 2_000, "p4").status()).isEqualTo(ChargeStatus.SUCCEEDED);
     }

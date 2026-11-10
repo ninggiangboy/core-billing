@@ -4,7 +4,6 @@ import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.payment.domain.refund.Refund;
 import io.corebilling.payment.domain.refund.RefundId;
 import io.corebilling.sharedkernel.Money;
-import java.util.List;
 import java.util.Optional;
 
 /** Refunds of the current tenant. */
@@ -21,8 +20,6 @@ public interface RefundRepository {
     Optional<Refund> findByStripeRefundId(String stripeRefundId);
 
     Optional<Refund> findByIdempotencyKey(String key);
-
-    List<Refund> listByPayment(PaymentId paymentId);
 
     /** Refunds that count against the captured amount: those still pending and those that succeeded. */
     long liveAmount(PaymentId paymentId);

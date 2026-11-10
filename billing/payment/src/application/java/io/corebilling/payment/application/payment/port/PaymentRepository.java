@@ -3,8 +3,6 @@ package io.corebilling.payment.application.payment.port;
 import io.corebilling.payment.domain.payment.Payment;
 import io.corebilling.payment.domain.payment.PaymentAttempt;
 import io.corebilling.payment.domain.payment.PaymentId;
-import io.corebilling.payment.domain.payment.PaymentStatus;
-import io.corebilling.sharedkernel.WalletId;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,11 +23,9 @@ public interface PaymentRepository {
 
     Optional<Payment> findByIdempotencyKey(String key);
 
-    /** Newest first; {@code before} is the id of the last payment of the previous page. */
-    List<Payment> list(WalletId walletId, PaymentStatus status, PaymentId before, int limit);
-
     /** Records a failed card attempt once per event; repeats are ignored. */
     void addAttempt(PaymentId id, PaymentAttempt attempt);
 
+    /** The attempts of a payment; a close decides from the last one whether the card was declined. */
     List<PaymentAttempt> attempts(PaymentId id);
 }

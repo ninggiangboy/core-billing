@@ -16,9 +16,11 @@ import io.corebilling.money.application.reservation.command.ReleaseReservationUs
 import io.corebilling.money.application.reservation.command.ReserveBudgetUseCase;
 import io.corebilling.money.application.ledger.command.ReverseEntryUseCase;
 import io.corebilling.money.application.wallet.query.WalletQueries;
-import io.corebilling.money.domain.charge.Charge;
+import io.corebilling.money.application.wallet.query.WalletView;
+import io.corebilling.money.application.charge.query.ChargeView;
+import io.corebilling.money.application.ledger.query.LedgerEntryView;
+import io.corebilling.money.application.reservation.query.ReservationView;
 import io.corebilling.money.domain.ledger.LedgerEntry;
-import io.corebilling.money.domain.reservation.Reservation;
 import io.corebilling.money.domain.wallet.Wallet;
 import io.corebilling.platform.api.actor.Actor;
 import io.corebilling.platform.api.actor.CurrentActor;
@@ -74,6 +76,12 @@ public class MoneyController {
                     MoneyDto.of(w.held()), MoneyDto.of(w.available()), MoneyDto.of(w.creditLimit()), MoneyDto.of(w.outstanding()), w.lastSequence(),
                     w.createdAt());
         }
+
+        static WalletResponse ofView(WalletView w) {
+            return new WalletResponse(w.id().toString(), w.customerId().toString(), w.currency().code(), w.mode().name(), MoneyDto.of(w.balance()),
+                    MoneyDto.of(w.held()), MoneyDto.of(w.available()), MoneyDto.of(w.creditLimit()), MoneyDto.of(w.outstanding()), w.lastSequence(),
+                    w.createdAt());
+        }
     }
 
     public record LedgerEntryResponse(
@@ -85,6 +93,13 @@ public class MoneyController {
                     e.source().chargeId() == null ? null : e.source().chargeId().toString(),
                     e.reversalOf() == null ? null : e.reversalOf().toString(), e.origin().actor(), e.origin().reason(), e.createdAt());
         }
+
+        static LedgerEntryResponse ofView(LedgerEntryView e) {
+            return new LedgerEntryResponse(e.id().toString(), e.sequence(), e.type().name(), MoneyDto.of(e.amount()), e.reference(),
+                    e.reservationId() == null ? null : e.reservationId().toString(),
+                    e.chargeId() == null ? null : e.chargeId().toString(),
+                    e.reversalOf() == null ? null : e.reversalOf().toString(), e.actor(), e.reason(), e.createdAt());
+        }
     }
 
     public record ReserveRequest(String walletId, long amount, String currency, Long ttlSeconds, String reference) {}
@@ -92,7 +107,7 @@ public class MoneyController {
     public record ReservationResponse(
             String id, String walletId, String status, MoneyDto amount, MoneyDto captured, Instant expiresAt, String reference, Instant createdAt,
             Instant closedAt) {
-        static ReservationResponse of(Reservation r) {
+        static ReservationResponse ofView(ReservationView r) {
             return new ReservationResponse(r.id().toString(), r.walletId().toString(), r.status().name(), MoneyDto.of(r.amount()),
                     MoneyDto.of(r.captured()), r.expiresAt(), r.reference(), r.createdAt(), r.closedAt());
         }
@@ -105,7 +120,7 @@ public class MoneyController {
     public record ChargeResponse(
             String id, String status, String failureReason, MoneyDto amount, String ledgerEntryId, String reservationId, String usageRef,
             String reference) {
-        static ChargeResponse of(ChargeResult result, Charge charge) {
+        static ChargeResponse ofView(ChargeResult result, ChargeView charge) {
             return new ChargeResponse(result.id().toString(), result.status().name(), result.failureReason(), MoneyDto.of(result.amount()),
                     result.ledgerEntryId() == null ? null : result.ledgerEntryId().toString(),
                     charge.reservationId() == null ? null : charge.reservationId().toString(), charge.usageRef(), charge.reference());
@@ -158,20 +173,20 @@ public class MoneyController {
     @GetMapping("/wallets")
     @RequiresPermission(Permission.WALLET_READ)
     public List<WalletResponse> wallets(@RequestParam String customerId) {
-        return queries.walletsOf(CustomerId.of(customerId)).stream().map(WalletResponse::of).toList();
+        return queries.walletsOf(CustomerId.of(customerId)).stream().map(WalletResponse::ofView).toList();
     }
 
     @GetMapping("/wallets/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public WalletResponse wallet(@PathVariable String id) {
-        return WalletResponse.of(queries.wallet(WalletId.of(id)));
+        return WalletResponse.ofView(queries.wallet(WalletId.of(id)));
     }
 
     @GetMapping("/wallets/{id}/ledger")
     @RequiresPermission(Permission.WALLET_READ)
     public List<LedgerEntryResponse> ledger(
             @PathVariable String id, @RequestParam(defaultValue = "0") long afterSequence, @RequestParam(defaultValue = "50") int limit) {
-        return queries.ledger(WalletId.of(id), afterSequence, limit).stream().map(LedgerEntryResponse::of).toList();
+        return queries.ledger(WalletId.of(id), afterSequence, limit).stream().map(LedgerEntryResponse::ofView).toList();
     }
 
     @PostMapping("/reservations")
@@ -180,20 +195,20 @@ public class MoneyController {
         ReservationResult result = reserve.reserve(new ReserveBudgetCommand(
                 WalletId.of(request.walletId()), new MoneyDto(request.amount(), request.currency()).toMoney(),
                 Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.of(queries.reservation(result.id())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.ofView(queries.reservation(result.id())));
     }
 
     @GetMapping("/reservations/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public ReservationResponse reservation(@PathVariable String id) {
-        return ReservationResponse.of(queries.reservation(ReservationId.of(id)));
+        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id)));
     }
 
     @PostMapping("/reservations/{id}/release")
     @RequiresPermission(Permission.RESERVATION_MANAGE)
     public ReservationResponse release(@PathVariable String id) {
         release.execute(ReservationId.of(id));
-        return ReservationResponse.of(queries.reservation(ReservationId.of(id)));
+        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id)));
     }
 
     /** Charges the actual cost against the reservation and releases whatever was not used. */
@@ -218,8 +233,8 @@ public class MoneyController {
     @GetMapping("/charges/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public ChargeResponse getCharge(@PathVariable String id) {
-        Charge found = queries.charge(ChargeId.of(id));
-        return ChargeResponse.of(new ChargeResult(found.id(), found.status(), found.failureReason(), found.amount(), null, false), found);
+        ChargeView found = queries.charge(ChargeId.of(id));
+        return ChargeResponse.ofView(new ChargeResult(found.id(), found.status(), found.failureReason(), found.amount(), null, false), found);
     }
 
     @PostMapping("/ledger-entries/{id}/reverse")
@@ -240,9 +255,9 @@ public class MoneyController {
 
     /** 201 for a recorded charge; 402 when the wallet could not pay (the failure is recorded and repeatable). */
     private ResponseEntity<ChargeResponse> chargeResponse(ChargeResult result) {
-        Charge stored = queries.charge(result.id());
+        ChargeView stored = queries.charge(result.id());
         HttpStatus status = result.status() == ChargeStatus.FAILED ? HttpStatus.PAYMENT_REQUIRED : HttpStatus.CREATED;
-        return ResponseEntity.status(status).body(ChargeResponse.of(result, stored));
+        return ResponseEntity.status(status).body(ChargeResponse.ofView(result, stored));
     }
 
     private static String requestId(String supplied) {

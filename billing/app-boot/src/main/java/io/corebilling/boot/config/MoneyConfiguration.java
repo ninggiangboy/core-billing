@@ -6,23 +6,31 @@ import io.corebilling.money.adapter.persistence.JdbcLedgerRepository;
 import io.corebilling.money.adapter.persistence.JdbcLedgerVerifier;
 import io.corebilling.money.adapter.persistence.JdbcReservationRepository;
 import io.corebilling.money.adapter.persistence.JdbcWalletRepository;
+import io.corebilling.money.adapter.persistence.charge.JdbcChargeReadRepository;
+import io.corebilling.money.adapter.persistence.ledger.JdbcLedgerReadRepository;
+import io.corebilling.money.adapter.persistence.reservation.JdbcReservationReadRepository;
+import io.corebilling.money.adapter.persistence.wallet.JdbcWalletReadRepository;
 import io.corebilling.money.api.wallet.WalletLookup;
 import io.corebilling.money.application.charge.port.ChargeRepository;
+import io.corebilling.money.application.charge.query.ChargeReadRepository;
 import io.corebilling.money.application.charge.command.ChargeUseCase;
 import io.corebilling.money.application.wallet.command.CreditWalletUseCase;
 import io.corebilling.money.application.wallet.command.DebitWalletUseCase;
 import io.corebilling.money.application.reservation.command.ExpireReservationsUseCase;
 import io.corebilling.money.application.ledger.port.LedgerRepository;
+import io.corebilling.money.application.ledger.query.LedgerReadRepository;
 import io.corebilling.money.application.ledger.command.LedgerVerifier;
 import io.corebilling.money.application.wallet.command.OpenWalletUseCase;
 import io.corebilling.money.application.reservation.command.ReleaseReservationUseCase;
 import io.corebilling.money.application.reservation.port.ReservationRepository;
+import io.corebilling.money.application.reservation.query.ReservationReadRepository;
 import io.corebilling.money.application.reservation.command.ReserveBudgetUseCase;
 import io.corebilling.money.application.ledger.command.ReverseEntryUseCase;
 import io.corebilling.money.application.ledger.command.VerifyLedgerUseCase;
 import io.corebilling.money.application.wallet.query.WalletLookupService;
 import io.corebilling.money.application.wallet.query.WalletQueries;
 import io.corebilling.money.application.wallet.port.WalletRepository;
+import io.corebilling.money.application.wallet.query.WalletReadRepository;
 import io.corebilling.platform.api.audit.AuditLog;
 import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
@@ -31,6 +39,7 @@ import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
@@ -41,23 +50,43 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 class MoneyConfiguration {
 
     @Bean
-    WalletRepository walletRepository(JdbcClient jdbc) {
-        return new JdbcWalletRepository(jdbc);
+    WalletRepository walletRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcWalletRepository(aggregates, jdbc);
     }
 
     @Bean
-    LedgerRepository ledgerRepository(JdbcClient jdbc) {
-        return new JdbcLedgerRepository(jdbc);
+    LedgerRepository ledgerRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcLedgerRepository(aggregates, jdbc);
     }
 
     @Bean
-    ReservationRepository reservationRepository(JdbcClient jdbc) {
-        return new JdbcReservationRepository(jdbc);
+    ReservationRepository reservationRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcReservationRepository(aggregates, jdbc);
     }
 
     @Bean
-    ChargeRepository chargeRepository(JdbcClient jdbc) {
-        return new JdbcChargeRepository(jdbc);
+    ChargeRepository chargeRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcChargeRepository(aggregates, jdbc);
+    }
+
+    @Bean
+    WalletReadRepository walletReadRepository(JdbcClient jdbc) {
+        return new JdbcWalletReadRepository(jdbc);
+    }
+
+    @Bean
+    LedgerReadRepository ledgerReadRepository(JdbcClient jdbc) {
+        return new JdbcLedgerReadRepository(jdbc);
+    }
+
+    @Bean
+    ReservationReadRepository reservationReadRepository(JdbcClient jdbc) {
+        return new JdbcReservationReadRepository(jdbc);
+    }
+
+    @Bean
+    ChargeReadRepository chargeReadRepository(JdbcClient jdbc) {
+        return new JdbcChargeReadRepository(jdbc);
     }
 
     @Bean
@@ -122,13 +151,14 @@ class MoneyConfiguration {
     }
 
     @Bean
-    WalletLookup walletLookup(UnitOfWork unitOfWork, WalletRepository wallets) {
+    WalletLookup walletLookup(UnitOfWork unitOfWork, WalletReadRepository wallets) {
         return new WalletLookupService(unitOfWork, wallets);
     }
 
     @Bean
     WalletQueries walletQueries(
-            UnitOfWork unitOfWork, WalletRepository wallets, LedgerRepository ledger, ReservationRepository reservations, ChargeRepository charges) {
+            UnitOfWork unitOfWork, WalletReadRepository wallets, LedgerReadRepository ledger, ReservationReadRepository reservations,
+            ChargeReadRepository charges) {
         return new WalletQueries(unitOfWork, wallets, ledger, reservations, charges);
     }
 }

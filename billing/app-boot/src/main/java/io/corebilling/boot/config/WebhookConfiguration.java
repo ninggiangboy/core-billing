@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -79,8 +80,8 @@ class WebhookConfiguration {
     }
 
     @Bean
-    WebhookDeliveryRepository webhookDeliveryRepository(JdbcClient jdbc) {
-        return new JdbcWebhookDeliveryRepository(jdbc);
+    WebhookDeliveryRepository webhookDeliveryRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcWebhookDeliveryRepository(aggregates, jdbc);
     }
 
     @Bean

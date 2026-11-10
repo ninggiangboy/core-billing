@@ -3,9 +3,18 @@ package io.corebilling.money.adapter.persistence;
 import io.corebilling.money.application.ledger.command.LedgerVerifier;
 import io.corebilling.sharedkernel.WalletId;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class JdbcLedgerVerifier implements LedgerVerifier {
+
+    private record LedgerMismatchRow(
+            UUID id, long balance, long ledgerBalance, long lastSequence, long ledgerLastSequence, long entryCount) {
+
+        Mismatch toMismatch() {
+            return new Mismatch(new WalletId(id), balance, ledgerBalance, lastSequence, ledgerLastSequence, entryCount);
+        }
+    }
 
     private final JdbcClient jdbc;
 
@@ -28,9 +37,10 @@ public class JdbcLedgerVerifier implements LedgerVerifier {
                             or count(l.id) <> coalesce(max(l.seq), 0)
                         order by w.id
                         """)
-                .query((rs, n) -> new Mismatch(
-                        new WalletId(Rows.uuid(rs, "id")), rs.getLong("balance"), rs.getLong("ledger_balance"),
-                        rs.getLong("last_sequence"), rs.getLong("ledger_last_sequence"), rs.getLong("entry_count")))
-                .list();
+                .query(LedgerMismatchRow.class)
+                .list()
+                .stream()
+                .map(LedgerMismatchRow::toMismatch)
+                .toList();
     }
 }

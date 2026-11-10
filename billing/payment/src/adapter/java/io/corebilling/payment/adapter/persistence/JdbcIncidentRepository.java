@@ -1,12 +1,10 @@
 package io.corebilling.payment.adapter.persistence;
 
 import io.corebilling.payment.application.incident.port.IncidentRepository;
-import io.corebilling.payment.domain.incident.Incident;
 import io.corebilling.payment.domain.incident.IncidentKind;
 import io.corebilling.payment.domain.stripe.StripeConfigurationId;
 import io.corebilling.sharedkernel.TenantId;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -20,6 +18,7 @@ public class JdbcIncidentRepository implements IncidentRepository {
 
     @Override
     public void record(UUID id, TenantId tenantId, StripeConfigurationId configurationId, IncidentKind kind, String subject, String detail, Instant now) {
+        // Finding the same open incident again raises its count instead of adding a row.
         jdbc.sql("""
                         insert into stripe_incidents (id, tenant_id, configuration_id, kind, subject, detail, created_at, last_seen_at)
                         values (?, ?, ?, ?, ?, ?, ?, ?)
@@ -29,26 +28,6 @@ public class JdbcIncidentRepository implements IncidentRepository {
                 .params(id, tenantId.value(), configurationId == null ? null : configurationId.value(), kind.name(), clip(subject, 300), clip(detail, 1000),
                         Rows.timestamp(now), Rows.timestamp(now))
                 .update();
-    }
-
-    @Override
-    public List<Incident> list(boolean openOnly, int limit) {
-        return jdbc.sql("""
-                        select id, tenant_id, configuration_id, kind, subject, detail, occurrences, created_at, last_seen_at, resolved_at
-                        from stripe_incidents
-                        where (? = false or resolved_at is null)
-                        order by last_seen_at desc, id
-                        limit ?
-                        """)
-                .params(openOnly, limit)
-                .query((rs, n) -> {
-                    UUID configuration = Rows.uuid(rs, "configuration_id");
-                    return new Incident(Rows.uuid(rs, "id"), new TenantId(Rows.uuid(rs, "tenant_id")),
-                            configuration == null ? null : new StripeConfigurationId(configuration), IncidentKind.valueOf(rs.getString("kind")),
-                            rs.getString("subject"), rs.getString("detail"), rs.getInt("occurrences"), Rows.instant(rs, "created_at"),
-                            Rows.instant(rs, "last_seen_at"), Rows.instant(rs, "resolved_at"));
-                })
-                .list();
     }
 
     @Override

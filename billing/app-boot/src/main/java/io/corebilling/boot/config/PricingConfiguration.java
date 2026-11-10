@@ -32,6 +32,7 @@ import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.usage.api.usage.UsageLookup;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -40,8 +41,8 @@ import tools.jackson.databind.json.JsonMapper;
 class PricingConfiguration {
 
     @Bean
-    PlanRepository planRepository(JdbcClient jdbc, JsonMapper json) {
-        return new JdbcPlanRepository(jdbc, json);
+    PlanRepository planRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc, JsonMapper json) {
+        return new JdbcPlanRepository(aggregates, jdbc, json);
     }
 
     @Bean

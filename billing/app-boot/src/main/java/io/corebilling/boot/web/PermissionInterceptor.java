@@ -2,6 +2,7 @@ package io.corebilling.boot.web;
 
 import io.corebilling.platform.api.Authenticated;
 import io.corebilling.platform.api.Authorizer;
+import io.corebilling.platform.api.PublicEndpoint;
 import io.corebilling.platform.api.RequiresPermission;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +11,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * Enforces the permission an endpoint declares. A controller method that declares neither a permission nor
- * {@link Authenticated} fails closed with a server error instead of being served, so no endpoint can be
+ * {@link Authenticated} (or {@link PublicEndpoint}) fails closed with a server error instead of being served, so no endpoint can be
  * exposed by forgetting an annotation.
  */
 class PermissionInterceptor implements HandlerInterceptor {
@@ -31,7 +32,7 @@ class PermissionInterceptor implements HandlerInterceptor {
             authorizer.require(required.value());
             return true;
         }
-        if (method.hasMethodAnnotation(Authenticated.class)) {
+        if (method.hasMethodAnnotation(Authenticated.class) || method.hasMethodAnnotation(PublicEndpoint.class)) {
             return true;
         }
         throw new IllegalStateException("endpoint declares no access rule: " + method.getShortLogMessage());

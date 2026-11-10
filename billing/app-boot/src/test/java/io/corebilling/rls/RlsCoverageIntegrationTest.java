@@ -20,8 +20,8 @@ import org.springframework.context.annotation.Import;
 @Import(PostgresContainerConfig.class)
 class RlsCoverageIntegrationTest {
 
-    /** Platform-owned tables that carry a nullable tenant_id but hold no tenant-scoped data. */
-    private static final Set<String> PLATFORM_OWNED = Set.of("tenant_domains");
+    /** Platform-owned lookup tables that carry a tenant_id but hold no tenant-scoped data: the hostname or the Stripe account is resolved before any tenant is known. */
+    private static final Set<String> PLATFORM_OWNED = Set.of("tenant_domains", "stripe_routes");
 
     @Autowired OwnerDatabase owner;
 

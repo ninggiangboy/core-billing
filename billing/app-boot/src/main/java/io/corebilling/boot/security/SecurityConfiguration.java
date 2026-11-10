@@ -41,6 +41,9 @@ class SecurityConfiguration {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/actuator/health", "/actuator/health/**")
                         .permitAll()
+                        // Stripe calls these; the signature of the body is the proof, verified before anything is read.
+                        .requestMatchers("/stripe/webhooks/**")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(resource -> resource

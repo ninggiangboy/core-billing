@@ -64,6 +64,39 @@ billing:
     read-timeout: PT10S
     deadline: PT15S
 
+  payments:
+    # The public address of this deployment, as Stripe reaches it. Webhook URLs shown to Tenants are built from it.
+    public-base-url: ${BILLING_PUBLIC_BASE_URL:http://localhost:8080}
+    # Where Stripe sends the customer after Checkout. {PAYMENT_ID} is replaced; the page only shows a result,
+    # since the wallet changes when Stripe's webhook arrives and never because of this redirect.
+    checkout-success-url: ${BILLING_PAYMENT_SUCCESS_URL:http://localhost:5173/top-up/done?payment={PAYMENT_ID}}
+    checkout-cancel-url: ${BILLING_PAYMENT_CANCEL_URL:http://localhost:5173/top-up/canceled?payment={PAYMENT_ID}}
+    # How long a refund holds the unspent balance while Stripe works on it. Seven days is the most the money
+    # context allows; a refund Stripe settles after that finds the hold gone and is debited only if the wallet
+    # still has the balance (otherwise the event is flagged for a person).
+    refund-hold: P7D
+    event-max-attempts: 8
+    event-backoff-base: PT30S
+    event-backoff-cap: PT6H
+    event-batch-size: 25
+    event-retry-delay: PT15S
+    # Switch both background jobs off to roll back to taking no new Stripe results from polling; webhooks still work.
+    jobs-enabled: true
+    reconcile-lookback: P3D
+    reconcile-delay: PT1H
+    stripe:
+      # Blank means Stripe's real API. Tests point it at a local fake.
+      api-base: ${BILLING_STRIPE_API_BASE:}
+      connect-timeout: PT5S
+      read-timeout: PT30S
+      webhook-tolerance: PT5M
+    # Stripe Connect is offered only when both values are set: the Platform's own Stripe key and Connect webhook secret.
+    connect:
+      platform-secret-key: ${BILLING_STRIPE_CONNECT_SECRET_KEY:}
+      webhook-secret: ${BILLING_STRIPE_CONNECT_WEBHOOK_SECRET:}
+      onboarding-return-url: ${BILLING_STRIPE_CONNECT_RETURN_URL:http://localhost:5173/settings/payments?connect=return}
+      onboarding-refresh-url: ${BILLING_STRIPE_CONNECT_REFRESH_URL:http://localhost:5173/settings/payments?connect=refresh}
+
 management:
   endpoints:
     web:

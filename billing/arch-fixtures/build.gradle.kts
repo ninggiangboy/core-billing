@@ -8,4 +8,6 @@ dependencies {
     compileOnly("org.springframework:spring-context")
     compileOnly("org.springframework.data:spring-data-relational")
     compileOnly("jakarta.persistence:jakarta.persistence-api")
+    compileOnly(libs.stripe.java)
+    compileOnly("com.google.code.gson:gson")
 }

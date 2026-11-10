@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":webhook"))
     implementation(project(":usage"))
     implementation(project(":pricing"))
+    implementation(project(":payment"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

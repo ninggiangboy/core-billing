@@ -1,5 +1,8 @@
 package io.corebilling.boot.web;
 
+import io.corebilling.payment.application.InvalidSignatureException;
+import io.corebilling.payment.application.ProviderRejectedException;
+import io.corebilling.payment.application.ProviderUnavailableException;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.money.api.InsufficientFundsException;
@@ -42,6 +45,24 @@ class ApiExceptionHandler {
     @ExceptionHandler(InsufficientFundsException.class)
     ProblemDetail insufficientFunds(InsufficientFundsException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.PAYMENT_REQUIRED, "The wallet cannot cover this amount.");
+    }
+
+    /** The body did not match its signature. Says nothing about why, so a caller cannot probe for the secret. */
+    @ExceptionHandler(InvalidSignatureException.class)
+    ProblemDetail invalidSignature(InvalidSignatureException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The signature could not be verified.");
+    }
+
+    @ExceptionHandler(ProviderRejectedException.class)
+    ProblemDetail providerRejected(ProviderRejectedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
+    }
+
+    /** The payment provider is unreachable; the outcome is unknown, so repeating the request with the same Idempotency-Key is safe. */
+    @ExceptionHandler(ProviderUnavailableException.class)
+    ProblemDetail providerUnavailable(ProviderUnavailableException e) {
+        LOG.warn("payment provider unavailable: {}", e.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "The payment provider could not be reached. Repeat the request with the same Idempotency-Key.");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

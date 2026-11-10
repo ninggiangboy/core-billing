@@ -53,6 +53,56 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserResponse"
       x-required-permission: user:manage
+  /api/v1/stripe/configuration/webhook-secret:
+    put:
+      tags:
+      - payment-controller
+      operationId: setWebhookSecret
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookSecretRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConfigurationResponse"
+      x-required-permission: stripe:manage
+  /api/v1/stripe/configuration/direct:
+    put:
+      tags:
+      - payment-controller
+      operationId: connectDirect
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConfigurationResponse"
+      x-required-permission: stripe:manage
   /api/v1/roles/{id}/permissions:
     put:
       tags:
@@ -126,6 +176,51 @@ paths:
               schema:
                 $ref: "#/components/schemas/CustomerResponse"
       x-required-permission: customer:write
+  /stripe/webhooks/direct/{configurationId}:
+    post:
+      tags:
+      - stripe-webhook-controller
+      operationId: direct
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Stripe-Signature
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /stripe/webhooks/connect:
+    post:
+      tags:
+      - stripe-webhook-controller
+      operationId: connect
+      parameters:
+      - name: Stripe-Signature
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
   /api/v1/webhook-endpoints:
     get:
       tags:
@@ -577,6 +672,120 @@ paths:
               schema:
                 $ref: "#/components/schemas/IssuedCredentialResponse"
       x-required-permission: credential:manage
+  /api/v1/stripe/reconcile:
+    post:
+      tags:
+      - payment-controller
+      operationId: reconcile
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReconcileResponse"
+      x-required-permission: stripe:manage
+  /api/v1/stripe/incidents/{id}/resolve:
+    post:
+      tags:
+      - payment-controller
+      operationId: resolveIncident
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+      x-required-permission: stripe:manage
+  /api/v1/stripe/events/{id}/retry:
+    post:
+      tags:
+      - payment-controller
+      operationId: retry
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EventDetailResponse"
+      x-required-permission: stripe:manage
+  /api/v1/stripe/configuration/refresh:
+    post:
+      tags:
+      - payment-controller
+      operationId: refresh
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConfigurationResponse"
+      x-required-permission: stripe:manage
+  /api/v1/stripe/configuration/connect:
+    post:
+      tags:
+      - payment-controller
+      operationId: startConnect
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConnectionResponse"
+      x-required-permission: stripe:manage
+  /api/v1/stripe/configuration/connect/link:
+    post:
+      tags:
+      - payment-controller
+      operationId: onboardingLink
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConnectionResponse"
+      x-required-permission: stripe:manage
   /api/v1/roles:
     get:
       tags:
@@ -846,6 +1055,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/PlanResponse"
       x-required-permission: pricing:manage
+  /api/v1/payments/{id}/refunds:
+    post:
+      tags:
+      - payment-controller
+      operationId: requestRefund
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefundRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RefundResponse"
+      x-required-permission: refund:create
+  /api/v1/payments/top-ups:
+    post:
+      tags:
+      - payment-controller
+      operationId: createTopUp
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopUpRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+      x-required-permission: payment:create
   /api/v1/ledger-entries/{id}/reverse:
     post:
       tags:
@@ -1220,6 +1494,114 @@ paths:
               schema:
                 $ref: "#/components/schemas/SystemResponse"
       x-required-permission: tenant-system:read
+  /api/v1/stripe/incidents:
+    get:
+      tags:
+      - payment-controller
+      operationId: incidents
+      parameters:
+      - name: open
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IncidentResponse"
+      x-required-permission: stripe:read
+  /api/v1/stripe/events:
+    get:
+      tags:
+      - payment-controller
+      operationId: events
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventResponse"
+      x-required-permission: stripe:read
+  /api/v1/stripe/events/{id}:
+    get:
+      tags:
+      - payment-controller
+      operationId: event
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EventDetailResponse"
+      x-required-permission: stripe:read
+  /api/v1/stripe/configuration:
+    get:
+      tags:
+      - payment-controller
+      operationId: getConfiguration
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConfigurationResponse"
+      x-required-permission: stripe:read
+    delete:
+      tags:
+      - payment-controller
+      operationId: disconnect
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+      x-required-permission: stripe:manage
   /api/v1/roles/{id}:
     get:
       tags:
@@ -1258,6 +1640,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/ReservationResponse"
       x-required-permission: wallet:read
+  /api/v1/refunds/{id}:
+    get:
+      tags:
+      - payment-controller
+      operationId: getRefund
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RefundResponse"
+      x-required-permission: payment:read
   /api/v1/pricing/usage-charges/{id}:
     get:
       tags:
@@ -1311,6 +1712,63 @@ paths:
                 items:
                   type: string
       x-required-permission: role:read
+  /api/v1/payments:
+    get:
+      tags:
+      - payment-controller
+      operationId: payments
+      parameters:
+      - name: walletId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentResponse"
+      x-required-permission: payment:read
+  /api/v1/payments/{id}:
+    get:
+      tags:
+      - payment-controller
+      operationId: payment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentDetailResponse"
+      x-required-permission: payment:read
   /api/v1/me:
     get:
       tags:
@@ -1416,6 +1874,53 @@ components:
         createdAt:
           type: string
           format: date-time
+    WebhookSecretRequest:
+      type: object
+      properties:
+        webhookSecret:
+          type: string
+    ConfigurationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        mode:
+          type: string
+        accountId:
+          type: string
+        environment:
+          type: string
+        status:
+          type: string
+        publishableKey:
+          type: string
+        webhookSecretSet:
+          type: boolean
+        cardPaymentsActive:
+          type: boolean
+        webhookUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        connectedAt:
+          type: string
+          format: date-time
+        lastVerifiedAt:
+          type: string
+          format: date-time
+    DirectRequest:
+      type: object
+      properties:
+        secretKey:
+          type: string
+        publishableKey:
+          type: string
+        webhookSecret:
+          type: string
     SetPermissionsRequest:
       type: object
       properties:
@@ -1784,6 +2289,79 @@ components:
         overlapMinutes:
           type: integer
           format: int64
+    ReconcileResponse:
+      type: object
+      properties:
+        checked:
+          type: integer
+          format: int32
+        corrected:
+          type: integer
+          format: int32
+        mismatches:
+          type: integer
+          format: int32
+    EventAttemptResponse:
+      type: object
+      properties:
+        attempt:
+          type: integer
+          format: int32
+        outcome:
+          type: string
+        detail:
+          type: string
+        attemptedAt:
+          type: string
+          format: date-time
+    EventDetailResponse:
+      type: object
+      properties:
+        event:
+          $ref: "#/components/schemas/EventResponse"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventAttemptResponse"
+    EventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        stripeEventId:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+        attempts:
+          type: integer
+          format: int32
+        nextAttemptAt:
+          type: string
+          format: date-time
+        lastError:
+          type: string
+        receivedAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: string
+          format: date-time
+    ConnectRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        contactEmail:
+          type: string
+    ConnectionResponse:
+      type: object
+      properties:
+        configuration:
+          $ref: "#/components/schemas/ConfigurationResponse"
+        onboardingUrl:
+          type: string
     CreateRoleRequest:
       type: object
       properties:
@@ -2119,6 +2697,79 @@ components:
           format: date-time
         createdBy:
           type: string
+    RefundRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        reason:
+          type: string
+    RefundResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        paymentId:
+          type: string
+        status:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        reason:
+          type: string
+        failureReason:
+          type: string
+        ledgerEntryId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    TopUpRequest:
+      type: object
+      properties:
+        walletId:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        customerId:
+          type: string
+        status:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        refunded:
+          $ref: "#/components/schemas/MoneyDto"
+        checkoutUrl:
+          type: string
+        failureReason:
+          type: string
+        ledgerEntryId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
     ReplacementRequest:
       type: object
       properties:
@@ -2254,6 +2905,42 @@ components:
         events:
           type: integer
           format: int64
+    IncidentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+        subject:
+          type: string
+        detail:
+          type: string
+        occurrences:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: string
+          format: date-time
+    PaymentDetailResponse:
+      type: object
+      properties:
+        payment:
+          $ref: "#/components/schemas/PaymentResponse"
+        refunds:
+          type: array
+          items:
+            $ref: "#/components/schemas/RefundResponse"
+        failedAttempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptResponse"
     MeResponse:
       type: object
       properties:

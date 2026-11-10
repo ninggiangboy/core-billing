@@ -39,7 +39,17 @@ public enum Permission {
     /** Creates, versions and retires pricing plans. Administrators only: a plan sets what customers are charged. */
     PRICING_MANAGE("pricing:manage", false, true, false),
     USAGE_RECORD("usage:record", false, true, true),
-    USAGE_READ("usage:read", false, true, true);
+    USAGE_READ("usage:read", false, true, true),
+
+    /** Reads the Stripe configuration (never its secrets), webhook processing history and reconciliation findings. */
+    STRIPE_READ("stripe:read", false, true, false),
+    /** Connects or disconnects Stripe, sets its secrets, retries events and runs reconciliation. Administrators only. */
+    STRIPE_MANAGE("stripe:manage", false, true, false),
+    PAYMENT_READ("payment:read", false, true, true),
+    /** Starts a wallet top-up through the Tenant's Stripe configuration. */
+    PAYMENT_CREATE("payment:create", false, true, true),
+    /** Sends money back to a customer's card. Administrators only: never granted to a Tenant System. */
+    REFUND_CREATE("refund:create", false, true, false);
 
     private final String code;
     private final boolean platform;

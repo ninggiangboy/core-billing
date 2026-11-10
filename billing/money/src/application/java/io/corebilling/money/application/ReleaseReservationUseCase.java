@@ -1,5 +1,6 @@
 package io.corebilling.money.application;
 
+import io.corebilling.money.api.ReleaseReservation;
 import io.corebilling.money.api.ReservationId;
 import io.corebilling.money.api.ReservationResult;
 import io.corebilling.money.api.ReservationStatus;
@@ -14,7 +15,7 @@ import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
 
 /** Gives a held budget back to the wallet. Releasing an already released reservation changes nothing. */
-public class ReleaseReservationUseCase {
+public class ReleaseReservationUseCase implements ReleaseReservation {
 
     private final UnitOfWork unitOfWork;
     private final WalletRepository wallets;
@@ -33,12 +34,30 @@ public class ReleaseReservationUseCase {
         this.clock = clock;
     }
 
+    /**
+     * The contract other contexts use: gives the hold back if it is still active and otherwise reports the state
+     * it is in (expired, captured) without failing, so a caller inside a larger transaction is never forced to
+     * roll back over a hold that is already gone.
+     */
+    @Override
+    public ReservationResult release(ReservationId id) {
+        return release(id, true);
+    }
+
+    /** The administrator's release: a hold that is not active is a conflict. */
     public ReservationResult execute(ReservationId id) {
+        return release(id, false);
+    }
+
+    private ReservationResult release(ReservationId id, boolean tolerateClosed) {
         return unitOfWork.transactional(() -> {
             Reservation unlocked = reservations.findById(id).orElseThrow(() -> new NotFoundException("reservation not found"));
             Wallet wallet = wallets.lockById(unlocked.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));
             Reservation reservation = reservations.findById(id).orElseThrow(() -> new NotFoundException("reservation not found"));
             if (reservation.status() == ReservationStatus.RELEASED) {
+                return ReserveBudgetUseCase.result(reservation, true);
+            }
+            if (!reservation.isActive() && tolerateClosed) {
                 return ReserveBudgetUseCase.result(reservation, true);
             }
             if (!reservation.isActive()) {

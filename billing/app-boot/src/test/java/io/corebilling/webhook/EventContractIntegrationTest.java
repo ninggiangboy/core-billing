@@ -51,7 +51,8 @@ class EventContractIntegrationTest {
     /** Event types this test produces through the real code; every schema must have a producer listed here. */
     private static final Set<String> EMITTED_HERE = Set.of(
             "reservation.created", "reservation.released", "reservation.expired", "charge.succeeded", "charge.failed", "wallet.credited",
-            "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated");
+            "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated",
+            "payment.succeeded", "payment.failed", "refund.succeeded");
 
     @Autowired MoneyTestWorld worlds;
     @Autowired ScopeTestSupport scopes;
@@ -66,6 +67,11 @@ class EventContractIntegrationTest {
     @Autowired PricingTestWorld pricing;
     @Autowired ChargeFromUsageUseCase chargeUsage;
     @Autowired PlanAdministration planAdmin;
+    @Autowired io.corebilling.payment.PaymentTestWorld payments;
+    @Autowired io.corebilling.payment.application.ReceiveStripeWebhookUseCase receive;
+    @Autowired io.corebilling.payment.application.PaymentRepository paymentRepository;
+    @Autowired io.corebilling.payment.application.RefundRepository refundRepository;
+    @Autowired io.corebilling.sharedkernel.UnitOfWork unitOfWork;
 
     private final JsonMapper json = JsonMapper.builder().build();
 
@@ -122,10 +128,42 @@ class EventContractIntegrationTest {
         return payloads;
     }
 
+    /** Pays, fails and refunds a top-up through verified, signed Stripe events and returns what landed in the outbox. */
+    private List<Payload> producePaymentEvents() {
+        var w = payments.direct(0);
+        var tenant = w.money().tenant().id();
+        var ok = payments.openPayment(w, new io.corebilling.payment.domain.PaymentId(UUID.randomUUID()), 5000);
+        deliver(w, io.corebilling.support.StripeEvents.paidCheckout(io.corebilling.support.StripeEvents.newEventId(), null, "cs_" + ok.id(), "pi_" + ok.id(),
+                ok.id().toString(), 5000));
+        var failing = payments.openPayment(w, new io.corebilling.payment.domain.PaymentId(UUID.randomUUID()), 700);
+        deliver(w, io.corebilling.support.StripeEvents.checkout(io.corebilling.support.StripeEvents.newEventId(), "checkout.session.async_payment_failed", null,
+                "cs_" + failing.id(), "pi_" + failing.id(), failing.id().toString(), "complete", "unpaid", 700, "usd"));
+        var settled = scopes.inTenant(tenant, () -> unitOfWork.transactional(() -> paymentRepository.findById(ok.id()).orElseThrow()));
+        var refund = scopes.inTenant(tenant, () -> unitOfWork.transactional(() -> {
+            var r = io.corebilling.payment.domain.Refund.request(new io.corebilling.payment.domain.RefundId(UUID.randomUUID()), settled,
+                    Money.of(1000, settled.amount().currency()), null, null, "user/test", "refund-" + UUID.randomUUID(), "hash", Instant.now());
+            refundRepository.add(r);
+            return r;
+        }));
+        deliver(w, io.corebilling.support.StripeEvents.refund(io.corebilling.support.StripeEvents.newEventId(), null, "re_" + refund.id(), "pi_" + ok.id(),
+                refund.id().toString(), "succeeded", 1000));
+
+        List<Payload> payloads = new ArrayList<>();
+        owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {
+            payloads.add(new Payload(rs.getString("type"), rs.getString("payload")));
+        }, tenant.value());
+        return payloads;
+    }
+
+    private void deliver(io.corebilling.payment.PaymentTestWorld.PayWorld w, String body) {
+        receive.receiveDirect(w.configuration().id(), body, io.corebilling.support.StripeEvents.sign(w.webhookSecret(), body));
+    }
+
     @Test
     void everyPayloadTheCodeEmitsConformsToItsSchema() {
         List<Payload> produced = new ArrayList<>(produceMoneyEvents());
         produced.addAll(producePricingEvents());
+        produced.addAll(producePaymentEvents());
 
         Set<String> producedTypes = new TreeSet<>();
         produced.forEach(p -> producedTypes.add(p.type()));

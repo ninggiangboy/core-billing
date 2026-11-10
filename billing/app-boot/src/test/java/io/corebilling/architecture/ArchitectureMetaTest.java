@@ -35,6 +35,7 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("ledger-repository-is-append-only", "LedgerRepository");
         CULPRIT_BY_RULE_ID.put("datasource-and-transactions-only-in-infrastructure", "TouchesDataSource");
         CULPRIT_BY_RULE_ID.put("outbound-http-only-through-the-guarded-sender", "OpensItsOwnHttpConnection");
+        CULPRIT_BY_RULE_ID.put("stripe-types-stay-in-the-stripe-adapter", "UsesStripeDirectly");
         CULPRIT_BY_RULE_ID.put("no-jpa", "JpaEntity");
         CULPRIT_BY_RULE_ID.put("shared-kernel-is-independent", "KernelKnowsAContext");
     }

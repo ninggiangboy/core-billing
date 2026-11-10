@@ -43,6 +43,7 @@ final class ArchitectureRules {
                 new NamedRule("ledger-repository-is-append-only", ledgerRepositoryIsAppendOnly()),
                 new NamedRule("datasource-and-transactions-only-in-infrastructure", datasourceOnlyInInfrastructure(root)),
                 new NamedRule("outbound-http-only-through-the-guarded-sender", outboundHttpOnlyThroughTheGuardedSender(root)),
+                new NamedRule("stripe-types-stay-in-the-stripe-adapter", stripeTypesStayInTheStripeAdapter(root)),
                 new NamedRule("no-jpa", noJpa()),
                 new NamedRule("shared-kernel-is-independent", sharedKernelIsIndependent(root)));
     }
@@ -127,6 +128,16 @@ final class ArchitectureRules {
                 .orShould().dependOnClassesThat().haveFullyQualifiedName("java.net.URL")
                 .orShould().dependOnClassesThat().haveFullyQualifiedName("java.net.HttpURLConnection")
                 .because("a Tenant-chosen destination must only be called through the guarded sender");
+    }
+
+    /**
+     * Stripe's SDK types may be named only by the Stripe adapter. Everything else talks to the PaymentProvider
+     * port, which is what keeps a second provider a matter of one adapter and keeps API drift in one place.
+     */
+    private static ArchRule stripeTypesStayInTheStripeAdapter(String root) {
+        return noClasses().that().resideOutsideOfPackage(root + ".payment.adapter.stripe..")
+                .should().dependOnClassesThat().resideInAPackage("com.stripe..")
+                .because("Stripe's types belong to the Stripe adapter; the rest of the system sees the PaymentProvider port");
     }
 
     private static ArchRule noJpa() {

@@ -36,6 +36,9 @@ public class PostgresContainerConfig {
             registry.add("spring.flyway.user", POSTGRES::getUsername);
             registry.add("spring.flyway.password", POSTGRES::getPassword);
             registry.add("spring.flyway.placeholders.appDbPassword", () -> APP_PASSWORD);
+            // Many cached Spring contexts share one container; small idle pools keep them under its connection limit.
+            registry.add("spring.datasource.hikari.maximum-pool-size", () -> "4");
+            registry.add("spring.datasource.hikari.minimum-idle", () -> "0");
             // Tests drive the background jobs directly and deterministically.
             registry.add("billing.jobs.enabled", () -> "false");
             registry.add("billing.secrets.master-key", () -> TEST_MASTER_KEY);
@@ -44,6 +47,8 @@ public class PostgresContainerConfig {
             // A small budget keeps the retry-to-dead-letter tests short.
             registry.add("billing.webhooks.max-attempts", () -> "3");
             registry.add("billing.outbox.max-attempts", () -> "3");
+            // Stripe events that cannot be applied give up quickly in tests.
+            registry.add("billing.payments.event-max-attempts", () -> "3");
         };
     }
 

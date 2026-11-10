@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/payment.succeeded.schema.json",
+  "title": "Payment succeeded",
+  "description": "A wallet top-up was paid through Stripe and the wallet was credited. Sent only after Stripe's own webhook was verified; a browser redirect never causes it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "paymentId",
+    "walletId",
+    "customerId",
+    "amount",
+    "ledgerEntryId"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "paymentId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "amount": {
+      "$ref": "#/$defs/money"
+    },
+    "ledgerEntryId": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

@@ -114,15 +114,24 @@ class AccessControlHttpIntegrationTest {
     @Test
     void everyControllerEndpointInEveryModuleDeclaresAnAccessRule() {
         int checked = 0;
+        int publicEndpoints = 0;
         for (var entry : handlerMapping.getHandlerMethods().entrySet()) {
             HandlerMethod method = entry.getValue();
             if (!method.getBeanType().getName().matches("io\\.corebilling\\.[a-z]+\\.adapter\\.web\\..*")) {
                 continue;
             }
             checked++;
+            if (method.hasMethodAnnotation(io.corebilling.platform.api.PublicEndpoint.class)) {
+                // Open to callers that prove themselves another way; the list is deliberate and short.
+                assertThat(method.getBeanType().getName()).as("only Stripe's signed webhooks are open endpoints")
+                        .isEqualTo("io.corebilling.payment.adapter.web.StripeWebhookController");
+                publicEndpoints++;
+                continue;
+            }
             assertThat(method.hasMethodAnnotation(RequiresPermission.class) || method.hasMethodAnnotation(io.corebilling.platform.api.Authenticated.class))
                     .as("%s declares neither @RequiresPermission nor @Authenticated", method.getShortLogMessage()).isTrue();
         }
+        assertThat(publicEndpoints).as("the direct and the connect webhook").isEqualTo(2);
         assertThat(checked).as("controllers of platform, customer and money were all inspected").isGreaterThan(40);
     }
 

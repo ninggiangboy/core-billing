@@ -47,6 +47,29 @@ class ArchitectureTest {
                 .check(production);
     }
 
+    /**
+     * Payments credit and debit wallets through the money api and announce through the outbox; nothing underneath
+     * knows a payment provider exists, which is what keeps a second provider a change inside payment only.
+     */
+    @org.junit.jupiter.api.Test
+    void contextsBelowPaymentDoNotKnowPayment() {
+        com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses()
+                .that().resideInAnyPackage(ROOT + ".money..", ROOT + ".usage..", ROOT + ".webhook..", ROOT + ".customer..", ROOT + ".pricing..")
+                .should().dependOnClassesThat().resideInAPackage(ROOT + ".payment..")
+                .because("payment sits above money; the arrow never points back")
+                .check(production);
+    }
+
+    /** The Stripe rule must have something to guard: the adapter really does use the SDK. */
+    @org.junit.jupiter.api.Test
+    void theStripeAdapterIsWhereTheSdkIsUsed() {
+        long users = production.stream()
+                .filter(c -> c.getDirectDependenciesFromSelf().stream().anyMatch(d -> d.getTargetClass().getPackageName().startsWith("com.stripe")))
+                .filter(c -> c.getPackageName().equals(ROOT + ".payment.adapter.stripe"))
+                .count();
+        assertThat(users).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(1);
+    }
+
     static Stream<ArchitectureRules.NamedRule> rules() {
         return ArchitectureRules.all(ROOT).stream();
     }

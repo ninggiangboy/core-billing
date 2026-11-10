@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":shared-kernel"))
     implementation(project(":platform"))
     implementation(project(":customer"))
+    implementation(project(":money"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

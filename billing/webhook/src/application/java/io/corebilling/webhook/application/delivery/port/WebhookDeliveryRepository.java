@@ -1,15 +1,14 @@
 package io.corebilling.webhook.application.delivery.port;
 
+import io.corebilling.webhook.application.delivery.command.ClaimedDelivery;
 import io.corebilling.webhook.domain.delivery.DeliveryAttempt;
 import io.corebilling.webhook.domain.delivery.DeliveryStatus;
 import io.corebilling.webhook.domain.delivery.WebhookDelivery;
 import io.corebilling.webhook.domain.delivery.WebhookDeliveryId;
-import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import io.corebilling.webhook.application.delivery.command.ClaimedDelivery;
 
 /** Deliveries and their attempt log within the current tenant. */
 public interface WebhookDeliveryRepository {
@@ -20,11 +19,6 @@ public interface WebhookDeliveryRepository {
     void add(WebhookDelivery delivery);
 
     Optional<WebhookDelivery> findById(WebhookDeliveryId id);
-
-    /** Newest first; {@code before} is the id of the last row of the previous page. */
-    List<WebhookDelivery> list(DeliveryStatus status, WebhookEndpointId endpointId, WebhookDeliveryId before, int limit);
-
-    List<DeliveryAttempt> attempts(WebhookDeliveryId id);
 
     /**
      * Marks as dead every claimed delivery whose lease ran out after its last allowed attempt (its worker died

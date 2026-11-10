@@ -1,21 +1,17 @@
 package io.corebilling.webhook.adapter.persistence;
 
-import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.webhook.application.delivery.command.ClaimedDelivery;
 import io.corebilling.webhook.application.delivery.port.WebhookDeliveryRepository;
 import io.corebilling.webhook.domain.delivery.DeliveryAttempt;
 import io.corebilling.webhook.domain.delivery.DeliveryStatus;
 import io.corebilling.webhook.domain.delivery.WebhookDelivery;
 import io.corebilling.webhook.domain.delivery.WebhookDeliveryId;
-import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository {
@@ -25,25 +21,6 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
 
     private static final String COLUMNS = "d.id, d.tenant_id, d.endpoint_id, d.event_id, d.event_type, d.body, d.status, d.attempts, d.next_attempt_at, "
             + "d.resend_of, d.last_status_code, d.last_error, d.created_at, d.completed_at";
-
-    private static final RowMapper<WebhookDelivery> MAPPER = (rs, n) -> {
-        UUID resendOf = Rows.uuid(rs, "resend_of");
-        return new WebhookDelivery(
-                new WebhookDeliveryId(Rows.uuid(rs, "id")),
-                new TenantId(Rows.uuid(rs, "tenant_id")),
-                new WebhookEndpointId(Rows.uuid(rs, "endpoint_id")),
-                Rows.uuid(rs, "event_id"),
-                rs.getString("event_type"),
-                rs.getString("body"),
-                DeliveryStatus.valueOf(rs.getString("status")),
-                rs.getInt("attempts"),
-                Rows.instant(rs, "next_attempt_at"),
-                resendOf == null ? null : new WebhookDeliveryId(resendOf),
-                Rows.nullableInt(rs, "last_status_code"),
-                rs.getString("last_error"),
-                Rows.instant(rs, "created_at"),
-                Rows.instant(rs, "completed_at"));
-    };
 
     private final JdbcClient jdbc;
 
@@ -63,50 +40,24 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
     }
 
     private int insert(WebhookDelivery d, String conflict) {
+        WebhookDeliveryRow row = WebhookDeliveryRow.from(d);
         return jdbc.sql("""
                         insert into webhook_deliveries (id, tenant_id, endpoint_id, event_id, event_type, body, status, attempts, next_attempt_at,
                                                         resend_of, created_at)
                         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """ + conflict)
-                .params(d.id().value(), d.tenantId().value(), d.endpointId().value(), d.eventId(), d.eventType(), d.body(), d.status().name(),
-                        d.attempts(), Timestamp.from(d.nextAttemptAt()), d.resendOf() == null ? null : d.resendOf().value(), Timestamp.from(d.createdAt()))
+                .params(row.id(), row.tenantId(), row.endpointId(), row.eventId(), row.eventType(), row.body(), row.status(),
+                        row.attempts(), Timestamp.from(row.nextAttemptAt()), row.resendOf(), Timestamp.from(row.createdAt()))
                 .update();
     }
 
     @Override
     public Optional<WebhookDelivery> findById(WebhookDeliveryId id) {
-        return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d where d.id = ?").param(id.value()).query(MAPPER).optional();
-    }
-
-    @Override
-    public List<WebhookDelivery> list(DeliveryStatus status, WebhookEndpointId endpointId, WebhookDeliveryId before, int limit) {
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from webhook_deliveries d where true");
-        List<Object> params = new ArrayList<>();
-        if (status != null) {
-            sql.append(" and d.status = ?");
-            params.add(status.name());
-        }
-        if (endpointId != null) {
-            sql.append(" and d.endpoint_id = ?");
-            params.add(endpointId.value());
-        }
-        if (before != null) {
-            sql.append(" and d.id < ?");
-            params.add(before.value());
-        }
-        sql.append(" order by d.id desc limit ?");
-        params.add(limit);
-        return jdbc.sql(sql.toString()).params(params).query(MAPPER).list();
-    }
-
-    @Override
-    public List<DeliveryAttempt> attempts(WebhookDeliveryId id) {
-        return jdbc.sql("select attempt_no, status_code, error, response_excerpt, latency_ms, attempted_at from webhook_delivery_attempts "
-                        + "where delivery_id = ? order by attempt_no")
+        return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d where d.id = ?")
                 .param(id.value())
-                .query((rs, n) -> new DeliveryAttempt(rs.getInt("attempt_no"), Rows.nullableInt(rs, "status_code"), rs.getString("error"),
-                        rs.getString("response_excerpt"), rs.getLong("latency_ms"), Rows.instant(rs, "attempted_at")))
-                .list();
+                .query(WebhookDeliveryRow.class)
+                .optional()
+                .map(WebhookDeliveryRow::toDomain);
     }
 
     @Override
@@ -146,9 +97,11 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
         return jdbc.sql("select " + COLUMNS + ", e.url as endpoint_url, e.key_id, e.secret_ciphertext from webhook_deliveries d "
                         + "join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id where d.id = any(?) order by d.id")
                 .param(claimed.toArray(UUID[]::new))
-                .query((rs, n) -> new ClaimedDelivery(MAPPER.mapRow(rs, n), rs.getString("endpoint_url"), rs.getString("key_id"),
-                        rs.getString("secret_ciphertext")))
-                .list();
+                .query(ClaimedDeliveryRow.class)
+                .list()
+                .stream()
+                .map(ClaimedDeliveryRow::toClaimed)
+                .toList();
     }
 
     @Override

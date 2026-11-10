@@ -7,7 +7,6 @@ import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanId;
-import io.corebilling.pricing.domain.plan.PlanStatus;
 import io.corebilling.pricing.domain.plan.PlanVersion;
 import io.corebilling.pricing.domain.plan.PriceRule;
 import io.corebilling.pricing.domain.plan.PricingEvents;
@@ -20,7 +19,6 @@ import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import io.corebilling.pricing.application.metric.port.MetricRegistry;
 import io.corebilling.pricing.application.plan.port.PlanRepository;
@@ -107,11 +105,6 @@ public class PlanAdministration {
 
     public PricingPlan get(PlanId id) {
         return unitOfWork.transactional(() -> plans.findById(id).orElseThrow(() -> new NotFoundException("pricing plan not found")));
-    }
-
-    /** Plans of the tenant, newest first; {@code status} filters when given. */
-    public List<PricingPlan> list(PlanStatus status) {
-        return unitOfWork.transactional(() -> plans.list(status));
     }
 
     private PlanVersion publish(PricingPlan plan, Terms terms, Audit audit, Instant now) {

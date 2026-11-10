@@ -1,23 +1,21 @@
 package io.corebilling.pricing.application.rating.query;
 
 import io.corebilling.platform.api.error.NotFoundException;
-import io.corebilling.pricing.domain.rating.RatingId;
-import io.corebilling.pricing.domain.rating.UsageRating;
 import io.corebilling.sharedkernel.UnitOfWork;
-import io.corebilling.pricing.application.rating.port.RatingRepository;
+import java.util.UUID;
 
-/** Reads ratings of the current tenant. */
+/** Reads stored ratings of the current tenant. */
 public class RatingQueries {
 
     private final UnitOfWork unitOfWork;
-    private final RatingRepository ratings;
+    private final RatingReadRepository ratings;
 
-    public RatingQueries(UnitOfWork unitOfWork, RatingRepository ratings) {
+    public RatingQueries(UnitOfWork unitOfWork, RatingReadRepository ratings) {
         this.unitOfWork = unitOfWork;
         this.ratings = ratings;
     }
 
-    public UsageRating get(RatingId id) {
+    public UsageRatingView get(UUID id) {
         return unitOfWork.transactional(() -> ratings.findById(id).orElseThrow(() -> new NotFoundException("usage rating not found")));
     }
 }

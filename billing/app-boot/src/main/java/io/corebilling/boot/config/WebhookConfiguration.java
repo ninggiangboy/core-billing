@@ -17,6 +17,12 @@ import io.corebilling.webhook.adapter.messaging.JacksonEventBodyWriter;
 import io.corebilling.webhook.adapter.messaging.WebhookEventListener;
 import io.corebilling.webhook.adapter.persistence.JdbcWebhookDeliveryRepository;
 import io.corebilling.webhook.adapter.persistence.JdbcWebhookEndpointRepository;
+import io.corebilling.webhook.adapter.persistence.delivery.JdbcWebhookDeliveryReadRepository;
+import io.corebilling.webhook.adapter.persistence.endpoint.JdbcWebhookEndpointReadRepository;
+import io.corebilling.webhook.application.delivery.query.DeliveryQueries;
+import io.corebilling.webhook.application.delivery.query.DeliveryReadRepository;
+import io.corebilling.webhook.application.endpoint.query.EndpointQueries;
+import io.corebilling.webhook.application.endpoint.query.EndpointReadRepository;
 import io.corebilling.webhook.application.endpoint.command.CreateEndpointUseCase;
 import io.corebilling.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import io.corebilling.webhook.application.delivery.command.DeliveryAdministration;
@@ -75,6 +81,26 @@ class WebhookConfiguration {
     @Bean
     WebhookDeliveryRepository webhookDeliveryRepository(JdbcClient jdbc) {
         return new JdbcWebhookDeliveryRepository(jdbc);
+    }
+
+    @Bean
+    EndpointReadRepository endpointReadRepository(JdbcClient jdbc) {
+        return new JdbcWebhookEndpointReadRepository(jdbc);
+    }
+
+    @Bean
+    DeliveryReadRepository deliveryReadRepository(JdbcClient jdbc) {
+        return new JdbcWebhookDeliveryReadRepository(jdbc);
+    }
+
+    @Bean
+    EndpointQueries endpointQueries(UnitOfWork unitOfWork, EndpointReadRepository endpoints) {
+        return new EndpointQueries(unitOfWork, endpoints);
+    }
+
+    @Bean
+    DeliveryQueries deliveryQueries(UnitOfWork unitOfWork, DeliveryReadRepository deliveries) {
+        return new DeliveryQueries(unitOfWork, deliveries);
     }
 
     @Bean

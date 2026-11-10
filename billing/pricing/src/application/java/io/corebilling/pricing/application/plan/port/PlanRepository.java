@@ -1,10 +1,8 @@
 package io.corebilling.pricing.application.plan.port;
 
 import io.corebilling.pricing.domain.plan.PlanId;
-import io.corebilling.pricing.domain.plan.PlanStatus;
 import io.corebilling.pricing.domain.plan.PlanVersion;
 import io.corebilling.pricing.domain.plan.PricingPlan;
-import java.util.List;
 import java.util.Optional;
 
 /** Pricing plans of the current tenant, always loaded with their versions. */
@@ -25,7 +23,4 @@ public interface PlanRepository {
     Optional<PricingPlan> lockById(PlanId id);
 
     Optional<PricingPlan> findByCode(String code);
-
-    /** Newest first; {@code status} filters when given. */
-    List<PricingPlan> list(PlanStatus status);
 }

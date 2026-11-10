@@ -14,8 +14,6 @@ public interface WebhookEndpointRepository {
 
     Optional<WebhookEndpoint> findById(WebhookEndpointId id);
 
-    List<WebhookEndpoint> list();
-
     /** Active endpoints that want {@code eventType}, directly or through the all-events subscription. */
     List<WebhookEndpoint> findSubscribed(String eventType);
 }

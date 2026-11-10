@@ -19,7 +19,10 @@ import io.corebilling.webhook.application.shared.command.Audit;
 import io.corebilling.webhook.application.endpoint.command.CreateEndpointUseCase;
 import io.corebilling.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import io.corebilling.webhook.application.delivery.command.DeliveryAdministration;
+import io.corebilling.webhook.application.delivery.query.DeliveryQueries;
+import io.corebilling.webhook.application.delivery.query.WebhookDeliveryView;
 import io.corebilling.webhook.application.endpoint.command.EndpointAdministration;
+import io.corebilling.webhook.application.endpoint.query.EndpointQueries;
 import io.corebilling.webhook.application.delivery.port.WebhookDeliveryRepository;
 import io.corebilling.webhook.domain.delivery.DeliveryStatus;
 import io.corebilling.webhook.domain.endpoint.EndpointStatus;
@@ -67,6 +70,8 @@ class WebhookDeliveryIntegrationTest {
     @Autowired CreateEndpointUseCase createEndpoint;
     @Autowired EndpointAdministration endpointAdmin;
     @Autowired DeliveryAdministration deliveryAdmin;
+    @Autowired EndpointQueries endpointQueries;
+    @Autowired DeliveryQueries deliveryQueries;
     @Autowired WebhookDeliveryRepository deliveryRepository;
     @Autowired WebhookEventListener listener;
 
@@ -99,8 +104,8 @@ class WebhookDeliveryIntegrationTest {
         owner.jdbc().update("update webhook_deliveries set next_attempt_at = now() - interval '1 second' where id = ?", deliveryId);
     }
 
-    private List<WebhookDelivery> deliveriesOf(TenantId tenant, WebhookEndpointId endpoint) {
-        return scopes.inTenant(tenant, () -> deliveryAdmin.list(null, endpoint, null, 200));
+    private List<WebhookDeliveryView> deliveriesOf(TenantId tenant, WebhookEndpointId endpoint) {
+        return scopes.inTenant(tenant, () -> deliveryQueries.list(null, endpoint.value(), null, 200));
     }
 
     /** The receiver-side recipe from contracts/events/README.md, written independently of the production signer. */
@@ -145,10 +150,10 @@ class WebhookDeliveryIntegrationTest {
             assertThat(body.get("tenantId").asString()).isEqualTo(tenant.toString());
             assertThat(body.get("data").get("answer").asInt()).isEqualTo(42);
 
-            WebhookDelivery done = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView done = deliveriesOf(tenant, hook.endpoint().id()).get(0);
             assertThat(done.status()).isEqualTo(DeliveryStatus.SUCCEEDED);
             assertThat(done.attempts()).isEqualTo(1);
-            assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.get(done.id())).attempts()).singleElement()
+            assertThat(scopes.inTenant(tenant, () -> deliveryQueries.get(done.id())).attempts()).singleElement()
                     .satisfies(a -> assertThat(a.statusCode()).isEqualTo(200));
         }
     }
@@ -179,39 +184,39 @@ class WebhookDeliveryIntegrationTest {
             Registered hook = register(tenant, receiver.url(), "*");
             publish(tenant, "charge.succeeded");
             relay(tenant);
-            WebhookDelivery queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
 
             assertThat(send(tenant)).isEqualTo(new DeliverWebhooksUseCase.Round(1, 0, 1, 0));
-            WebhookDelivery afterFirst = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView afterFirst = deliveriesOf(tenant, hook.endpoint().id()).get(0);
             assertThat(afterFirst.status()).isEqualTo(DeliveryStatus.PENDING);
             assertThat(afterFirst.nextAttemptAt()).as("backed off into the future").isAfter(Instant.now().plusSeconds(10));
             assertThat(send(tenant)).as("not due yet").isEqualTo(DeliverWebhooksUseCase.Round.NONE);
 
-            makeDue(queued.id().value());
+            makeDue(queued.id());
             assertThat(send(tenant).retrying()).isEqualTo(1);
-            makeDue(queued.id().value());
+            makeDue(queued.id());
             assertThat(send(tenant)).as("third and last attempt").isEqualTo(new DeliverWebhooksUseCase.Round(1, 0, 0, 1));
 
-            WebhookDelivery dead = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView dead = deliveriesOf(tenant, hook.endpoint().id()).get(0);
             assertThat(dead.status()).isEqualTo(DeliveryStatus.DEAD);
             assertThat(dead.attempts()).isEqualTo(3);
             assertThat(dead.lastStatusCode()).isEqualTo(500);
             assertThat(dead.completedAt()).isNotNull();
-            makeDue(queued.id().value());
+            makeDue(queued.id());
             assertThat(send(tenant)).as("a dead delivery is never sent again by itself").isEqualTo(DeliverWebhooksUseCase.Round.NONE);
-            assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.get(dead.id())).attempts()).extracting(a -> a.statusCode()).containsExactly(500, 500, 500);
+            assertThat(scopes.inTenant(tenant, () -> deliveryQueries.get(dead.id())).attempts()).extracting(a -> a.statusCode()).containsExactly(500, 500, 500);
 
             receiver.answerAlways(200);
-            WebhookDelivery resent = scopes.inTenant(tenant, () -> deliveryAdmin.resend(AUDIT, dead.id()));
-            assertThat(resent.id()).isNotEqualTo(dead.id());
-            assertThat(resent.resendOf()).isEqualTo(dead.id());
+            WebhookDelivery resent = scopes.inTenant(tenant, () -> deliveryAdmin.resend(AUDIT, new WebhookDeliveryId(dead.id())));
+            assertThat(resent.id()).isNotEqualTo(new WebhookDeliveryId(dead.id()));
+            assertThat(resent.resendOf()).isEqualTo(new WebhookDeliveryId(dead.id()));
             assertThat(resent.eventId()).isEqualTo(dead.eventId());
             assertThat(resent.body()).as("byte-identical to the stored event").isEqualTo(dead.body());
             assertThat(send(tenant)).isEqualTo(new DeliverWebhooksUseCase.Round(1, 1, 0, 0));
 
-            assertThat(deliveriesOf(tenant, hook.endpoint().id())).extracting(WebhookDelivery::status)
+            assertThat(deliveriesOf(tenant, hook.endpoint().id())).extracting(WebhookDeliveryView::status)
                     .containsExactlyInAnyOrder(DeliveryStatus.DEAD, DeliveryStatus.SUCCEEDED);
-            assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.get(dead.id())).delivery().status()).as("history is kept").isEqualTo(DeliveryStatus.DEAD);
+            assertThat(scopes.inTenant(tenant, () -> deliveryQueries.get(dead.id())).delivery().status()).as("history is kept").isEqualTo(DeliveryStatus.DEAD);
         }
     }
 
@@ -222,8 +227,8 @@ class WebhookDeliveryIntegrationTest {
             Registered hook = register(tenant, receiver.url(), "*");
             publish(tenant, "charge.succeeded");
             relay(tenant);
-            WebhookDelivery pending = deliveriesOf(tenant, hook.endpoint().id()).get(0);
-            org.assertj.core.api.Assertions.assertThatThrownBy(() -> scopes.inTenant(tenant, () -> deliveryAdmin.resend(AUDIT, pending.id())))
+            WebhookDeliveryView pending = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> scopes.inTenant(tenant, () -> deliveryAdmin.resend(AUDIT, new WebhookDeliveryId(pending.id()))))
                     .isInstanceOf(io.corebilling.platform.api.error.ConflictException.class);
         }
     }
@@ -235,7 +240,7 @@ class WebhookDeliveryIntegrationTest {
             Registered hook = register(tenant, receiver.url(), "*");
             publish(tenant, "charge.succeeded");
             relay(tenant);
-            WebhookDelivery queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
 
             // A worker claims the row and dies before recording anything.
             var claimed = scopes.inTenant(tenant, () -> unitOfWork.transactional(
@@ -245,9 +250,9 @@ class WebhookDeliveryIntegrationTest {
 
             assertThat(send(tenant)).as("while the lease holds, nobody else takes it").isEqualTo(DeliverWebhooksUseCase.Round.NONE);
 
-            makeDue(queued.id().value()); // the lease runs out
+            makeDue(queued.id()); // the lease runs out
             assertThat(send(tenant)).isEqualTo(new DeliverWebhooksUseCase.Round(1, 1, 0, 0));
-            WebhookDelivery done = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView done = deliveriesOf(tenant, hook.endpoint().id()).get(0);
             assertThat(done.status()).isEqualTo(DeliveryStatus.SUCCEEDED);
             assertThat(done.attempts()).as("the lost attempt counts").isEqualTo(2);
             assertThat(receiver.requests()).hasSize(1);
@@ -261,9 +266,9 @@ class WebhookDeliveryIntegrationTest {
             Registered hook = register(tenant, receiver.url(), "*");
             publish(tenant, "charge.succeeded");
             relay(tenant);
-            WebhookDelivery queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
             owner.jdbc().update("update webhook_deliveries set status = 'IN_PROGRESS', attempts = 3, next_attempt_at = now() - interval '1 second' where id = ?",
-                    queued.id().value());
+                    queued.id());
 
             assertThat(send(tenant)).isEqualTo(DeliverWebhooksUseCase.Round.NONE);
             assertThat(deliveriesOf(tenant, hook.endpoint().id()).get(0).status()).isEqualTo(DeliveryStatus.DEAD);
@@ -278,10 +283,10 @@ class WebhookDeliveryIntegrationTest {
             Registered hook = register(tenant, receiver.url(), "*");
             publish(tenant, "charge.succeeded");
             relay(tenant);
-            WebhookDelivery queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
+            WebhookDeliveryView queued = deliveriesOf(tenant, hook.endpoint().id()).get(0);
 
             var slow = scopes.inTenant(tenant, () -> unitOfWork.transactional(() -> deliveryRepository.claimDue(Instant.now(), 10, java.time.Duration.ofMinutes(2))));
-            makeDue(queued.id().value());
+            makeDue(queued.id());
             assertThat(send(tenant).succeeded()).isEqualTo(1); // the second worker finishes first
 
             // The slow worker finally reports its stale attempt 1 as a failure.
@@ -290,7 +295,7 @@ class WebhookDeliveryIntegrationTest {
                     new io.corebilling.webhook.domain.delivery.DeliveryAttempt(1, 500, null, "late", 5, Instant.now()), DeliveryStatus.PENDING, Instant.now(), null)));
 
             assertThat(deliveriesOf(tenant, hook.endpoint().id()).get(0).status()).as("the newer outcome stands").isEqualTo(DeliveryStatus.SUCCEEDED);
-            assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.get(queued.id())).attempts()).as("but the late attempt is still logged").hasSize(2);
+            assertThat(scopes.inTenant(tenant, () -> deliveryQueries.get(queued.id())).attempts()).as("but the late attempt is still logged").hasSize(2);
         }
     }
 
@@ -400,7 +405,7 @@ class WebhookDeliveryIntegrationTest {
         String stored = owner.jdbc().queryForObject("select secret_ciphertext from webhook_endpoints where id = ?", String.class, hook.endpoint().id().value());
         assertThat(stored).startsWith("v1.").doesNotContain(hook.secret()).doesNotContain(hook.secret().substring(6));
         assertThat(hook.secret()).startsWith("whsec_");
-        assertThat(scopes.inTenant(tenant, () -> endpointAdmin.get(hook.endpoint().id())).secretCiphertext()).isEqualTo(stored);
+        assertThat(scopes.inTenant(tenant, () -> endpointQueries.get(hook.endpoint().id().value())).secretCiphertext()).isEqualTo(stored);
     }
 
     @Test
@@ -445,15 +450,15 @@ class WebhookDeliveryIntegrationTest {
                 // drain
             }
             send(tenant);
-            assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.list(DeliveryStatus.SUCCEEDED, hook.endpoint().id(), null, 200))).hasSize(5);
-            assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.list(DeliveryStatus.DEAD, hook.endpoint().id(), null, 200))).isEmpty();
-            List<WebhookDelivery> first = scopes.inTenant(tenant, () -> deliveryAdmin.list(null, hook.endpoint().id(), null, 2));
-            List<WebhookDelivery> second = scopes.inTenant(tenant, () -> deliveryAdmin.list(null, hook.endpoint().id(), first.get(1).id(), 2));
+            assertThat(scopes.inTenant(tenant, () -> deliveryQueries.list(DeliveryStatus.SUCCEEDED, hook.endpoint().id().value(), null, 200))).hasSize(5);
+            assertThat(scopes.inTenant(tenant, () -> deliveryQueries.list(DeliveryStatus.DEAD, hook.endpoint().id().value(), null, 200))).isEmpty();
+            List<WebhookDeliveryView> first = scopes.inTenant(tenant, () -> deliveryQueries.list(null, hook.endpoint().id().value(), null, 2));
+            List<WebhookDeliveryView> second = scopes.inTenant(tenant, () -> deliveryQueries.list(null, hook.endpoint().id().value(), first.get(1).id(), 2));
             assertThat(first).hasSize(2);
             assertThat(second).hasSize(2);
-            assertThat(second.get(0).id().value()).isLessThan(first.get(1).id().value());
+            assertThat(second.get(0).id()).isLessThan(first.get(1).id());
             WebhookDeliveryId unknown = new WebhookDeliveryId(UUID.randomUUID());
-            org.assertj.core.api.Assertions.assertThatThrownBy(() -> scopes.inTenant(tenant, () -> deliveryAdmin.get(unknown)))
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> scopes.inTenant(tenant, () -> deliveryQueries.get(unknown.value())))
                     .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
         }
     }

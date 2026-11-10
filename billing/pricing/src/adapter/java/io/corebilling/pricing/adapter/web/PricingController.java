@@ -9,7 +9,12 @@ import io.corebilling.pricing.application.shared.command.Audit;
 import io.corebilling.pricing.application.rating.command.ChargeFromUsageUseCase;
 import io.corebilling.pricing.application.rating.command.EstimateCostUseCase;
 import io.corebilling.pricing.application.plan.command.PlanAdministration;
+import io.corebilling.pricing.application.plan.query.PlanQueries;
+import io.corebilling.pricing.application.plan.query.PlanVersionView;
+import io.corebilling.pricing.application.plan.query.PricingPlanView;
+import io.corebilling.pricing.application.rating.query.PriceLineView;
 import io.corebilling.pricing.application.rating.query.RatingQueries;
+import io.corebilling.pricing.application.rating.query.UsageRatingView;
 import io.corebilling.pricing.application.rating.command.ReserveFromEstimateUseCase;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.metric.Measure;
@@ -19,7 +24,7 @@ import io.corebilling.pricing.domain.plan.PlanVersion;
 import io.corebilling.pricing.domain.plan.PriceLine;
 import io.corebilling.pricing.domain.plan.PricingModel;
 import io.corebilling.pricing.domain.plan.PricingPlan;
-import io.corebilling.pricing.domain.rating.RatingId;
+import io.corebilling.pricing.domain.rating.RatingStatus;
 import io.corebilling.pricing.domain.plan.RoundingPolicy;
 import io.corebilling.pricing.domain.rating.UsageRating;
 import io.corebilling.sharedkernel.Currency;
@@ -44,6 +49,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Pricing plans and what is done with them: cost estimation, reserving the estimate, and charging usage.
@@ -65,6 +71,12 @@ public class PricingController {
             return new VersionResponse(v.number(), RuleDto.of(v.rule()), v.billingCycle() == null ? null : v.billingCycle().name(), v.minCharge(), v.maxCharge(),
                     v.rounding().name(), v.validFrom(), v.validUntil(), v.createdAt(), v.createdBy());
         }
+
+        static VersionResponse ofView(PlanVersionView v, JsonMapper json) {
+            return new VersionResponse(v.version(), json.readValue(v.rule(), RuleDto.class),
+                    v.billingCycle() == null ? null : v.billingCycle().name(), v.minCharge(), v.maxCharge(), v.rounding().name(),
+                    v.validFrom(), v.validUntil(), v.createdAt(), v.createdBy());
+        }
     }
 
     public record PlanResponse(
@@ -72,6 +84,11 @@ public class PricingController {
         static PlanResponse of(PricingPlan p) {
             return new PlanResponse(p.id().toString(), p.code(), p.name(), p.model().name(), p.currency().code(), p.status().name(), p.createdAt(), p.retiredAt(),
                     p.versions().stream().map(VersionResponse::of).toList());
+        }
+
+        static PlanResponse ofView(PricingPlanView p, JsonMapper json) {
+            return new PlanResponse(p.id().toString(), p.code(), p.name(), p.model().name(), p.currency(), p.status().name(), p.createdAt(), p.retiredAt(),
+                    p.versions().stream().map(v -> VersionResponse.ofView(v, json)).toList());
         }
     }
 
@@ -88,6 +105,11 @@ public class PricingController {
 
     public record LineResponse(String description, String metric, String quantity, String amount) {
         static LineResponse of(PriceLine line) {
+            return new LineResponse(line.description(), line.metric(), line.quantity() == null ? null : line.quantity().stripTrailingZeros().toPlainString(),
+                    line.amount().stripTrailingZeros().toPlainString());
+        }
+
+        static LineResponse ofView(PriceLineView line) {
             return new LineResponse(line.description(), line.metric(), line.quantity() == null ? null : line.quantity().stripTrailingZeros().toPlainString(),
                     line.amount().stripTrailingZeros().toPlainString());
         }
@@ -126,24 +148,42 @@ public class PricingController {
                     r.chargeId() == null ? null : r.chargeId().toString(), r.failureReason(), r.usageCount(), r.periodStart(), r.periodEnd(),
                     r.breakdown().stream().map(LineResponse::of).toList(), result.replayed());
         }
+
+        static RatingResponse ofView(UsageRatingView r) {
+            return new RatingResponse(outcome(r.status()), r.id().toString(), r.planId().toString(), r.planVersion(), AmountDto.of(r.amount()),
+                    r.chargeId() == null ? null : r.chargeId().toString(), r.failureReason(), r.usageCount(), r.periodStart(), r.periodEnd(),
+                    r.breakdown().stream().map(LineResponse::ofView).toList(), false);
+        }
+
+        private static String outcome(RatingStatus status) {
+            return switch (status) {
+                case CHARGED -> "CHARGED";
+                case FAILED -> "FAILED";
+                case NO_CHARGE -> "NO_CHARGE";
+            };
+        }
     }
 
     private final PlanAdministration plans;
+    private final PlanQueries planQueries;
     private final EstimateCostUseCase estimates;
     private final ReserveFromEstimateUseCase reserve;
     private final ChargeFromUsageUseCase chargeUsage;
     private final RatingQueries ratings;
     private final CurrentActor currentActor;
+    private final JsonMapper json;
 
     public PricingController(
-            PlanAdministration plans, EstimateCostUseCase estimates, ReserveFromEstimateUseCase reserve, ChargeFromUsageUseCase chargeUsage,
-            RatingQueries ratings, CurrentActor currentActor) {
+            PlanAdministration plans, PlanQueries planQueries, EstimateCostUseCase estimates, ReserveFromEstimateUseCase reserve,
+            ChargeFromUsageUseCase chargeUsage, RatingQueries ratings, CurrentActor currentActor, JsonMapper json) {
         this.plans = plans;
+        this.planQueries = planQueries;
         this.estimates = estimates;
         this.reserve = reserve;
         this.chargeUsage = chargeUsage;
         this.ratings = ratings;
         this.currentActor = currentActor;
+        this.json = json;
     }
 
     @PostMapping("/pricing-plans")
@@ -162,13 +202,13 @@ public class PricingController {
     @GetMapping("/pricing-plans")
     @RequiresPermission(Permission.PRICING_READ)
     public List<PlanResponse> listPlans(@RequestParam(required = false) String status) {
-        return plans.list(status == null ? null : PlanStatus.valueOf(status)).stream().map(PlanResponse::of).toList();
+        return planQueries.list(status == null ? null : PlanStatus.valueOf(status)).stream().map(v -> PlanResponse.ofView(v, json)).toList();
     }
 
     @GetMapping("/pricing-plans/{id}")
     @RequiresPermission(Permission.PRICING_READ)
     public PlanResponse getPlan(@PathVariable String id) {
-        return PlanResponse.of(plans.get(PlanId.of(id)));
+        return PlanResponse.ofView(planQueries.get(UUID.fromString(id)), json);
     }
 
     /** Adds the next version. Earlier versions, and every charge that used them, are unchanged. */
@@ -234,13 +274,7 @@ public class PricingController {
     @GetMapping("/pricing/usage-charges/{id}")
     @RequiresPermission(Permission.PRICING_READ)
     public RatingResponse getRating(@PathVariable String id) {
-        UsageRating rating = ratings.get(RatingId.of(id));
-        return RatingResponse.of(new ChargeFromUsageUseCase.Result(
-                switch (rating.status()) {
-                    case CHARGED -> ChargeFromUsageUseCase.Outcome.CHARGED;
-                    case FAILED -> ChargeFromUsageUseCase.Outcome.FAILED;
-                    case NO_CHARGE -> ChargeFromUsageUseCase.Outcome.NO_CHARGE;
-                }, rating, false));
+        return RatingResponse.ofView(ratings.get(UUID.fromString(id)));
     }
 
     private static PlanAdministration.Terms terms(VersionRequest v, PricingModel model) {

@@ -18,7 +18,11 @@ import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.pricing.application.rating.command.ChargeFromUsageUseCase;
 import io.corebilling.pricing.application.rating.command.EstimateCostUseCase;
 import io.corebilling.pricing.application.plan.command.PlanAdministration;
+import io.corebilling.pricing.application.plan.query.PlanQueries;
+import io.corebilling.pricing.application.plan.query.PricingPlanView;
+import io.corebilling.pricing.application.rating.query.PriceLineView;
 import io.corebilling.pricing.application.rating.query.RatingQueries;
+import io.corebilling.pricing.application.rating.query.UsageRatingView;
 import io.corebilling.pricing.application.rating.command.ReserveFromEstimateUseCase;
 import io.corebilling.pricing.domain.plan.EventBased;
 import io.corebilling.pricing.domain.metric.Measure;
@@ -71,6 +75,7 @@ class PricingUsageIntegrationTest {
     @Autowired OwnerDatabase owner;
     @Autowired JdbcTemplate appJdbc;
     @Autowired PlanAdministration planAdmin;
+    @Autowired PlanQueries planQueries;
     @Autowired EstimateCostUseCase estimate;
     @Autowired ReserveFromEstimateUseCase reserve;
     @Autowired ChargeFromUsageUseCase chargeUsage;
@@ -209,7 +214,7 @@ class PricingUsageIntegrationTest {
         assertThatThrownBy(() -> worlds.record(globex.tenant().id(), acme.customerId(), metric, "call", "1", DAY)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("unknown metric");
         assertThatThrownBy(() -> scopes.inTenant(globex.tenant().id(), () -> planAdmin.get(acmePlan.id()))).isInstanceOf(NotFoundException.class);
-        assertThat(scopes.inTenant(globex.tenant().id(), () -> planAdmin.list(null))).isEmpty();
+        assertThat(scopes.inTenant(globex.tenant().id(), () -> planQueries.list(null))).isEmpty();
         worlds.plan(globex.tenant().id(), "calls", worlds.calls(metric));
         assertThatThrownBy(() -> worlds.record(globex.tenant().id(), acme.customerId(), metric, "call", "1", DAY)).isInstanceOf(NotFoundException.class);
     }
@@ -273,8 +278,8 @@ class PricingUsageIntegrationTest {
                 .isInstanceOf(ConflictException.class).hasMessageContaining("already measured in 'call'");
 
         scopes.inTenant(tenant, () -> planAdmin.retire(AUDIT, plan.id()));
-        assertThat(scopes.inTenant(tenant, () -> planAdmin.list(io.corebilling.pricing.domain.plan.PlanStatus.ACTIVE))).extracting(PricingPlan::id).doesNotContain(plan.id());
-        assertThat(scopes.inTenant(tenant, () -> planAdmin.list(io.corebilling.pricing.domain.plan.PlanStatus.RETIRED))).extracting(PricingPlan::id).contains(plan.id());
+        assertThat(scopes.inTenant(tenant, () -> planQueries.list(io.corebilling.pricing.domain.plan.PlanStatus.ACTIVE))).extracting(PricingPlanView::id).doesNotContain(plan.id().value());
+        assertThat(scopes.inTenant(tenant, () -> planQueries.list(io.corebilling.pricing.domain.plan.PlanStatus.RETIRED))).extracting(PricingPlanView::id).contains(plan.id().value());
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
                 worlds.calls(metric), null, null, null, null, null, null)))).isInstanceOf(ConflictException.class).hasMessageContaining("retired");
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.retire(AUDIT, plan.id()))).isInstanceOf(ConflictException.class);
@@ -433,12 +438,13 @@ class PricingUsageIntegrationTest {
         scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
                 new EventBased(metric, "call", d("100")), null, null, null, null, DAY.plusSeconds(30), null)));
         var replay = charge(w, window(w, plan, null));
-        UsageRating stored = scopes.inTenant(tenant, () -> ratings.get(first.rating().id()));
+        UsageRatingView stored = scopes.inTenant(tenant, () -> ratings.get(first.rating().id().value()));
 
         assertThat(replay.rating().planVersion()).isEqualTo(1);
         assertThat(replay.rating().amount().minorUnits()).isEqualTo(10);
         assertThat(stored.planVersion()).isEqualTo(1);
-        assertThat(stored.breakdown()).isEqualTo(first.rating().breakdown());
+        assertThat(stored.breakdown().stream().map(PriceLineView::amount).toList())
+                .isEqualTo(first.rating().breakdown().stream().map(io.corebilling.pricing.domain.plan.PriceLine::amount).toList());
         assertThat(balance(w)).isEqualTo(100_000 - 10);
 
         worlds.record(tenant, w.customerId(), metric, "call", "1", DAY.plusSeconds(50));

@@ -51,14 +51,6 @@ public class EndpointAdministration {
         this.clock = clock;
     }
 
-    public WebhookEndpoint get(WebhookEndpointId id) {
-        return unitOfWork.transactional(() -> endpoints.findById(id).orElseThrow(() -> new NotFoundException("webhook endpoint not found")));
-    }
-
-    public List<WebhookEndpoint> list() {
-        return unitOfWork.transactional(endpoints::list);
-    }
-
     public WebhookEndpoint update(Audit audit, WebhookEndpointId id, Change change) {
         String url = change.url() == null ? null : EndpointRules.url(change.url(), settings);
         var types = change.eventTypes() == null ? null : EndpointRules.eventTypes(change.eventTypes(), catalog);

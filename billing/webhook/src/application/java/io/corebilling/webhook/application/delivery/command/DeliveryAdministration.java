@@ -8,23 +8,15 @@ import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
-import io.corebilling.webhook.domain.delivery.DeliveryAttempt;
-import io.corebilling.webhook.domain.delivery.DeliveryStatus;
-import io.corebilling.webhook.domain.delivery.WebhookDelivery;
-import io.corebilling.webhook.domain.delivery.WebhookDeliveryId;
-import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
-import java.time.Instant;
-import java.util.List;
 import io.corebilling.webhook.application.delivery.port.WebhookDeliveryRepository;
 import io.corebilling.webhook.application.endpoint.port.WebhookEndpointRepository;
 import io.corebilling.webhook.application.shared.command.Audit;
+import io.corebilling.webhook.domain.delivery.WebhookDelivery;
+import io.corebilling.webhook.domain.delivery.WebhookDeliveryId;
+import java.time.Instant;
 
-/** Delivery history of the current tenant, and resending a stored event. */
+/** Changes delivery state: resending a stored event. The history is read through DeliveryQueries. */
 public class DeliveryAdministration {
-
-    public static final int MAX_PAGE = 200;
-
-    public record Detail(WebhookDelivery delivery, List<DeliveryAttempt> attempts) {}
 
     private final UnitOfWork unitOfWork;
     private final WebhookDeliveryRepository deliveries;
@@ -44,21 +36,6 @@ public class DeliveryAdministration {
         this.tenantContext = tenantContext;
         this.ids = ids;
         this.clock = clock;
-    }
-
-    /** Newest first. {@code status}, {@code endpointId} and {@code before} (the last id of the previous page) are optional filters. */
-    public List<WebhookDelivery> list(DeliveryStatus status, WebhookEndpointId endpointId, WebhookDeliveryId before, int limit) {
-        if (limit < 1) {
-            throw new IllegalArgumentException("limit must be at least 1");
-        }
-        return unitOfWork.transactional(() -> deliveries.list(status, endpointId, before, Math.min(limit, MAX_PAGE)));
-    }
-
-    public Detail get(WebhookDeliveryId id) {
-        return unitOfWork.transactional(() -> {
-            WebhookDelivery delivery = deliveries.findById(id).orElseThrow(() -> new NotFoundException("webhook delivery not found"));
-            return new Detail(delivery, deliveries.attempts(id));
-        });
     }
 
     /**

@@ -7,9 +7,11 @@ import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.usage.adapter.persistence.JdbcUsageEventRepository;
+import io.corebilling.usage.adapter.persistence.usage.JdbcUsageEventReadRepository;
 import io.corebilling.usage.application.port.MetricUnits;
 import io.corebilling.usage.application.command.RecordUsageUseCase;
 import io.corebilling.usage.application.port.UsageEventRepository;
+import io.corebilling.usage.application.query.UsageEventReadRepository;
 import io.corebilling.usage.application.query.UsageQueries;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +31,11 @@ class UsageConfiguration {
     }
 
     @Bean
+    UsageEventReadRepository usageEventReadRepository(JdbcClient jdbc) {
+        return new JdbcUsageEventReadRepository(jdbc);
+    }
+
+    @Bean
     MetricUnits metricUnits(MetricCatalog catalog) {
         return catalog::unitOf;
     }
@@ -42,7 +49,7 @@ class UsageConfiguration {
 
     /** Also the {@code UsageLookup} other contexts read usage through. */
     @Bean
-    UsageQueries usageQueries(UnitOfWork unitOfWork, UsageEventRepository events, CustomerLookup customers) {
+    UsageQueries usageQueries(UnitOfWork unitOfWork, UsageEventReadRepository events, CustomerLookup customers) {
         return new UsageQueries(unitOfWork, events, customers);
     }
 }

@@ -1,16 +1,9 @@
 package io.corebilling.pricing.adapter.persistence;
 
-import io.corebilling.pricing.adapter.persistence.RuleDto;
 import io.corebilling.pricing.application.plan.port.PlanRepository;
-import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanId;
-import io.corebilling.pricing.domain.plan.PlanStatus;
 import io.corebilling.pricing.domain.plan.PlanVersion;
-import io.corebilling.pricing.domain.plan.PricingModel;
 import io.corebilling.pricing.domain.plan.PricingPlan;
-import io.corebilling.pricing.domain.plan.RoundingPolicy;
-import io.corebilling.sharedkernel.Currency;
-import io.corebilling.sharedkernel.TenantId;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +20,6 @@ public class JdbcPlanRepository implements PlanRepository {
     private static final String VERSION_COLUMNS = "plan_id, version, tenant_id, rule::text as rule, billing_cycle, min_charge, max_charge, rounding, "
             + "valid_from, valid_until, created_at, created_by";
 
-    private record PlanRow(UUID id, UUID tenantId, String code, String name, String model, String currency, String status, java.time.Instant createdAt,
-            java.time.Instant retiredAt) {}
-
     private final JdbcClient jdbc;
     private final JsonMapper json;
 
@@ -40,21 +30,22 @@ public class JdbcPlanRepository implements PlanRepository {
 
     @Override
     public void add(PricingPlan plan) {
+        PricingPlanRow row = PricingPlanRow.from(plan);
         jdbc.sql("insert into pricing_plans (" + PLAN_COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                .params(plan.id().value(), plan.tenantId().value(), plan.code(), plan.name(), plan.model().name(), plan.currency().code(), plan.status().name(),
-                        Timestamp.from(plan.createdAt()), plan.retiredAt() == null ? null : Timestamp.from(plan.retiredAt()))
+                .params(row.id(), row.tenantId(), row.code(), row.name(), row.model(), row.currency(), row.status(),
+                        Timestamp.from(row.createdAt()), row.retiredAt() == null ? null : Timestamp.from(row.retiredAt()))
                 .update();
         plan.versions().forEach(this::addVersion);
     }
 
     @Override
-    public void addVersion(PlanVersion v) {
+    public void addVersion(PlanVersion version) {
+        PlanVersionRow row = PlanVersionRow.from(version, json);
         jdbc.sql("insert into pricing_plan_versions (plan_id, version, tenant_id, rule, billing_cycle, min_charge, max_charge, rounding, valid_from, "
                         + "valid_until, created_at, created_by) values (?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?)")
-                .params(v.planId().value(), v.number(), v.tenantId().value(), json.writeValueAsString(RuleDto.of(v.rule())),
-                        v.billingCycle() == null ? null : v.billingCycle().name(), v.minCharge(), v.maxCharge(), v.rounding().name(),
-                        Timestamp.from(v.validFrom()), v.validUntil() == null ? null : Timestamp.from(v.validUntil()), Timestamp.from(v.createdAt()),
-                        v.createdBy())
+                .params(row.planId(), row.version(), row.tenantId(), row.rule(), row.billingCycle(), row.minCharge(), row.maxCharge(), row.rounding(),
+                        Timestamp.from(row.validFrom()), row.validUntil() == null ? null : Timestamp.from(row.validUntil()), Timestamp.from(row.createdAt()),
+                        row.createdBy())
                 .update();
     }
 
@@ -83,36 +74,20 @@ public class JdbcPlanRepository implements PlanRepository {
         return load(jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where code = ?").param(code)).stream().findFirst();
     }
 
-    @Override
-    public List<PricingPlan> list(PlanStatus status) {
-        var statement = status == null
-                ? jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans order by id desc")
-                : jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where status = ? order by id desc").param(status.name());
-        return load(statement);
-    }
-
     private List<PricingPlan> load(JdbcClient.StatementSpec statement) {
-        List<PlanRow> rows = statement.query((rs, n) -> new PlanRow(Rows.uuid(rs, "id"), Rows.uuid(rs, "tenant_id"), rs.getString("code"), rs.getString("name"),
-                rs.getString("model"), rs.getString("currency"), rs.getString("status"), Rows.instant(rs, "created_at"), Rows.instant(rs, "retired_at"))).list();
+        List<PricingPlanRow> rows = statement.query(PricingPlanRow.class).list();
         if (rows.isEmpty()) {
             return List.of();
         }
+        Map<UUID, PricingPlanRow> byId = new HashMap<>();
+        rows.forEach(row -> byId.put(row.id(), row));
         Map<UUID, List<PlanVersion>> versions = new HashMap<>();
         jdbc.sql("select " + VERSION_COLUMNS + " from pricing_plan_versions where plan_id = any(?) order by plan_id, version")
-                .param(rows.stream().map(PlanRow::id).toArray(UUID[]::new))
-                .query((rs, n) -> {
-                    UUID planId = Rows.uuid(rs, "plan_id");
-                    PricingModel model = rows.stream().filter(r -> r.id().equals(planId)).findFirst().map(r -> PricingModel.valueOf(r.model())).orElseThrow();
-                    String cycle = rs.getString("billing_cycle");
-                    RuleDto rule = json.readValue(rs.getString("rule"), RuleDto.class);
-                    return new PlanVersion(new PlanId(planId), new TenantId(Rows.uuid(rs, "tenant_id")), rs.getInt("version"),
-                            rule.toRule(model), cycle == null ? null : BillingCycle.valueOf(cycle), Rows.nullableLong(rs, "min_charge"),
-                            Rows.nullableLong(rs, "max_charge"), RoundingPolicy.valueOf(rs.getString("rounding")), Rows.instant(rs, "valid_from"),
-                            Rows.instant(rs, "valid_until"), Rows.instant(rs, "created_at"), rs.getString("created_by"));
-                })
+                .param(byId.keySet().toArray(UUID[]::new))
+                .query(PlanVersionRow.class)
                 .list()
-                .forEach(v -> versions.computeIfAbsent(v.planId().value(), k -> new ArrayList<>()).add(v));
-        return rows.stream().map(r -> PricingPlan.restore(new PlanId(r.id()), new TenantId(r.tenantId()), r.code(), r.name(), PricingModel.valueOf(r.model()),
-                Currency.of(r.currency().strip()), PlanStatus.valueOf(r.status()), r.createdAt(), r.retiredAt(), versions.getOrDefault(r.id(), List.of()))).toList();
+                .forEach(row -> versions.computeIfAbsent(row.planId(), key -> new ArrayList<>())
+                        .add(row.toDomain(byId.get(row.planId()).pricingModel(), json)));
+        return rows.stream().map(row -> row.toDomain(versions.getOrDefault(row.id(), List.of()))).toList();
     }
 }

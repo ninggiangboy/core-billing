@@ -8,14 +8,21 @@ import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.pricing.adapter.persistence.JdbcMetricRegistry;
 import io.corebilling.pricing.adapter.persistence.JdbcPlanRepository;
 import io.corebilling.pricing.adapter.persistence.JdbcRatingRepository;
+import io.corebilling.pricing.adapter.persistence.metric.JdbcMetricReadRepository;
+import io.corebilling.pricing.adapter.persistence.plan.JdbcPlanReadRepository;
+import io.corebilling.pricing.adapter.persistence.rating.JdbcRatingReadRepository;
 import io.corebilling.pricing.api.metric.MetricCatalog;
 import io.corebilling.pricing.application.rating.command.ChargeFromUsageUseCase;
 import io.corebilling.pricing.application.rating.command.EstimateCostUseCase;
 import io.corebilling.pricing.application.metric.query.MetricCatalogService;
+import io.corebilling.pricing.application.metric.query.MetricReadRepository;
 import io.corebilling.pricing.application.metric.port.MetricRegistry;
 import io.corebilling.pricing.application.plan.command.PlanAdministration;
 import io.corebilling.pricing.application.plan.port.PlanRepository;
+import io.corebilling.pricing.application.plan.query.PlanQueries;
+import io.corebilling.pricing.application.plan.query.PlanReadRepository;
 import io.corebilling.pricing.application.rating.query.RatingQueries;
+import io.corebilling.pricing.application.rating.query.RatingReadRepository;
 import io.corebilling.pricing.application.rating.port.RatingRepository;
 import io.corebilling.pricing.application.rating.command.ReserveFromEstimateUseCase;
 import io.corebilling.sharedkernel.Clock;
@@ -48,7 +55,22 @@ class PricingConfiguration {
     }
 
     @Bean
-    MetricCatalog metricCatalog(UnitOfWork unitOfWork, MetricRegistry metrics) {
+    PlanReadRepository planReadRepository(JdbcClient jdbc) {
+        return new JdbcPlanReadRepository(jdbc);
+    }
+
+    @Bean
+    RatingReadRepository ratingReadRepository(JdbcClient jdbc, JsonMapper json) {
+        return new JdbcRatingReadRepository(jdbc, json);
+    }
+
+    @Bean
+    MetricReadRepository metricReadRepository(JdbcClient jdbc) {
+        return new JdbcMetricReadRepository(jdbc);
+    }
+
+    @Bean
+    MetricCatalog metricCatalog(UnitOfWork unitOfWork, MetricReadRepository metrics) {
         return new MetricCatalogService(unitOfWork, metrics);
     }
 
@@ -77,7 +99,12 @@ class PricingConfiguration {
     }
 
     @Bean
-    RatingQueries ratingQueries(UnitOfWork unitOfWork, RatingRepository ratings) {
+    PlanQueries planQueries(UnitOfWork unitOfWork, PlanReadRepository plans) {
+        return new PlanQueries(unitOfWork, plans);
+    }
+
+    @Bean
+    RatingQueries ratingQueries(UnitOfWork unitOfWork, RatingReadRepository ratings) {
         return new RatingQueries(unitOfWork, ratings);
     }
 }

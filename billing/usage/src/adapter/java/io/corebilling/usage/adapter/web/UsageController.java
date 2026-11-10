@@ -8,6 +8,7 @@ import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.usage.api.usage.UsageEventId;
 import io.corebilling.usage.api.usage.UsageTotal;
 import io.corebilling.usage.application.command.RecordUsageUseCase;
+import io.corebilling.usage.application.query.UsageEventView;
 import io.corebilling.usage.application.query.UsageQueries;
 import io.corebilling.usage.domain.usage.UsageEvent;
 import io.corebilling.usage.domain.usage.UsageTrace;
@@ -47,6 +48,12 @@ public class UsageController {
             return new UsageEventResponse(e.id().toString(), e.customerId().toString(), e.metric(), e.quantity().toPlainString(), e.unit(), e.occurredAt(),
                     e.recordedAt(), e.idempotencyKey(), e.trace().tenantSystemId() == null ? null : e.trace().tenantSystemId().toString(),
                     e.trace().resourceRef(), e.trace().sourceEventId());
+        }
+
+        static UsageEventResponse ofView(UsageEventView v) {
+            return new UsageEventResponse(v.id().toString(), v.customerId().toString(), v.metric(), v.quantity().toPlainString(), v.unit(), v.occurredAt(),
+                    v.recordedAt(), v.idempotencyKey(), v.tenantSystemId() == null ? null : v.tenantSystemId().toString(),
+                    v.resourceRef(), v.sourceEventId());
         }
     }
 
@@ -100,7 +107,7 @@ public class UsageController {
             @RequestParam String customerId, @RequestParam(required = false) String metric, @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to, @RequestParam(required = false) String before, @RequestParam(defaultValue = "50") int limit) {
         return queries.history(CustomerId.of(customerId), metric, from, to, before == null ? null : UsageEventId.of(before), limit).stream()
-                .map(UsageEventResponse::of).toList();
+                .map(UsageEventResponse::ofView).toList();
     }
 
     /** Quantity and event count per metric over {@code [from, to)}, for rating and for invoices. */

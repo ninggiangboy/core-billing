@@ -8,11 +8,9 @@ import io.corebilling.usage.api.usage.UsageEventId;
 import io.corebilling.usage.api.usage.UsageLookup;
 import io.corebilling.usage.api.usage.UsageRecord;
 import io.corebilling.usage.api.usage.UsageTotal;
-import io.corebilling.usage.domain.usage.UsageEvent;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import io.corebilling.usage.application.port.UsageEventRepository;
 
 /** Reads usage of the current tenant: history for the API, and the {@link UsageLookup} other contexts use. */
 public class UsageQueries implements UsageLookup {
@@ -20,17 +18,17 @@ public class UsageQueries implements UsageLookup {
     public static final int MAX_PAGE = 200;
 
     private final UnitOfWork unitOfWork;
-    private final UsageEventRepository events;
+    private final UsageEventReadRepository events;
     private final CustomerLookup customers;
 
-    public UsageQueries(UnitOfWork unitOfWork, UsageEventRepository events, CustomerLookup customers) {
+    public UsageQueries(UnitOfWork unitOfWork, UsageEventReadRepository events, CustomerLookup customers) {
         this.unitOfWork = unitOfWork;
         this.events = events;
         this.customers = customers;
     }
 
     /** Newest first; {@code metric}, {@code from}, {@code to} and {@code before} are optional filters. */
-    public List<UsageEvent> history(CustomerId customerId, String metric, Instant from, Instant to, UsageEventId before, int limit) {
+    public List<UsageEventView> history(CustomerId customerId, String metric, Instant from, Instant to, UsageEventId before, int limit) {
         if (limit < 1) {
             throw new IllegalArgumentException("limit must be at least 1");
         }
@@ -47,7 +45,7 @@ public class UsageQueries implements UsageLookup {
         if (from == null || to == null) {
             throw new IllegalArgumentException("a period needs both from and to");
         }
-        return unitOfWork.transactional(() -> events.find(customerId, metrics, from, to, limit));
+        return unitOfWork.transactional(() -> events.find(customerId, metrics, from, to, limit).stream().map(UsageRecordView::toRecord).toList());
     }
 
     @Override
@@ -58,7 +56,7 @@ public class UsageQueries implements UsageLookup {
         }
         return unitOfWork.transactional(() -> {
             requireCustomer(customerId);
-            return events.totals(customerId, metrics, from, to);
+            return events.totals(customerId, metrics, from, to).stream().map(UsageTotalView::toTotal).toList();
         });
     }
 

@@ -21,15 +21,14 @@ public class JdbcMetricRegistry implements MetricRegistry {
         if (inserted == 1) {
             return true;
         }
-        String existing = unitOf(metric).orElseThrow();
+        String existing = currentUnit(metric).orElseThrow();
         if (!existing.equals(unit)) {
             throw new ConflictException("metric '" + metric + "' is already measured in '" + existing + "', not '" + unit + "'");
         }
         return false;
     }
 
-    @Override
-    public Optional<String> unitOf(String metric) {
+    private Optional<String> currentUnit(String metric) {
         return jdbc.sql("select unit from pricing_metrics where code = ?").param(metric).query(String.class).optional();
     }
 }

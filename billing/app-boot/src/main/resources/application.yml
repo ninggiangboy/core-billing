@@ -8,6 +8,11 @@ spring:
           issuer-uri: ${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/corebilling}
           jwk-set-uri: ${BILLING_OIDC_JWK_SET_URI:${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/corebilling}/protocol/openid-connect/certs}
           audiences: core-billing
+  task:
+    scheduling:
+      # Money jobs, the outbox relay and the webhook sender run side by side; a slow receiver must not stall the rest.
+      pool:
+        size: 4
   datasource:
     url: ${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}
     username: ${BILLING_DB_USER:corebilling_app}
@@ -34,6 +39,30 @@ billing:
     # Optional: creates the first Platform administrator on start when the email is set and unused.
     platform-admin-email: ${BILLING_BOOTSTRAP_ADMIN_EMAIL:}
     platform-admin-temporary-password: ${BILLING_BOOTSTRAP_ADMIN_TEMPORARY_PASSWORD:}
+  secrets:
+    # Master key for secrets at rest (webhook signing secrets, Stripe keys): base64 of 32 random bytes, e.g. `openssl rand -base64 32`.
+    master-key: ${BILLING_SECRETS_MASTER_KEY}
+    master-key-id: ${BILLING_SECRETS_MASTER_KEY_ID:k1}
+  outbox:
+    poll-delay: PT1S
+    batch-size: 100
+    max-attempts: 10
+    backoff-base: PT10S
+    backoff-cap: PT1H
+  webhooks:
+    # Development only: allows http and loopback or private destinations so a local receiver works.
+    allow-insecure-targets: ${BILLING_WEBHOOKS_ALLOW_INSECURE_TARGETS:false}
+    # Set to false to stop sending; deliveries stay queued and go out when it is switched back on.
+    sender-enabled: true
+    poll-delay: PT2S
+    batch-size: 25
+    max-attempts: 10
+    backoff-base: PT30S
+    backoff-cap: PT6H
+    lease: PT2M
+    connect-timeout: PT3S
+    read-timeout: PT10S
+    deadline: PT15S
 
 management:
   endpoints:

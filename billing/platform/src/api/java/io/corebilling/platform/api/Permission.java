@@ -30,7 +30,10 @@ public enum Permission {
     RESERVATION_MANAGE("reservation:manage", false, true, true),
     CHARGE_CREATE("charge:create", false, true, true),
     /** Corrects the ledger. Administrators only: never granted to a Tenant System. */
-    LEDGER_REVERSE("ledger:reverse", false, true, false);
+    LEDGER_REVERSE("ledger:reverse", false, true, false),
+
+    WEBHOOK_READ("webhook:read", false, true, true),
+    WEBHOOK_MANAGE("webhook:manage", false, true, true);
 
     private final String code;
     private final boolean platform;

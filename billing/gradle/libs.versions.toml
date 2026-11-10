@@ -4,6 +4,7 @@
 spring-boot = "4.1.2"
 spring-modulith = "2.1.2"
 archunit = "1.5.1"
+json-schema-validator = "3.0.7"
 springdoc = "3.2.0"
 jdk = "25"
 
@@ -15,6 +16,7 @@ spring-modulith-api = { module = "org.springframework.modulith:spring-modulith-a
 spring-modulith-core = { module = "org.springframework.modulith:spring-modulith-core" }
 spring-modulith-docs = { module = "org.springframework.modulith:spring-modulith-docs" }
 springdoc-webmvc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
+json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 
 [plugins]

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/ledger.entry-reversed.schema.json",
+  "title": "Ledger entry reversed",
+  "description": "An earlier ledger entry was corrected by a reversal entry; the original is never edited. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "walletId",
+    "originalEntryId",
+    "reversalEntryId",
+    "amount",
+    "reason",
+    "chargeId"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "originalEntryId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "reversalEntryId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "amount": {
+      "$ref": "#/$defs/money"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "chargeId": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

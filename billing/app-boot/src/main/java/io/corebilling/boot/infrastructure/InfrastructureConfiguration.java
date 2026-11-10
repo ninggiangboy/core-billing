@@ -4,6 +4,7 @@ import io.corebilling.platform.api.AuditLog;
 import io.corebilling.platform.api.IdempotencyStore;
 import io.corebilling.platform.api.TenantContext;
 import io.corebilling.sharedkernel.Clock;
+import io.corebilling.sharedkernel.EventInbox;
 import io.corebilling.sharedkernel.EventPublisher;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
@@ -41,6 +42,11 @@ class InfrastructureConfiguration {
     @Bean
     EventPublisher eventPublisher(JdbcClient jdbc, JsonMapper json) {
         return new JdbcOutboxAppender(jdbc, json);
+    }
+
+    @Bean
+    EventInbox eventInbox(JdbcClient jdbc) {
+        return new JdbcEventInbox(jdbc);
     }
 
     @Bean

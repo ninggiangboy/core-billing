@@ -17,6 +17,8 @@ public class PostgresContainerConfig {
     public static final String IMAGE = "postgres:18";
     public static final String APP_ROLE = "corebilling_app";
     public static final String APP_PASSWORD = "app-role-test-secret";
+    /** 32 bytes, base64: a fixed key for tests only. */
+    public static final String TEST_MASTER_KEY = "dGVzdC1tYXN0ZXIta2V5LTMyLWJ5dGVzLWxvbmctISE=";
 
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(IMAGE);
 
@@ -36,6 +38,12 @@ public class PostgresContainerConfig {
             registry.add("spring.flyway.placeholders.appDbPassword", () -> APP_PASSWORD);
             // Tests drive the background jobs directly and deterministically.
             registry.add("billing.jobs.enabled", () -> "false");
+            registry.add("billing.secrets.master-key", () -> TEST_MASTER_KEY);
+            // Delivery tests use a receiver on loopback over http.
+            registry.add("billing.webhooks.allow-insecure-targets", () -> "true");
+            // A small budget keeps the retry-to-dead-letter tests short.
+            registry.add("billing.webhooks.max-attempts", () -> "3");
+            registry.add("billing.outbox.max-attempts", () -> "3");
         };
     }
 

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/charge.failed.schema.json",
+  "title": "Charge failed",
+  "description": "A charge could not be paid and was recorded as failed; nothing was posted to the ledger. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "chargeId",
+    "walletId",
+    "amount",
+    "source",
+    "usageRef",
+    "reason",
+    "reference"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "chargeId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "amount": {
+      "$ref": "#/$defs/money"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "USAGE",
+        "RESERVATION",
+        "STANDALONE"
+      ]
+    },
+    "usageRef": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "reference": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

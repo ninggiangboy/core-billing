@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/customer.created.schema.json",
+  "title": "Customer created",
+  "description": "A Customer now exists in the tenant. It carries no email or other contact data. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "customerId",
+    "displayName",
+    "identities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "identities": {
+      "type": "array",
+      "description": "The Tenant System users this customer is mapped to; empty for a customer created by an administrator.",
+      "items": {
+        "type": "object",
+        "required": [
+          "tenantSystemId",
+          "externalUserId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "tenantSystemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalUserId": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

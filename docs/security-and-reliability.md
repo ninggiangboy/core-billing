@@ -15,6 +15,8 @@ Requirements beyond business functions.
 - Composite foreign keys for important relationships.
 - PostgreSQL Row-Level Security where appropriate.
 - Sensitive data is never exposed through logs, APIs or Webhooks.
+- Secrets stored in the database (for example webhook signing secrets and Stripe keys) are AES-GCM envelope-encrypted under a master key from the environment, bound to the owning row, and never returned by an API after creation.
+- A call to a Tenant-chosen URL is guarded against server-side request forgery: public addresses only, checked in the connection's own DNS resolution, no redirects, bounded time and size. Only the webhook sender may make such a call, enforced by an architecture rule.
 
 ## Payment security
 
@@ -27,9 +29,9 @@ Requirements beyond business functions.
 ## Reliability
 
 - Transactional Outbox for important Events.
-- Bounded Retry with Backoff.
-- Dead Letter Queue.
-- Idempotent Consumer.
+- Bounded Retry with Backoff. The outbox relay and the webhook sender both retry with exponential backoff and jitter within an attempt limit.
+- Dead Letter Queue. A row that runs out of attempts becomes `DEAD` and is kept; a dead webhook delivery can be resent.
+- Idempotent Consumer. In-process consumers record each handled event id in an inbox table in the same transaction as their effect.
 - Background jobs run once per Tenant, each inside that Tenant's scope, because Row-Level Security lets a job see one Tenant at a time. A failure in one Tenant does not stop the others.
 - Audit Log of administrative actions and transactions.
 - Monitoring and Distributed Tracing.

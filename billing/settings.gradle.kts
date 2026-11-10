@@ -9,4 +9,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "core-billing"
 
-include("shared-kernel", "platform", "customer", "money", "app-boot", "arch-fixtures")
+include("shared-kernel", "platform", "customer", "money", "webhook", "app-boot", "arch-fixtures")

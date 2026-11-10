@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":platform"))
     implementation(project(":customer"))
     implementation(project(":money"))
+    implementation(project(":webhook"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")
@@ -24,6 +25,7 @@ dependencies {
     testImplementation(libs.archunit.junit5)
     testImplementation(libs.spring.modulith.core)
     testImplementation(libs.spring.modulith.docs)
+    testImplementation(libs.json.schema.validator)
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -31,6 +33,15 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
+}
+
+// The event schemas under contracts/events are the source of truth for which event types exist; the
+// application reads them from the classpath, so the catalog and the contract cannot drift apart.
+tasks.processResources {
+    from(layout.projectDirectory.dir("../../contracts/events")) {
+        include("*.schema.json")
+        into("events")
+    }
 }
 
 tasks.test {

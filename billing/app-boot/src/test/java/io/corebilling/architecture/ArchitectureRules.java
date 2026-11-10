@@ -42,6 +42,7 @@ final class ArchitectureRules {
                 new NamedRule("api-exposes-no-internals", apiExposesNoInternals(root)),
                 new NamedRule("ledger-repository-is-append-only", ledgerRepositoryIsAppendOnly()),
                 new NamedRule("datasource-and-transactions-only-in-infrastructure", datasourceOnlyInInfrastructure(root)),
+                new NamedRule("outbound-http-only-through-the-guarded-sender", outboundHttpOnlyThroughTheGuardedSender(root)),
                 new NamedRule("no-jpa", noJpa()),
                 new NamedRule("shared-kernel-is-independent", sharedKernelIsIndependent(root)));
     }
@@ -111,6 +112,21 @@ final class ArchitectureRules {
         return noMethods().that().areDeclaredInClassesThat().haveSimpleName("LedgerRepository")
                 .should().haveNameMatching("(update|delete|remove|save|set|merge|upsert|truncate).*")
                 .because("the ledger is append-only: corrections are reversal entries, never edits");
+    }
+
+    /**
+     * Webhook URLs are chosen by Tenants, so every call to one must go through the sender whose resolver refuses
+     * non-public addresses. Any other HTTP client inside the webhook module would bypass that guard.
+     */
+    private static ArchRule outboundHttpOnlyThroughTheGuardedSender(String root) {
+        return noClasses().that().resideInAPackage(root + ".webhook..")
+                .and().resideOutsideOfPackage(root + ".webhook.adapter.http..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "java.net.http..", "org.apache.hc..", "org.springframework.web.client..", "org.springframework.http.client..",
+                        "org.springframework.web.reactive.function.client..")
+                .orShould().dependOnClassesThat().haveFullyQualifiedName("java.net.URL")
+                .orShould().dependOnClassesThat().haveFullyQualifiedName("java.net.HttpURLConnection")
+                .because("a Tenant-chosen destination must only be called through the guarded sender");
     }
 
     private static ArchRule noJpa() {

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/wallet.debited.schema.json",
+  "title": "Wallet debited",
+  "description": "Money was taken from a wallet outside a charge. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "walletId",
+    "entryId",
+    "sequence",
+    "amount",
+    "balanceAfter",
+    "reference"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "entryId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "amount": {
+      "$ref": "#/$defs/money"
+    },
+    "balanceAfter": {
+      "$ref": "#/$defs/money"
+    },
+    "reference": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

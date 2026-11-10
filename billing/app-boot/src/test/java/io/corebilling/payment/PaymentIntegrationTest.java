@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.Application;
-import io.corebilling.money.api.ChargeCommand;
-import io.corebilling.money.api.ChargeWallet;
-import io.corebilling.money.api.WalletLookup;
-import io.corebilling.money.application.WalletQueries;
+import io.corebilling.money.api.charge.ChargeCommand;
+import io.corebilling.money.api.charge.ChargeWallet;
+import io.corebilling.money.api.wallet.WalletLookup;
+import io.corebilling.money.application.wallet.query.WalletQueries;
 import io.corebilling.payment.PaymentTestWorld.PayWorld;
 import io.corebilling.payment.application.shared.command.Audit;
 import io.corebilling.payment.application.payment.command.CreateTopUpUseCase;
@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import io.corebilling.payment.application.stripe.command.StripeConfigurationService;
+import io.corebilling.money.application.reservation.command.ExpireReservationsUseCase;
 
 /**
  * The payment flows against real PostgreSQL, with Stripe replaced by an in-memory provider (which keeps real
@@ -72,7 +73,7 @@ class PaymentIntegrationTest {
     @Autowired RetryStripeEventsUseCase retry;
     @Autowired ReconcileStripeUseCase reconcile;
     @Autowired io.corebilling.payment.application.stripe.command.StripeConfigurationService configService;
-    @Autowired io.corebilling.money.application.ExpireReservationsUseCase expireReservations;
+    @Autowired io.corebilling.money.application.reservation.command.ExpireReservationsUseCase expireReservations;
     @Autowired StripeEventAdministration eventAdmin;
     @Autowired PaymentQueries queries;
     @Autowired WalletQueries wallets;
@@ -730,7 +731,7 @@ class PaymentIntegrationTest {
         var attempt = scopes.inTenant(w.money().tenant().id(), () -> charge.charge(new ChargeCommand(w.money().wallet().id(), null,
                 Money.of(1, p.amount().currency()), "usage-2", null, "spend-2")));
 
-        assertThat(attempt.status()).isEqualTo(io.corebilling.money.api.ChargeStatus.FAILED);
+        assertThat(attempt.status()).isEqualTo(io.corebilling.money.api.charge.ChargeStatus.FAILED);
     }
 
     @Test

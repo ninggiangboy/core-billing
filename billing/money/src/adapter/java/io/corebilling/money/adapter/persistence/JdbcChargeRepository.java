@@ -1,11 +1,11 @@
 package io.corebilling.money.adapter.persistence;
 
-import io.corebilling.money.api.ChargeId;
-import io.corebilling.money.api.ChargeSource;
-import io.corebilling.money.api.ChargeStatus;
-import io.corebilling.money.api.ReservationId;
-import io.corebilling.money.application.ChargeRepository;
-import io.corebilling.money.domain.Charge;
+import io.corebilling.money.api.charge.ChargeId;
+import io.corebilling.money.api.charge.ChargeSource;
+import io.corebilling.money.api.charge.ChargeStatus;
+import io.corebilling.money.api.reservation.ReservationId;
+import io.corebilling.money.application.charge.port.ChargeRepository;
+import io.corebilling.money.domain.charge.Charge;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;

@@ -29,6 +29,7 @@ import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.corebilling.money.domain.wallet.Wallet;
 
 /**
  * What the adapter actually puts on the wire, checked against a local stand-in for Stripe: the credentials and

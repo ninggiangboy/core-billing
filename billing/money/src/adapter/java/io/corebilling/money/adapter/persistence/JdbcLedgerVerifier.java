@@ -1,6 +1,6 @@
 package io.corebilling.money.adapter.persistence;
 
-import io.corebilling.money.application.LedgerVerifier;
+import io.corebilling.money.application.ledger.command.LedgerVerifier;
 import io.corebilling.sharedkernel.WalletId;
 import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;

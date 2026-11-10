@@ -1,8 +1,8 @@
 package io.corebilling.boot.jobs;
 
-import io.corebilling.money.application.ExpireReservationsUseCase;
-import io.corebilling.money.application.LedgerVerifier;
-import io.corebilling.money.application.VerifyLedgerUseCase;
+import io.corebilling.money.application.reservation.command.ExpireReservationsUseCase;
+import io.corebilling.money.application.ledger.command.LedgerVerifier;
+import io.corebilling.money.application.ledger.command.VerifyLedgerUseCase;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.List;
 import org.slf4j.Logger;

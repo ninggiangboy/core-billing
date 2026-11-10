@@ -1,11 +1,11 @@
 package io.corebilling.money.adapter.persistence;
 
-import io.corebilling.money.api.ChargeId;
-import io.corebilling.money.api.EntryType;
-import io.corebilling.money.api.LedgerEntryId;
-import io.corebilling.money.api.ReservationId;
-import io.corebilling.money.application.LedgerRepository;
-import io.corebilling.money.domain.LedgerEntry;
+import io.corebilling.money.api.charge.ChargeId;
+import io.corebilling.money.api.ledger.EntryType;
+import io.corebilling.money.api.ledger.LedgerEntryId;
+import io.corebilling.money.api.reservation.ReservationId;
+import io.corebilling.money.application.ledger.port.LedgerRepository;
+import io.corebilling.money.domain.ledger.LedgerEntry;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;

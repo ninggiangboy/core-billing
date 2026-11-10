@@ -1,9 +1,9 @@
 package io.corebilling.payment.application.refund.command;
 
-import io.corebilling.money.api.InsufficientFundsException;
-import io.corebilling.money.api.ReserveBudget;
-import io.corebilling.money.api.ReserveBudgetCommand;
-import io.corebilling.money.api.ReservationResult;
+import io.corebilling.money.api.wallet.InsufficientFundsException;
+import io.corebilling.money.api.reservation.ReserveBudget;
+import io.corebilling.money.api.reservation.ReserveBudgetCommand;
+import io.corebilling.money.api.reservation.ReservationResult;
 import io.corebilling.payment.domain.payment.Payment;
 import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.payment.domain.payment.PaymentStatus;

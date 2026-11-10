@@ -1,12 +1,12 @@
 package io.corebilling.payment.application.shared.command;
 
-import io.corebilling.money.api.CreditCommand;
-import io.corebilling.money.api.CreditWallet;
-import io.corebilling.money.api.DebitCommand;
-import io.corebilling.money.api.DebitWallet;
-import io.corebilling.money.api.LedgerPostingResult;
-import io.corebilling.money.api.ReleaseReservation;
-import io.corebilling.money.api.ReservationId;
+import io.corebilling.money.api.wallet.CreditCommand;
+import io.corebilling.money.api.wallet.CreditWallet;
+import io.corebilling.money.api.wallet.DebitCommand;
+import io.corebilling.money.api.wallet.DebitWallet;
+import io.corebilling.money.api.ledger.LedgerPostingResult;
+import io.corebilling.money.api.reservation.ReleaseReservation;
+import io.corebilling.money.api.reservation.ReservationId;
 import io.corebilling.payment.domain.incident.IncidentKind;
 import io.corebilling.payment.domain.payment.Payment;
 import io.corebilling.payment.domain.payment.PaymentAttempt;

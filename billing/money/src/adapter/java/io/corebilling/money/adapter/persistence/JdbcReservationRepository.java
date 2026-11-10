@@ -1,9 +1,9 @@
 package io.corebilling.money.adapter.persistence;
 
-import io.corebilling.money.api.ReservationId;
-import io.corebilling.money.api.ReservationStatus;
-import io.corebilling.money.application.ReservationRepository;
-import io.corebilling.money.domain.Reservation;
+import io.corebilling.money.api.reservation.ReservationId;
+import io.corebilling.money.api.reservation.ReservationStatus;
+import io.corebilling.money.application.reservation.port.ReservationRepository;
+import io.corebilling.money.domain.reservation.Reservation;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;

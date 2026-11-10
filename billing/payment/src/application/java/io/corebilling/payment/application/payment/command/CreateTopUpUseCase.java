@@ -1,7 +1,7 @@
 package io.corebilling.payment.application.payment.command;
 
-import io.corebilling.money.api.WalletLookup;
-import io.corebilling.money.api.WalletSummary;
+import io.corebilling.money.api.wallet.WalletLookup;
+import io.corebilling.money.api.wallet.WalletSummary;
 import io.corebilling.payment.domain.payment.Payment;
 import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.payment.domain.payment.PaymentStatus;

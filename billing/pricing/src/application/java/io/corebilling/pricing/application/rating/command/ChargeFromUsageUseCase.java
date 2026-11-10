@@ -1,11 +1,11 @@
 package io.corebilling.pricing.application.rating.command;
 
-import io.corebilling.money.api.ChargeCommand;
-import io.corebilling.money.api.ChargeResult;
-import io.corebilling.money.api.ChargeStatus;
-import io.corebilling.money.api.ChargeWallet;
-import io.corebilling.money.api.WalletLookup;
-import io.corebilling.money.api.WalletSummary;
+import io.corebilling.money.api.charge.ChargeCommand;
+import io.corebilling.money.api.charge.ChargeResult;
+import io.corebilling.money.api.charge.ChargeStatus;
+import io.corebilling.money.api.charge.ChargeWallet;
+import io.corebilling.money.api.wallet.WalletLookup;
+import io.corebilling.money.api.wallet.WalletSummary;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.platform.api.TenantContext;

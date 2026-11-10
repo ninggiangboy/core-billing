@@ -1,6 +1,6 @@
 package io.corebilling.pricing.adapter.web;
 
-import io.corebilling.money.api.ReservationResult;
+import io.corebilling.money.api.reservation.ReservationResult;
 import io.corebilling.platform.api.CurrentActor;
 import io.corebilling.platform.api.Permission;
 import io.corebilling.platform.api.RequiresPermission;

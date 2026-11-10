@@ -2,15 +2,15 @@ package io.corebilling.money;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.corebilling.money.api.ChargeSource;
-import io.corebilling.money.api.ChargeStatus;
-import io.corebilling.money.api.InsufficientFundsException;
-import io.corebilling.money.api.ReservationId;
-import io.corebilling.money.api.WalletMode;
-import io.corebilling.money.domain.ChargeService;
-import io.corebilling.money.domain.LedgerEntry;
-import io.corebilling.money.domain.Reservation;
-import io.corebilling.money.domain.Wallet;
+import io.corebilling.money.api.charge.ChargeSource;
+import io.corebilling.money.api.charge.ChargeStatus;
+import io.corebilling.money.api.wallet.InsufficientFundsException;
+import io.corebilling.money.api.reservation.ReservationId;
+import io.corebilling.money.api.wallet.WalletMode;
+import io.corebilling.money.domain.charge.ChargeService;
+import io.corebilling.money.domain.ledger.LedgerEntry;
+import io.corebilling.money.domain.reservation.Reservation;
+import io.corebilling.money.domain.wallet.Wallet;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.Money;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import io.corebilling.money.api.ledger.LedgerEntryId;
 
 /**
  * Property-style tests: thousands of random operations on a wallet, with the invariants checked after every
@@ -69,14 +70,14 @@ class MoneyInvariantsTest {
 
         void credit(long amount) {
             long seq = wallet.post(usd(amount));
-            ledger.add(LedgerEntry.credit(new io.corebilling.money.api.LedgerEntryId(UUID.randomUUID()), TENANT, wallet.id(), seq, usd(amount),
+            ledger.add(LedgerEntry.credit(new io.corebilling.money.api.ledger.LedgerEntryId(UUID.randomUUID()), TENANT, wallet.id(), seq, usd(amount),
                     LedgerEntry.Source.of("topup"), new LedgerEntry.Origin("sim", null, UUID.randomUUID().toString()), now));
         }
 
         void debit(long amount) {
             try {
                 long seq = wallet.post(usd(-amount));
-                ledger.add(LedgerEntry.debit(new io.corebilling.money.api.LedgerEntryId(UUID.randomUUID()), TENANT, wallet.id(), seq, usd(amount),
+                ledger.add(LedgerEntry.debit(new io.corebilling.money.api.ledger.LedgerEntryId(UUID.randomUUID()), TENANT, wallet.id(), seq, usd(amount),
                         LedgerEntry.Source.of("debit"), new LedgerEntry.Origin("sim", null, UUID.randomUUID().toString()), now));
             } catch (InsufficientFundsException expected) {
                 // rejected: nothing may have changed

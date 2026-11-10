@@ -7,11 +7,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.Application;
 import io.corebilling.money.MoneyTestWorld.World;
-import io.corebilling.money.api.ChargeStatus;
-import io.corebilling.money.api.CreditCommand;
-import io.corebilling.money.api.CreditWallet;
-import io.corebilling.money.api.InsufficientFundsException;
-import io.corebilling.money.application.WalletQueries;
+import io.corebilling.money.api.charge.ChargeStatus;
+import io.corebilling.money.api.wallet.CreditCommand;
+import io.corebilling.money.api.wallet.CreditWallet;
+import io.corebilling.money.api.wallet.InsufficientFundsException;
+import io.corebilling.money.application.wallet.query.WalletQueries;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.platform.api.NotFoundException;
@@ -56,6 +56,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanStatus;
+import io.corebilling.money.api.charge.ChargeCommand;
+import io.corebilling.money.api.charge.ChargeWallet;
 
 /** Plans, usage, estimation and charging against real PostgreSQL: idempotency, versions, atomicity and isolation. */
 @SpringBootTest(classes = Application.class)
@@ -77,7 +79,7 @@ class PricingUsageIntegrationTest {
     @Autowired UsageQueries usageQueries;
     @Autowired WalletQueries wallets;
     @Autowired CreditWallet credit;
-    @Autowired io.corebilling.money.api.ChargeWallet chargeWallet;
+    @Autowired io.corebilling.money.api.charge.ChargeWallet chargeWallet;
 
     private ChargeFromUsageUseCase.Command window(World w, PricingPlan plan, Integer version) {
         return new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), plan.id(), version, DAY, DAY.plus(1, ChronoUnit.DAYS));
@@ -634,7 +636,7 @@ class PricingUsageIntegrationTest {
 
         // The resource actually ran for 4 hours: price that, and capture it against the reservation.
         var actual = scopes.inTenant(tenant, () -> estimate.estimate(new EstimateCostUseCase.Request(plan.id(), null, null, Map.of(metric, new Measure(d("4"), 1)))));
-        var captured = scopes.inTenant(tenant, () -> chargeWallet.charge(new io.corebilling.money.api.ChargeCommand(
+        var captured = scopes.inTenant(tenant, () -> chargeWallet.charge(new io.corebilling.money.api.charge.ChargeCommand(
                 null, held.reservation().id(), actual.quote().amount(), null, "vm-2", "capture-" + UUID.randomUUID())));
 
         assertThat(captured.status()).isEqualTo(ChargeStatus.SUCCEEDED);

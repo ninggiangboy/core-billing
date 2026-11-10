@@ -3,8 +3,8 @@ package io.corebilling.http;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.corebilling.Application;
-import io.corebilling.money.api.CreditCommand;
-import io.corebilling.money.api.CreditWallet;
+import io.corebilling.money.api.wallet.CreditCommand;
+import io.corebilling.money.api.wallet.CreditWallet;
 import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.WalletId;

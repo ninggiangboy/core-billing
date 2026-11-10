@@ -1,8 +1,8 @@
 package io.corebilling.money.adapter.persistence;
 
-import io.corebilling.money.api.WalletMode;
-import io.corebilling.money.application.WalletRepository;
-import io.corebilling.money.domain.Wallet;
+import io.corebilling.money.api.wallet.WalletMode;
+import io.corebilling.money.application.wallet.port.WalletRepository;
+import io.corebilling.money.domain.wallet.Wallet;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;

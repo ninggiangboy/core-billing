@@ -1,8 +1,8 @@
 package io.corebilling.boot.config;
 
-import io.corebilling.money.api.ChargeWallet;
-import io.corebilling.money.api.ReserveBudget;
-import io.corebilling.money.api.WalletLookup;
+import io.corebilling.money.api.charge.ChargeWallet;
+import io.corebilling.money.api.reservation.ReserveBudget;
+import io.corebilling.money.api.wallet.WalletLookup;
 import io.corebilling.platform.api.AuditLog;
 import io.corebilling.platform.api.TenantContext;
 import io.corebilling.pricing.adapter.persistence.JdbcMetricRegistry;

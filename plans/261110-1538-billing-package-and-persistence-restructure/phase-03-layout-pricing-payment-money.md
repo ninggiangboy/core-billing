@@ -31,12 +31,62 @@ Pure move, as in phase 2. Suggested feature groups (confirm against the files be
 
 ## Tasks & Steps
 
-- [ ] 1. Write the file-to-package mapping for `pricing` in the phase notes.
-- [ ] 2. Move `pricing` (smallest), compile, fix imports, run `./gradlew :pricing:test`.
-- [ ] 3. Move `payment`, compile, fix imports, run `./gradlew :payment:test`.
-- [ ] 4. Move `money`, compile, fix the roughly 180 import lines that reference `money.api`, run `./gradlew :money:test`.
-- [ ] 5. Add the three modules to the layout set, run the architecture tests.
-- [ ] 6. One commit per module: `refactor(<module>): group packages by feature and role`.
+- [x] 1. Write the file-to-package mapping for `pricing` in the phase notes.
+- [x] 2. Move `pricing` (smallest), compile, fix imports, run `./gradlew :pricing:test`.
+- [x] 3. Move `payment`, compile, fix imports, run `./gradlew :payment:test`.
+- [x] 4. Move `money`, compile, fix the roughly 180 import lines that reference `money.api`, run `./gradlew :money:test`.
+- [x] 5. Add the three modules to the layout set, run the architecture tests.
+- [x] 6. One commit per module: `refactor(<module>): group packages by feature and role`.
+
+## Phase notes
+
+### pricing
+
+- `pricing.domain.plan`: PricingPlan, PlanId, PlanStatus, PlanVersion, BillingCycle, PriceRule, PriceLine, Prices, RoundingPolicy, Tier, TierMode, PricingModel, Subscription, EventBased, Hybrid, TimeBased, UsageBased, WorkloadBased, PricingEvents.
+- `pricing.domain.metric`: Measure, UsageSummary.
+- `pricing.domain.rating`: RatingId, RatingStatus, UsageRating, Quote.
+- `pricing.application.plan.command`: PlanAdministration; `.plan.port`: PlanRepository.
+- `pricing.application.metric.query`: MetricCatalogService; `.metric.port`: MetricRegistry.
+- `pricing.application.rating.command`: ChargeFromUsageUseCase, EstimateCostUseCase, ReserveFromEstimateUseCase, PlanSelection (package-private, used by both rating use cases); `.rating.query`: RatingQueries; `.rating.port`: RatingRepository.
+- `pricing.application.shared.command`: Audit.
+- `pricing.api.metric`: MetricCatalog, with `@NamedInterface("pricing-metric")`.
+- `adapter`: RuleDto moved from the `adapter` root to `adapter.persistence` (it is shared with the web adapter); all repositories stay in `adapter.persistence`.
+
+### payment
+
+- `payment.domain.payment`: Payment, PaymentAttempt, PaymentId, PaymentStatus, PaymentEvents.
+- `payment.domain.refund`: Refund, RefundId, RefundStatus.
+- `payment.domain.stripe`: StripeConfiguration, StripeConfigurationId, StripeEnvironment, StripeEvent, StoredEventId, EventStatus, EventAttempt, ConnectionStatus, IntegrationMode.
+- `payment.domain.incident`: Incident, IncidentKind.
+- `payment.application.payment.command`: CreateTopUpUseCase, PaymentSettings; `.payment.query`: PaymentQueries; `.payment.port`: PaymentRepository, PaymentProvider.
+- `payment.application.refund.command`: RequestRefundUseCase; `.refund.port`: RefundRepository.
+- `payment.application.stripe.command`: ReceiveStripeWebhookUseCase, ReconcileStripeUseCase, RetryStripeEventsUseCase, StripeConfigurationService, StripeEventAdministration, StripeEventProcessor, InvalidSignatureException, ProviderRejectedException, ProviderUnavailableException; `.stripe.port`: StripeConfigurationRepository, StripeEventRepository, StripeRoutes, ProviderAccess, SecretCipher.
+- `payment.application.incident.port`: IncidentRepository.
+- `payment.application.shared.command`: Audit, Fingerprint, PaymentSettlement.
+
+### money
+
+- `money.domain.wallet`: Wallet; `.ledger`: LedgerEntry; `.reservation`: Reservation; `.charge`: Charge, ChargeService; `.event`: MoneyEvents.
+- `money.api.wallet`: CreditCommand, CreditWallet, DebitCommand, DebitWallet, InsufficientFundsException, WalletLookup, WalletMode, WalletSummary.
+- `money.api.reservation`: ReleaseReservation, ReservationId, ReservationResult, ReservationStatus, ReserveBudget, ReserveBudgetCommand.
+- `money.api.charge`: ChargeCommand, ChargeId, ChargeResult, ChargeSource, ChargeStatus, ChargeWallet.
+- `money.api.ledger`: EntryType, LedgerEntryId, LedgerPostingResult.
+- `money.application.wallet.command`: OpenWalletUseCase, CreditWalletUseCase, DebitWalletUseCase, RequestFingerprint; `.wallet.query`: WalletQueries, WalletLookupService; `.wallet.port`: WalletRepository.
+- `money.application.ledger.command`: ReverseEntryUseCase, VerifyLedgerUseCase, LedgerPosting, LedgerVerifier; `.ledger.port`: LedgerRepository.
+- `money.application.reservation.command`: ReserveBudgetUseCase, ReleaseReservationUseCase, ExpireReservationsUseCase; `.reservation.port`: ReservationRepository.
+- `money.application.charge.command`: ChargeUseCase; `.charge.port`: ChargeRepository.
+- API sub-packages get `@NamedInterface("money-wallet" | "money-reservation" | "money-charge" | "money-ledger")` in the adapter source set.
+
+### Deviations recorded
+
+- `LedgerPosting`, `RequestFingerprint`, `PaymentSettlement.releaseHold` and `Fingerprint` were package-private and are used by more than one feature. The plan puts each shared helper in the feature that uses it most; that requires making the helper and the used methods `public`. This is the only visibility change in the phase, and there is no logic change.
+- `PlanSelection` stays package-private because both its users (ChargeFromUsageUseCase, EstimateCostUseCase) are in `rating.command`.
+- Adapter helpers (`Rows`) stay in `adapter.persistence` for each module because several feature repositories use them; adapter packages are not split by feature in this phase.
+
+### Result
+
+- `./gradlew build` green after each module and at the end; 551 tests, 0 failures (same count as phase 1).
+- `ArchitectureTest` and `ModulithVerificationTest` pass with `pricing`, `payment` and `money` in the layout set and the split `money.api` / `pricing.api.metric` named interfaces.
 
 ## Verification
 

@@ -2,11 +2,11 @@ package io.corebilling.money;
 
 import io.corebilling.customer.application.command.AuditContext;
 import io.corebilling.customer.application.command.CreateCustomerUseCase;
-import io.corebilling.money.api.CreditCommand;
-import io.corebilling.money.api.CreditWallet;
-import io.corebilling.money.api.WalletMode;
-import io.corebilling.money.application.OpenWalletUseCase;
-import io.corebilling.money.domain.Wallet;
+import io.corebilling.money.api.wallet.CreditCommand;
+import io.corebilling.money.api.wallet.CreditWallet;
+import io.corebilling.money.api.wallet.WalletMode;
+import io.corebilling.money.application.wallet.command.OpenWalletUseCase;
+import io.corebilling.money.domain.wallet.Wallet;
 import io.corebilling.platform.domain.Tenant;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;

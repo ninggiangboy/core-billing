@@ -5,7 +5,7 @@ import io.corebilling.payment.application.stripe.command.ProviderRejectedExcepti
 import io.corebilling.payment.application.stripe.command.ProviderUnavailableException;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.NotFoundException;
-import io.corebilling.money.api.InsufficientFundsException;
+import io.corebilling.money.api.wallet.InsufficientFundsException;
 import io.corebilling.platform.api.AccessDeniedException;
 import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.platform.application.RateLimitExceededException;

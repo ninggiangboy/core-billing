@@ -1,10 +1,10 @@
 package io.corebilling.pricing.application.rating.command;
 
-import io.corebilling.money.api.ReservationResult;
-import io.corebilling.money.api.ReserveBudget;
-import io.corebilling.money.api.ReserveBudgetCommand;
-import io.corebilling.money.api.WalletLookup;
-import io.corebilling.money.api.WalletSummary;
+import io.corebilling.money.api.reservation.ReservationResult;
+import io.corebilling.money.api.reservation.ReserveBudget;
+import io.corebilling.money.api.reservation.ReserveBudgetCommand;
+import io.corebilling.money.api.wallet.WalletLookup;
+import io.corebilling.money.api.wallet.WalletSummary;
 import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.pricing.domain.metric.Measure;
 import io.corebilling.pricing.domain.plan.PlanId;
@@ -34,7 +34,7 @@ public class ReserveFromEstimateUseCase {
         this.wallets = wallets;
     }
 
-    /** @throws io.corebilling.money.api.InsufficientFundsException when the wallet cannot cover the estimate */
+    /** @throws io.corebilling.money.api.wallet.InsufficientFundsException when the wallet cannot cover the estimate */
     public Result reserve(Command command) {
         return unitOfWork.transactional(() -> {
             WalletSummary wallet = wallets.find(command.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));

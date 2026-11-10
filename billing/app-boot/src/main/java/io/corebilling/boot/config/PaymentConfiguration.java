@@ -1,10 +1,10 @@
 package io.corebilling.boot.config;
 
-import io.corebilling.money.api.CreditWallet;
-import io.corebilling.money.api.DebitWallet;
-import io.corebilling.money.api.ReleaseReservation;
-import io.corebilling.money.api.ReserveBudget;
-import io.corebilling.money.api.WalletLookup;
+import io.corebilling.money.api.wallet.CreditWallet;
+import io.corebilling.money.api.wallet.DebitWallet;
+import io.corebilling.money.api.reservation.ReleaseReservation;
+import io.corebilling.money.api.reservation.ReserveBudget;
+import io.corebilling.money.api.wallet.WalletLookup;
 import io.corebilling.payment.adapter.persistence.JdbcIncidentRepository;
 import io.corebilling.payment.adapter.persistence.JdbcPaymentRepository;
 import io.corebilling.payment.adapter.persistence.JdbcRefundRepository;

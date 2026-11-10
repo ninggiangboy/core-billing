@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Tenancy core, UnitOfWork and RLS"
-status: pending
+status: completed
 priority: P1
 effort: "4d"
 dependencies: [1]
@@ -27,16 +27,26 @@ Source: [multi-tenancy-and-data-isolation.md](../../docs/multi-tenancy-and-data-
 
 ## Tasks & Steps
 
-- [ ] 1. Define database roles: a migration owner that owns every table, and an application role that does not own tables and has no BYPASSRLS. Apply `ENABLE` and `FORCE ROW LEVEL SECURITY` on every tenant-scoped table by a migration helper so later phases cannot forget it.
-- [ ] 2. Model `Tenant` (unique `tenant-code`, status) and `TenantDomain` (hostname to tenant, kind: platform or tenant subdomain) as the domain-mapping seam. Unique constraints include `tenant_id` where the identifier is tenant-scoped.
-- [ ] 3. Implement the Tenant Context as a value object in `shared-kernel` terms (`TenantId` only), resolved once per request from the hostname: `platform.<base-domain>` yields the Platform context, a known subdomain yields a Tenant context, anything else is rejected with a generic error. A client-supplied `tenant_id` is ignored for access decisions.
-- [ ] 4. Implement `SpringUnitOfWork`: a `TransactionTemplate` with propagation `REQUIRED`; the first statement is `select set_config('app.tenant_id', ?, true)`. A platform-scoped variant sets no tenant and may touch only platform-owned tables.
-- [ ] 5. RLS policy template: `tenant_id = current_setting('app.tenant_id', true)::uuid`. No blanket cross-tenant policy exists on any financial table; Platform administrators read tenant data only by acting in that tenant's explicit, audited context.
-- [ ] 6. `outbox` table (id, tenant_id, aggregate, type, payload, created_at, status, attempts, next_attempt_at), `JdbcOutboxAppender` implementing the `EventPublisher` port inside the caller's transaction. The relay arrives in phase 6.
-- [ ] 7. `idempotency_keys` table with `unique (tenant_id, scope, key)`, a request hash and the stored response. `JdbcIdempotencyStore` inserts first; a duplicate with the same hash returns the stored result, a duplicate with a different hash is a conflict.
-- [ ] 8. `audit_log` table (actor, tenant, action, target, timestamp, request id) with an `AuditLog` port used by administrative use cases.
-- [ ] 9. Use cases and persistence for create and deactivate tenant and add domain. REST controllers for them are deliberately left to phase 3, where authentication exists.
-- [ ] 10. Row types live in `adapter..persistence`; add a reload-and-compare test for each repository write.
+- [x] 1. Define database roles: a migration owner that owns every table, and an application role that does not own tables and has no BYPASSRLS. Apply `ENABLE` and `FORCE ROW LEVEL SECURITY` on every tenant-scoped table by a migration helper so later phases cannot forget it.
+- [x] 2. Model `Tenant` (unique `tenant-code`, status) and `TenantDomain` (hostname to tenant, kind: platform or tenant subdomain) as the domain-mapping seam. Unique constraints include `tenant_id` where the identifier is tenant-scoped.
+- [x] 3. Implement the Tenant Context as a value object in `shared-kernel` terms (`TenantId` only), resolved once per request from the hostname: `platform.<base-domain>` yields the Platform context, a known subdomain yields a Tenant context, anything else is rejected with a generic error. A client-supplied `tenant_id` is ignored for access decisions.
+- [x] 4. Implement `SpringUnitOfWork`: a `TransactionTemplate` with propagation `REQUIRED`; the first statement is `select set_config('app.tenant_id', ?, true)`. A platform-scoped variant sets no tenant and may touch only platform-owned tables.
+- [x] 5. RLS policy template: `tenant_id = current_setting('app.tenant_id', true)::uuid`. No blanket cross-tenant policy exists on any financial table; Platform administrators read tenant data only by acting in that tenant's explicit, audited context.
+- [x] 6. `outbox` table (id, tenant_id, aggregate, type, payload, created_at, status, attempts, next_attempt_at), `JdbcOutboxAppender` implementing the `EventPublisher` port inside the caller's transaction. The relay arrives in phase 6.
+- [x] 7. `idempotency_keys` table with `unique (tenant_id, scope, key)`, a request hash and the stored response. `JdbcIdempotencyStore` inserts first; a duplicate with the same hash returns the stored result, a duplicate with a different hash is a conflict.
+- [x] 8. `audit_log` table (actor, tenant, action, target, timestamp, request id) with an `AuditLog` port used by administrative use cases.
+- [x] 9. Use cases and persistence for create and deactivate tenant and add domain. REST controllers for them are deliberately left to phase 3, where authentication exists.
+- [x] 10. Row types live in `adapter..persistence`; add a reload-and-compare test for each repository write.
+
+## Notes
+
+- Platform-owned tables (`tenants`, `tenant_domains`) have no RLS, because the hostname is resolved before any tenant exists; `RlsCoverageIntegrationTest` fails when any other table with `tenant_id` lacks forced RLS.
+- `audit_log` has its own policy so Platform-scope rows (no tenant) and Tenant rows stay apart; the application role has no UPDATE or DELETE on it.
+- `current_setting('app.tenant_id', true)` returns `''` after first use on a connection, so policies go through `app_tenant_id()` which applies `nullif`.
+- `IdempotencyStore`, `AuditLog`, `RequestScope` and `TenantContext` live in `platform.api` because `shared-kernel` is at its ten-type limit.
+- Wiring lives in `io.corebilling.boot` (excluded from Modulith module detection); a ninth ArchUnit rule restricts `DataSource` and transaction types to `boot.infrastructure`, as this phase's risk table requires.
+- The outbox relay must read across tenants in phase 6; that needs its own policy or role and is not provided here.
+- REST controllers for tenants and domains are left to phase 3 as planned.
 
 ## Verification
 

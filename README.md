@@ -11,4 +11,4 @@ Documentation lives in [docs/](docs/README.md). Code lives in:
 
 Build the backend: `cd billing && ./gradlew build` (needs JDK 25 and a running Docker daemon for Testcontainers).
 
-Run the app locally: `docker compose up -d postgres`, then `cd billing && ./gradlew :app-boot:bootRun`. Database settings come from `BILLING_DB_URL`, `BILLING_DB_USER` and `BILLING_DB_PASSWORD` (defaults match `docker-compose.yml`).
+Run the app locally: `docker compose up -d postgres`, then `cd billing && ./gradlew :app-boot:bootRun`. The application connects as the unprivileged `corebilling_app` role (`BILLING_DB_URL`, `BILLING_DB_USER`, `BILLING_DB_PASSWORD`); Flyway migrates as the table owner (`BILLING_MIGRATION_DB_USER`, `BILLING_MIGRATION_DB_PASSWORD`). Defaults match `docker-compose.yml`. `BILLING_BASE_DOMAIN` (default `localhost`) makes `platform.<base>` the Platform and `<tenant-code>.<base>` a Tenant.

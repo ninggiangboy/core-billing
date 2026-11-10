@@ -1,4 +1,4 @@
-package io.corebilling.platform.application;
+package io.corebilling.platform.api;
 
 /** The request clashes with existing state (a duplicate name, a rotation already in progress). */
 public class ConflictException extends RuntimeException {

@@ -1,7 +1,7 @@
 package io.corebilling.platform.adapter.persistence;
 
+import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.TenantSystemId;
-import io.corebilling.platform.application.ConflictException;
 import io.corebilling.platform.application.TenantSystemRepository;
 import io.corebilling.platform.domain.TenantSystem;
 import io.corebilling.platform.domain.TenantSystemStatus;

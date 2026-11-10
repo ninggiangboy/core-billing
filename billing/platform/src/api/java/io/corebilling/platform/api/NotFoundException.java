@@ -1,4 +1,4 @@
-package io.corebilling.platform.application;
+package io.corebilling.platform.api;
 
 /** The requested thing does not exist in the current scope. */
 public class NotFoundException extends RuntimeException {

@@ -1,5 +1,6 @@
 package io.corebilling.identity;
 
+import io.corebilling.platform.api.ConflictException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -8,7 +9,6 @@ import io.corebilling.platform.api.Actor;
 import io.corebilling.platform.api.Permission;
 import io.corebilling.platform.application.Authentication;
 import io.corebilling.platform.application.Caller;
-import io.corebilling.platform.application.ConflictException;
 import io.corebilling.platform.application.ProvisionTenantUseCase;
 import io.corebilling.platform.application.RoleAdministration;
 import io.corebilling.platform.application.SeedDefaultRolesUseCase;

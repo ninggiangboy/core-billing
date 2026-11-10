@@ -1,6 +1,6 @@
 package io.corebilling.platform.adapter.keycloak;
 
-import io.corebilling.platform.application.ConflictException;
+import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.application.IdentityProviderPort;
 import java.net.URI;
 import java.time.Duration;

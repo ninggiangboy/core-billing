@@ -1,9 +1,9 @@
 package io.corebilling.boot.web;
 
+import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.platform.api.AccessDeniedException;
 import io.corebilling.platform.api.IdempotencyConflictException;
-import io.corebilling.platform.application.ConflictException;
-import io.corebilling.platform.application.NotFoundException;
 import io.corebilling.platform.application.RateLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

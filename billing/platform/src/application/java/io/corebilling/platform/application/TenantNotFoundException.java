@@ -1,5 +1,6 @@
 package io.corebilling.platform.application;
 
+import io.corebilling.platform.api.NotFoundException;
 public class TenantNotFoundException extends NotFoundException {
 
     private static final long serialVersionUID = 1L;

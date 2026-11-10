@@ -1,5 +1,6 @@
 package io.corebilling.platform.application;
 
+import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.domain.BillingUser;
 import io.corebilling.platform.domain.UserId;
 import java.util.List;

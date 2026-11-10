@@ -2,6 +2,7 @@ package io.corebilling.platform.application;
 
 import io.corebilling.platform.api.AuditEntry;
 import io.corebilling.platform.api.AuditLog;
+import io.corebilling.platform.api.RequestScope;
 import io.corebilling.platform.domain.Tenant;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.TenantId;
@@ -27,6 +28,9 @@ public class DeactivateTenantUseCase {
 
     public Tenant execute(Command command) {
         return unitOfWork.transactional(() -> {
+            if (RequestScope.PLATFORM_TENANT_ID.equals(command.tenantId())) {
+                throw new IllegalArgumentException("the platform tenant cannot be deactivated");
+            }
             Tenant tenant = tenants.findById(command.tenantId())
                     .orElseThrow(() -> new TenantNotFoundException(command.tenantId().toString()));
             tenant.deactivate();

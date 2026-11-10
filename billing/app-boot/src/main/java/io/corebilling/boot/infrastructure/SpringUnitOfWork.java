@@ -13,8 +13,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * The only place that opens transactions and the only place that tells PostgreSQL which tenant a
  * transaction belongs to. The first statement of every new transaction sets {@code app.tenant_id}
- * transaction-locally, so row-level security applies to everything that follows and nothing survives
- * the commit on a pooled connection.
+ * transaction-locally (the reserved platform tenant for Platform scope), so row-level security applies
+ * to everything that follows and nothing survives the commit on a pooled connection.
  */
 public class SpringUnitOfWork implements UnitOfWork {
 
@@ -44,10 +44,8 @@ public class SpringUnitOfWork implements UnitOfWork {
             }
             TransactionSynchronizationManager.bindResource(SCOPE_RESOURCE, scope);
             try {
-                if (scope instanceof RequestScope.Tenant tenant) {
-                    jdbc.queryForObject(
-                            "select set_config('app.tenant_id', ?, true)", String.class, tenant.tenantId().toString());
-                }
+                jdbc.queryForObject(
+                        "select set_config('app.tenant_id', ?, true)", String.class, scope.dataTenantId().toString());
                 return work.get();
             } finally {
                 TransactionSynchronizationManager.unbindResource(SCOPE_RESOURCE);

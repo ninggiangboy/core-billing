@@ -103,7 +103,7 @@ class PlatformUseCaseTest {
         assertThat(domainStore).containsKey(new Hostname("acme.billing.test"));
         assertThat(audit).singleElement().satisfies(entry -> {
             assertThat(entry.action()).isEqualTo("tenant.created");
-            assertThat(entry.tenant()).isEmpty();
+            assertThat(entry.tenantId()).isEqualTo(RequestScope.PLATFORM_TENANT_ID);
             assertThat(entry.target()).isEqualTo("tenant/" + tenant.id());
         });
         assertThat(transactions).isEqualTo(1);

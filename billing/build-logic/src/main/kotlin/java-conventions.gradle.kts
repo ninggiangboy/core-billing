@@ -26,5 +26,8 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+    testLogging {
+        events("passed", "failed", "skipped")
+        exceptionFormat = TestExceptionFormat.FULL
+    }
 }

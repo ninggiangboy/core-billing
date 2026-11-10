@@ -1,4 +1,8 @@
 plugins {
     id("java-conventions")
 }
-// shared-kernel is plain Java: no dependency other than the JDK, so purity is a classpath fact.
+
+// shared-kernel is plain Java: main depends on nothing but the JDK, so purity is a classpath fact.
+dependencies {
+    testImplementation("org.assertj:assertj-core")
+}

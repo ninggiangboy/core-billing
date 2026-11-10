@@ -169,7 +169,7 @@ public class RequestRefundUseCase {
         RefundId id = new RefundId(ids.newId());
         ReservationResult hold;
         try {
-            hold = reserve.reserve(new ReserveBudgetCommand(payment.walletId(), amount, settings.refundHold(), "refund/" + id, "refund-hold:" + id));
+            hold = reserve.reserve(new ReserveBudgetCommand(payment.walletId(), amount, settings.refundHold(), "refund/" + id, "refund-hold:" + id, null));
         } catch (InsufficientFundsException unspent) {
             throw new ConflictException("only the unspent balance of a top-up can be refunded; the wallet cannot cover " + amount);
         }

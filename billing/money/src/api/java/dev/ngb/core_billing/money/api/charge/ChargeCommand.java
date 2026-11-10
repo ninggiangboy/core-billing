@@ -3,15 +3,22 @@ package dev.ngb.core_billing.money.api.charge;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.util.Objects;
+import java.util.UUID;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 
 /**
  * Record the actual cost incurred. The source follows from the fields: a {@code reservationId} charges from
  * that reservation (releasing the unused remainder), a {@code usageRef} charges from usage, neither is a
  * standalone charge. For a reservation the wallet is the reservation's and {@code walletId} may be null.
+ * {@code caller} is the Tenant System acting over HTTP, or null for a trusted in-process caller.
  */
 public record ChargeCommand(
-        WalletId walletId, ReservationId reservationId, Money amount, String usageRef, String reference, String idempotencyKey) {
+        WalletId walletId, ReservationId reservationId, Money amount, String usageRef, String reference, String idempotencyKey, UUID caller) {
+
+    public ChargeCommand(
+            WalletId walletId, ReservationId reservationId, Money amount, String usageRef, String reference, String idempotencyKey) {
+        this(walletId, reservationId, amount, usageRef, reference, idempotencyKey, null);
+    }
 
     public ChargeCommand {
         Objects.requireNonNull(amount, "amount");

@@ -23,9 +23,14 @@ public class JdbcWebhookDeliveryReadRepository implements DeliveryReadRepository
     }
 
     @Override
-    public List<WebhookDeliveryView> list(DeliveryStatus status, UUID endpointId, UUID before, int limit) {
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from webhook_deliveries d where true");
+    public List<WebhookDeliveryView> list(DeliveryStatus status, UUID endpointId, UUID before, int limit, UUID tenantSystemId) {
+        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from webhook_deliveries d "
+                + "join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id where true");
         List<Object> params = new ArrayList<>();
+        if (tenantSystemId != null) {
+            sql.append(" and e.tenant_system_id = ?");
+            params.add(tenantSystemId);
+        }
         if (status != null) {
             sql.append(" and d.status = ?");
             params.add(status.name());
@@ -44,8 +49,19 @@ public class JdbcWebhookDeliveryReadRepository implements DeliveryReadRepository
     }
 
     @Override
-    public Optional<WebhookDeliveryView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d where d.id = ?").param(id).query(WebhookDeliveryView.class).optional();
+    public Optional<WebhookDeliveryView> findById(UUID id, UUID tenantSystemId) {
+        if (tenantSystemId == null) {
+            return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d where d.id = ?")
+                    .param(id)
+                    .query(WebhookDeliveryView.class)
+                    .optional();
+        }
+        return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d "
+                        + "join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id "
+                        + "where d.id = ? and e.tenant_system_id = ?")
+                .params(id, tenantSystemId)
+                .query(WebhookDeliveryView.class)
+                .optional();
     }
 
     @Override

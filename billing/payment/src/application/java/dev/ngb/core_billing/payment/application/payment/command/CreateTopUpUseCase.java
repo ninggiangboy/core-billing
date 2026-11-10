@@ -2,6 +2,7 @@ package dev.ngb.core_billing.payment.application.payment.command;
 
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
@@ -20,6 +21,7 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.payment.application.shared.command.Audit;
@@ -36,7 +38,11 @@ import dev.ngb.core_billing.payment.application.shared.command.Fingerprint;
  */
 public class CreateTopUpUseCase {
 
-    public record Command(WalletId walletId, Money amount, String idempotencyKey, Audit audit) {}
+    public record Command(WalletId walletId, Money amount, String idempotencyKey, Audit audit, UUID caller) {
+        public Command(WalletId walletId, Money amount, String idempotencyKey, Audit audit) {
+            this(walletId, amount, idempotencyKey, audit, null);
+        }
+    }
 
     /** {@code replayed} is true when the idempotency key had been used and the existing payment is returned. */
     public record Result(Payment payment, boolean replayed) {}
@@ -47,6 +53,7 @@ public class CreateTopUpUseCase {
     private final StripeConfigurationRepository configurations;
     private final PaymentRepository payments;
     private final WalletLookup wallets;
+    private final CustomerLookup customers;
     private final PaymentProvider provider;
     private final ProviderAccess access;
     private final PaymentSettings settings;
@@ -57,12 +64,13 @@ public class CreateTopUpUseCase {
 
     public CreateTopUpUseCase(
             UnitOfWork unitOfWork, StripeConfigurationRepository configurations, PaymentRepository payments, WalletLookup wallets,
-            PaymentProvider provider, ProviderAccess access, PaymentSettings settings, AuditLog auditLog, TenantContext tenantContext,
-            IdGenerator ids, Clock clock) {
+            CustomerLookup customers, PaymentProvider provider, ProviderAccess access, PaymentSettings settings, AuditLog auditLog,
+            TenantContext tenantContext, IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.configurations = configurations;
         this.payments = payments;
         this.wallets = wallets;
+        this.customers = customers;
         this.provider = provider;
         this.access = access;
         this.settings = settings;
@@ -123,6 +131,7 @@ public class CreateTopUpUseCase {
             throw new ConflictException("Stripe is " + configuration.status().name().toLowerCase(java.util.Locale.ROOT) + " and cannot take payments yet");
         }
         WalletSummary wallet = wallets.find(command.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));
+        customers.findFor(wallet.customerId(), command.caller()).orElseThrow(() -> new NotFoundException("wallet not found"));
         if (!wallet.currency().equals(command.amount().currency())) {
             throw new IllegalArgumentException("the top-up is in " + command.amount().currency() + " but the wallet is in " + wallet.currency());
         }

@@ -166,27 +166,27 @@ public class MoneyController {
         WalletMode mode = WalletMode.valueOf(request.mode());
         Money limit = request.creditLimit() == null ? null : Money.of(request.creditLimit(), currency);
         OpenWalletUseCase.Result result = openWallet.execute(new OpenWalletUseCase.Command(
-                CustomerId.of(request.customerId()), currency, mode, limit, currentActor.get().auditName(), requestId(requestId)));
+                CustomerId.of(request.customerId()), currency, mode, limit, currentActor.get().auditName(), requestId(requestId), caller()));
         return ResponseEntity.status(result.created() ? HttpStatus.CREATED : HttpStatus.OK).body(WalletResponse.of(result.wallet()));
     }
 
     @GetMapping("/wallets")
     @RequiresPermission(Permission.WALLET_READ)
     public List<WalletResponse> wallets(@RequestParam String customerId) {
-        return queries.walletsOf(CustomerId.of(customerId)).stream().map(WalletResponse::ofView).toList();
+        return queries.walletsOf(CustomerId.of(customerId), caller()).stream().map(WalletResponse::ofView).toList();
     }
 
     @GetMapping("/wallets/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public WalletResponse wallet(@PathVariable String id) {
-        return WalletResponse.ofView(queries.wallet(WalletId.of(id)));
+        return WalletResponse.ofView(queries.wallet(WalletId.of(id), caller()));
     }
 
     @GetMapping("/wallets/{id}/ledger")
     @RequiresPermission(Permission.WALLET_READ)
     public List<LedgerEntryResponse> ledger(
             @PathVariable String id, @RequestParam(defaultValue = "0") long afterSequence, @RequestParam(defaultValue = "50") int limit) {
-        return queries.ledger(WalletId.of(id), afterSequence, limit).stream().map(LedgerEntryResponse::ofView).toList();
+        return queries.ledger(WalletId.of(id), afterSequence, limit, caller()).stream().map(LedgerEntryResponse::ofView).toList();
     }
 
     @PostMapping("/reservations")
@@ -194,21 +194,21 @@ public class MoneyController {
     public ResponseEntity<ReservationResponse> reserve(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
         ReservationResult result = reserve.reserve(new ReserveBudgetCommand(
                 WalletId.of(request.walletId()), new MoneyDto(request.amount(), request.currency()).toMoney(),
-                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.ofView(queries.reservation(result.id())));
+                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, caller()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.ofView(queries.reservation(result.id(), caller())));
     }
 
     @GetMapping("/reservations/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public ReservationResponse reservation(@PathVariable String id) {
-        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id)));
+        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id), caller()));
     }
 
     @PostMapping("/reservations/{id}/release")
     @RequiresPermission(Permission.RESERVATION_MANAGE)
     public ReservationResponse release(@PathVariable String id) {
-        release.execute(ReservationId.of(id));
-        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id)));
+        release.execute(ReservationId.of(id), caller());
+        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id), caller()));
     }
 
     /** Charges the actual cost against the reservation and releases whatever was not used. */
@@ -217,8 +217,8 @@ public class MoneyController {
     public ResponseEntity<ChargeResponse> capture(
             @PathVariable String id, @RequestHeader("Idempotency-Key") String key, @RequestBody CaptureRequest request) {
         ChargeResult result = charge.charge(new ChargeCommand(
-                null, ReservationId.of(id), new MoneyDto(request.amount(), request.currency()).toMoney(), null, request.reference(), key));
-        return chargeResponse(result);
+                null, ReservationId.of(id), new MoneyDto(request.amount(), request.currency()).toMoney(), null, request.reference(), key, caller()));
+        return chargeResponse(result, caller());
     }
 
     @PostMapping("/charges")
@@ -226,14 +226,14 @@ public class MoneyController {
     public ResponseEntity<ChargeResponse> charge(@RequestHeader("Idempotency-Key") String key, @RequestBody ChargeRequest request) {
         ChargeResult result = charge.charge(new ChargeCommand(
                 WalletId.of(request.walletId()), null, new MoneyDto(request.amount(), request.currency()).toMoney(), request.usageRef(),
-                request.reference(), key));
-        return chargeResponse(result);
+                request.reference(), key, caller()));
+        return chargeResponse(result, caller());
     }
 
     @GetMapping("/charges/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public ChargeResponse getCharge(@PathVariable String id) {
-        ChargeView found = queries.charge(ChargeId.of(id));
+        ChargeView found = queries.charge(ChargeId.of(id), caller());
         return ChargeResponse.ofView(new ChargeResult(found.id(), found.status(), found.failureReason(), found.amount(), null, false), found);
     }
 
@@ -254,10 +254,15 @@ public class MoneyController {
     }
 
     /** 201 for a recorded charge; 402 when the wallet could not pay (the failure is recorded and repeatable). */
-    private ResponseEntity<ChargeResponse> chargeResponse(ChargeResult result) {
-        ChargeView stored = queries.charge(result.id());
+    private ResponseEntity<ChargeResponse> chargeResponse(ChargeResult result, UUID caller) {
+        ChargeView stored = queries.charge(result.id(), caller);
         HttpStatus status = result.status() == ChargeStatus.FAILED ? HttpStatus.PAYMENT_REQUIRED : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(ChargeResponse.ofView(result, stored));
+    }
+
+    private UUID caller() {
+        var system = currentActor.get().tenantSystemId();
+        return system == null ? null : system.value();
     }
 
     private static String requestId(String supplied) {

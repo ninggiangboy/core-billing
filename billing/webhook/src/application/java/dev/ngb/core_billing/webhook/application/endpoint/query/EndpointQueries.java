@@ -17,11 +17,19 @@ public class EndpointQueries {
     }
 
     public List<WebhookEndpointView> list() {
-        return unitOfWork.transactional(endpoints::list);
+        return list(null);
+    }
+
+    public List<WebhookEndpointView> list(UUID caller) {
+        return unitOfWork.transactional(() -> endpoints.list(caller));
     }
 
     public WebhookEndpointView get(UUID id) {
+        return get(id, null);
+    }
+
+    public WebhookEndpointView get(UUID id, UUID caller) {
         return unitOfWork.transactional(
-                () -> endpoints.findById(id).orElseThrow(() -> new NotFoundException("webhook endpoint not found")));
+                () -> endpoints.findById(id, caller).orElseThrow(() -> new NotFoundException("webhook endpoint not found")));
     }
 }

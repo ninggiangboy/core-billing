@@ -6,6 +6,7 @@ import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -30,8 +31,12 @@ public class CustomerAdministration {
     }
 
     public Customer update(AuditContext audit, CustomerId id, String displayName, String email) {
+        return update(audit, id, displayName, email, null);
+    }
+
+    public Customer update(AuditContext audit, CustomerId id, String displayName, String email, TenantSystemId caller) {
         return unitOfWork.transactional(() -> {
-            Customer customer = customers.findById(id).orElseThrow(() -> new NotFoundException("customer not found"));
+            Customer customer = requireVisible(id, caller);
             try {
                 customer.changeContact(displayName, email);
             } catch (IllegalStateException deactivated) {
@@ -44,13 +49,25 @@ public class CustomerAdministration {
     }
 
     public Customer deactivate(AuditContext audit, CustomerId id) {
+        return deactivate(audit, id, null);
+    }
+
+    public Customer deactivate(AuditContext audit, CustomerId id, TenantSystemId caller) {
         return unitOfWork.transactional(() -> {
-            Customer customer = customers.findById(id).orElseThrow(() -> new NotFoundException("customer not found"));
+            Customer customer = requireVisible(id, caller);
             customer.deactivate();
             customers.update(customer);
             record(audit, "customer.deactivated", customer);
             return customer;
         });
+    }
+
+    /** A Tenant System may change only a customer it mapped; anything else is not found for it. */
+    private Customer requireVisible(CustomerId id, TenantSystemId caller) {
+        if (caller != null && !customers.isMappedTo(id, caller)) {
+            throw new NotFoundException("customer not found");
+        }
+        return customers.findById(id).orElseThrow(() -> new NotFoundException("customer not found"));
     }
 
     private void record(AuditContext audit, String action, Customer customer) {

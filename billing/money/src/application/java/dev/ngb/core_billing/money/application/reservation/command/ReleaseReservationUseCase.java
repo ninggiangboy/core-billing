@@ -4,6 +4,7 @@ import dev.ngb.core_billing.money.api.reservation.ReleaseReservation;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.api.reservation.ReservationResult;
 import dev.ngb.core_billing.money.api.reservation.ReservationStatus;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.domain.event.MoneyEvents;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
@@ -13,6 +14,7 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import java.util.UUID;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 
@@ -23,15 +25,18 @@ public class ReleaseReservationUseCase implements ReleaseReservation {
     private final WalletRepository wallets;
     private final ReservationRepository reservations;
     private final EventPublisher events;
+    private final CustomerLookup customers;
     private final IdGenerator ids;
     private final Clock clock;
 
     public ReleaseReservationUseCase(
-            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, IdGenerator ids, Clock clock) {
+            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, CustomerLookup customers,
+            IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.wallets = wallets;
         this.reservations = reservations;
         this.events = events;
+        this.customers = customers;
         this.ids = ids;
         this.clock = clock;
     }
@@ -43,18 +48,24 @@ public class ReleaseReservationUseCase implements ReleaseReservation {
      */
     @Override
     public ReservationResult release(ReservationId id) {
-        return release(id, true);
+        return release(id, true, null);
     }
 
     /** The administrator's release: a hold that is not active is a conflict. */
     public ReservationResult execute(ReservationId id) {
-        return release(id, false);
+        return release(id, false, null);
     }
 
-    private ReservationResult release(ReservationId id, boolean tolerateClosed) {
+    /** The HTTP caller's release: a Tenant System may release only a hold on its own customer's wallet. */
+    public ReservationResult execute(ReservationId id, UUID caller) {
+        return release(id, false, caller);
+    }
+
+    private ReservationResult release(ReservationId id, boolean tolerateClosed, UUID caller) {
         return unitOfWork.transactional(() -> {
             Reservation unlocked = reservations.findById(id).orElseThrow(() -> new NotFoundException("reservation not found"));
             Wallet wallet = wallets.lockById(unlocked.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));
+            requireVisible(wallet, caller);
             Reservation reservation = reservations.findById(id).orElseThrow(() -> new NotFoundException("reservation not found"));
             if (reservation.status() == ReservationStatus.RELEASED) {
                 return ReserveBudgetUseCase.result(reservation, true);
@@ -72,5 +83,11 @@ public class ReleaseReservationUseCase implements ReleaseReservation {
             events.publish(new MoneyEvents.ReservationReleased(ids.newId(), reservation, false, now));
             return ReserveBudgetUseCase.result(reservation, false);
         });
+    }
+
+    private void requireVisible(Wallet wallet, UUID caller) {
+        if (caller != null && customers.findFor(wallet.customerId(), caller).isEmpty()) {
+            throw new NotFoundException("reservation not found");
+        }
     }
 }

@@ -11,9 +11,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 public class JdbcWebhookEndpointRepository implements WebhookEndpointRepository {
 
     private static final String INSERT_COLUMNS =
-            "id, tenant_id, url, description, event_types, status, key_id, secret_ciphertext, created_at, updated_at, secret_rotated_at";
-    private static final String SELECT_COLUMNS = "id, tenant_id, url, description, array_to_string(event_types, ',') as event_types_csv, status, key_id, "
-            + "secret_ciphertext, created_at, updated_at, secret_rotated_at";
+            "id, tenant_id, tenant_system_id, url, description, event_types, status, key_id, secret_ciphertext, created_at, updated_at, secret_rotated_at";
+    private static final String SELECT_COLUMNS = "id, tenant_id, tenant_system_id, url, description, array_to_string(event_types, ',') as event_types_csv, "
+            + "status, key_id, secret_ciphertext, created_at, updated_at, secret_rotated_at";
 
     private final JdbcClient jdbc;
 
@@ -23,10 +23,10 @@ public class JdbcWebhookEndpointRepository implements WebhookEndpointRepository 
 
     @Override
     public void add(WebhookEndpoint e) {
-        jdbc.sql("insert into webhook_endpoints (" + INSERT_COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                .params(e.id().value(), e.tenantId().value(), e.url(), e.description(), e.eventTypes().toArray(String[]::new), e.status().name(),
-                        e.keyId(), e.secretCiphertext(), Timestamp.from(e.createdAt()), Timestamp.from(e.updatedAt()),
-                        e.secretRotatedAt() == null ? null : Timestamp.from(e.secretRotatedAt()))
+        jdbc.sql("insert into webhook_endpoints (" + INSERT_COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                .params(e.id().value(), e.tenantId().value(), e.tenantSystemId() == null ? null : e.tenantSystemId().value(), e.url(), e.description(),
+                        e.eventTypes().toArray(String[]::new), e.status().name(), e.keyId(), e.secretCiphertext(), Timestamp.from(e.createdAt()),
+                        Timestamp.from(e.updatedAt()), e.secretRotatedAt() == null ? null : Timestamp.from(e.secretRotatedAt()))
                 .update();
     }
 

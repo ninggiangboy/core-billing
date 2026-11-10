@@ -19,11 +19,21 @@ public class CustomerQueries {
     }
 
     public List<CustomerView> list() {
-        return unitOfWork.transactional(customers::list);
+        return list(null);
+    }
+
+    /** A Tenant System sees only the customers mapped to it; any other caller sees the whole tenant. */
+    public List<CustomerView> list(TenantSystemId caller) {
+        return unitOfWork.transactional(() -> caller == null ? customers.list() : customers.listMappedTo(caller.value()));
     }
 
     public CustomerView get(CustomerId id) {
-        return unitOfWork.transactional(() -> customers.findById(id).orElseThrow(() -> new NotFoundException("customer not found")));
+        return get(id, null);
+    }
+
+    public CustomerView get(CustomerId id, TenantSystemId caller) {
+        return unitOfWork.transactional(() -> (caller == null ? customers.findById(id) : customers.findByIdMappedTo(id, caller.value()))
+                .orElseThrow(() -> new NotFoundException("customer not found")));
     }
 
     public CustomerView getByExternalUser(TenantSystemId tenantSystemId, String externalUserId) {

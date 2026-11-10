@@ -115,21 +115,23 @@ class MoneyConfiguration {
 
     @Bean
     ReserveBudgetUseCase reserveBudgetUseCase(
-            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, IdGenerator ids, Clock clock) {
-        return new ReserveBudgetUseCase(unitOfWork, wallets, reservations, events, ids, clock);
+            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, CustomerLookup customers,
+            IdGenerator ids, Clock clock) {
+        return new ReserveBudgetUseCase(unitOfWork, wallets, reservations, events, customers, ids, clock);
     }
 
     @Bean
     ChargeUseCase chargeUseCase(
             UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, ChargeRepository charges, LedgerRepository ledger,
-            EventPublisher events, IdGenerator ids, Clock clock) {
-        return new ChargeUseCase(unitOfWork, wallets, reservations, charges, ledger, events, ids, clock);
+            EventPublisher events, CustomerLookup customers, IdGenerator ids, Clock clock) {
+        return new ChargeUseCase(unitOfWork, wallets, reservations, charges, ledger, events, customers, ids, clock);
     }
 
     @Bean
     ReleaseReservationUseCase releaseReservationUseCase(
-            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, IdGenerator ids, Clock clock) {
-        return new ReleaseReservationUseCase(unitOfWork, wallets, reservations, events, ids, clock);
+            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, CustomerLookup customers,
+            IdGenerator ids, Clock clock) {
+        return new ReleaseReservationUseCase(unitOfWork, wallets, reservations, events, customers, ids, clock);
     }
 
     @Bean
@@ -158,7 +160,7 @@ class MoneyConfiguration {
     @Bean
     WalletQueries walletQueries(
             UnitOfWork unitOfWork, WalletReadRepository wallets, LedgerReadRepository ledger, ReservationReadRepository reservations,
-            ChargeReadRepository charges) {
-        return new WalletQueries(unitOfWork, wallets, ledger, reservations, charges);
+            ChargeReadRepository charges, CustomerLookup customers) {
+        return new WalletQueries(unitOfWork, wallets, ledger, reservations, charges, customers);
     }
 }

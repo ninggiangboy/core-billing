@@ -110,20 +110,20 @@ public class WebhookController {
     public EndpointWithSecretResponse createEndpoint(
             @RequestHeader(value = "X-Request-Id", required = false) String requestId, @RequestBody CreateEndpointRequest request) {
         CreateEndpointUseCase.Result result = create.execute(
-                new CreateEndpointUseCase.Command(request.url(), request.description(), request.eventTypes(), audit(requestId)));
+                new CreateEndpointUseCase.Command(request.url(), request.description(), request.eventTypes(), audit(requestId), caller()));
         return new EndpointWithSecretResponse(EndpointResponse.of(result.endpoint()), result.signingSecret());
     }
 
     @GetMapping("/webhook-endpoints")
     @RequiresPermission(Permission.WEBHOOK_READ)
     public List<EndpointResponse> listEndpoints() {
-        return endpointQueries.list().stream().map(EndpointResponse::ofView).toList();
+        return endpointQueries.list(caller()).stream().map(EndpointResponse::ofView).toList();
     }
 
     @GetMapping("/webhook-endpoints/{id}")
     @RequiresPermission(Permission.WEBHOOK_READ)
     public EndpointResponse getEndpoint(@PathVariable String id) {
-        return EndpointResponse.ofView(endpointQueries.get(UUID.fromString(id)));
+        return EndpointResponse.ofView(endpointQueries.get(UUID.fromString(id), caller()));
     }
 
     /** Changes only the fields that are present. Setting {@code status} to {@code DISABLED} pauses delivery without losing queued events. */
@@ -134,13 +134,13 @@ public class WebhookController {
             @RequestBody UpdateEndpointRequest request) {
         EndpointStatus status = request.status() == null ? null : EndpointStatus.valueOf(request.status());
         return EndpointResponse.of(endpoints.update(audit(requestId), WebhookEndpointId.of(id),
-                new EndpointAdministration.Change(request.url(), request.description(), request.eventTypes(), status)));
+                new EndpointAdministration.Change(request.url(), request.description(), request.eventTypes(), status), caller()));
     }
 
     @PostMapping("/webhook-endpoints/{id}/rotate-secret")
     @RequiresPermission(Permission.WEBHOOK_MANAGE)
     public EndpointWithSecretResponse rotateSecret(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        EndpointAdministration.Rotated rotated = endpoints.rotateSecret(audit(requestId), WebhookEndpointId.of(id));
+        EndpointAdministration.Rotated rotated = endpoints.rotateSecret(audit(requestId), WebhookEndpointId.of(id), caller());
         return new EndpointWithSecretResponse(EndpointResponse.of(rotated.endpoint()), rotated.signingSecret());
     }
 
@@ -154,14 +154,15 @@ public class WebhookController {
                         status == null ? null : DeliveryStatus.valueOf(status),
                         endpointId == null ? null : UUID.fromString(endpointId),
                         before == null ? null : UUID.fromString(before),
-                        limit)
+                        limit,
+                        caller())
                 .stream().map(DeliveryResponse::ofView).toList();
     }
 
     @GetMapping("/webhook-deliveries/{id}")
     @RequiresPermission(Permission.WEBHOOK_READ)
     public DeliveryDetailResponse getDelivery(@PathVariable String id) {
-        DeliveryQueries.Detail detail = deliveryQueries.get(UUID.fromString(id));
+        DeliveryQueries.Detail detail = deliveryQueries.get(UUID.fromString(id), caller());
         return new DeliveryDetailResponse(DeliveryResponse.ofView(detail.delivery()), detail.delivery().body(),
                 detail.attempts().stream().map(AttemptResponse::ofView).toList());
     }
@@ -171,7 +172,12 @@ public class WebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @RequiresPermission(Permission.WEBHOOK_MANAGE)
     public DeliveryResponse resend(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return DeliveryResponse.of(deliveries.resend(audit(requestId), WebhookDeliveryId.of(id)));
+        return DeliveryResponse.of(deliveries.resend(audit(requestId), WebhookDeliveryId.of(id), caller()));
+    }
+
+    private UUID caller() {
+        var system = currentActor.get().tenantSystemId();
+        return system == null ? null : system.value();
     }
 
     private Audit audit(String requestId) {

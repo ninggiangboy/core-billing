@@ -1,6 +1,7 @@
 package dev.ngb.core_billing.webhook.domain.endpoint;
 
 import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
@@ -9,7 +10,8 @@ import java.util.TreeSet;
 
 /**
  * Where a Tenant wants its events sent, and which ones. The signing secret is held only as ciphertext; the
- * plaintext exists once, in the response that creates or rotates it.
+ * plaintext exists once, in the response that creates or rotates it. {@code tenantSystemId} names the Tenant
+ * System that registered it, or is null when a Tenant User owns it.
  */
 public final class WebhookEndpoint {
 
@@ -18,6 +20,7 @@ public final class WebhookEndpoint {
 
     private final WebhookEndpointId id;
     private final TenantId tenantId;
+    private final TenantSystemId tenantSystemId;
     private String url;
     private String description;
     private Set<String> eventTypes;
@@ -29,10 +32,11 @@ public final class WebhookEndpoint {
     private Instant secretRotatedAt;
 
     private WebhookEndpoint(
-            WebhookEndpointId id, TenantId tenantId, String url, String description, Set<String> eventTypes, EndpointStatus status, String keyId,
-            String secretCiphertext, Instant createdAt, Instant updatedAt, Instant secretRotatedAt) {
+            WebhookEndpointId id, TenantId tenantId, TenantSystemId tenantSystemId, String url, String description, Set<String> eventTypes,
+            EndpointStatus status, String keyId, String secretCiphertext, Instant createdAt, Instant updatedAt, Instant secretRotatedAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
+        this.tenantSystemId = tenantSystemId;
         this.url = Objects.requireNonNull(url, "url");
         this.description = description;
         this.eventTypes = normalize(eventTypes);
@@ -47,15 +51,27 @@ public final class WebhookEndpoint {
     public static WebhookEndpoint create(
             WebhookEndpointId id, TenantId tenantId, String url, String description, Collection<String> eventTypes, String keyId,
             String secretCiphertext, Instant now) {
-        return new WebhookEndpoint(id, tenantId, url, cleanDescription(description), Set.copyOf(eventTypes), EndpointStatus.ACTIVE, keyId,
+        return create(id, tenantId, null, url, description, eventTypes, keyId, secretCiphertext, now);
+    }
+
+    public static WebhookEndpoint create(
+            WebhookEndpointId id, TenantId tenantId, TenantSystemId tenantSystemId, String url, String description, Collection<String> eventTypes,
+            String keyId, String secretCiphertext, Instant now) {
+        return new WebhookEndpoint(id, tenantId, tenantSystemId, url, cleanDescription(description), Set.copyOf(eventTypes), EndpointStatus.ACTIVE, keyId,
                 secretCiphertext, now, now, null);
     }
 
     public static WebhookEndpoint restore(
             WebhookEndpointId id, TenantId tenantId, String url, String description, Collection<String> eventTypes, EndpointStatus status,
             String keyId, String secretCiphertext, Instant createdAt, Instant updatedAt, Instant secretRotatedAt) {
-        return new WebhookEndpoint(id, tenantId, url, description, Set.copyOf(eventTypes), status, keyId, secretCiphertext, createdAt, updatedAt,
-                secretRotatedAt);
+        return restore(id, tenantId, null, url, description, eventTypes, status, keyId, secretCiphertext, createdAt, updatedAt, secretRotatedAt);
+    }
+
+    public static WebhookEndpoint restore(
+            WebhookEndpointId id, TenantId tenantId, TenantSystemId tenantSystemId, String url, String description, Collection<String> eventTypes,
+            EndpointStatus status, String keyId, String secretCiphertext, Instant createdAt, Instant updatedAt, Instant secretRotatedAt) {
+        return new WebhookEndpoint(id, tenantId, tenantSystemId, url, description, Set.copyOf(eventTypes), status, keyId, secretCiphertext, createdAt,
+                updatedAt, secretRotatedAt);
     }
 
     public void reconfigure(String newUrl, String newDescription, Collection<String> newEventTypes, Instant now) {
@@ -104,6 +120,11 @@ public final class WebhookEndpoint {
 
     public TenantId tenantId() {
         return tenantId;
+    }
+
+    /** The Tenant System that owns this endpoint, or null when a Tenant User owns it. */
+    public TenantSystemId tenantSystemId() {
+        return tenantSystemId;
     }
 
     public String url() {

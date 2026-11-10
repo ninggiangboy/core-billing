@@ -91,7 +91,7 @@ public class CustomerController {
     @GetMapping
     @RequiresPermission(Permission.CUSTOMER_READ)
     public List<CustomerResponse> list() {
-        return queries.list().stream().map(CustomerResponse::ofView).toList();
+        return queries.list(currentActor.get().tenantSystemId()).stream().map(CustomerResponse::ofView).toList();
     }
 
     @GetMapping("/by-external-user/{externalUserId}")
@@ -107,7 +107,7 @@ public class CustomerController {
     @GetMapping("/{id}")
     @RequiresPermission(Permission.CUSTOMER_READ)
     public CustomerResponse get(@PathVariable String id) {
-        return CustomerResponse.ofView(queries.get(CustomerId.of(id)));
+        return CustomerResponse.ofView(queries.get(CustomerId.of(id), currentActor.get().tenantSystemId()));
     }
 
     @PutMapping("/{id}")
@@ -116,14 +116,16 @@ public class CustomerController {
             @PathVariable String id,
             @RequestHeader(value = "X-Request-Id", required = false) String requestId,
             @RequestBody UpdateCustomerRequest request) {
+        Actor actor = currentActor.get();
         return CustomerResponse.of(administration.update(
-                audit(currentActor.get(), requestId), CustomerId.of(id), request.displayName(), request.email()));
+                audit(actor, requestId), CustomerId.of(id), request.displayName(), request.email(), actor.tenantSystemId()));
     }
 
     @PostMapping("/{id}/deactivate")
     @RequiresPermission(Permission.CUSTOMER_WRITE)
     public CustomerResponse deactivate(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return CustomerResponse.of(administration.deactivate(audit(currentActor.get(), requestId), CustomerId.of(id)));
+        Actor actor = currentActor.get();
+        return CustomerResponse.of(administration.deactivate(audit(actor, requestId), CustomerId.of(id), actor.tenantSystemId()));
     }
 
     /**

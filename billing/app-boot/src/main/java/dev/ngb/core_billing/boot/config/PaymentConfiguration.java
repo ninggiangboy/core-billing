@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.boot.config;
 
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
 import dev.ngb.core_billing.money.api.wallet.DebitWallet;
 import dev.ngb.core_billing.money.api.reservation.ReleaseReservation;
@@ -203,9 +204,10 @@ class PaymentConfiguration {
     @Bean
     CreateTopUpUseCase createTopUpUseCase(
             UnitOfWork unitOfWork, StripeConfigurationRepository configurations, PaymentRepository payments, WalletLookup wallets,
-            PaymentProvider provider, ProviderAccess access, PaymentSettings settings, AuditLog auditLog, TenantContext tenantContext,
-            IdGenerator ids, Clock clock) {
-        return new CreateTopUpUseCase(unitOfWork, configurations, payments, wallets, provider, access, settings, auditLog, tenantContext, ids, clock);
+            CustomerLookup customers, PaymentProvider provider, ProviderAccess access, PaymentSettings settings, AuditLog auditLog,
+            TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new CreateTopUpUseCase(unitOfWork, configurations, payments, wallets, customers, provider, access, settings, auditLog, tenantContext,
+                ids, clock);
     }
 
     @Bean
@@ -226,13 +228,15 @@ class PaymentConfiguration {
     }
 
     @Bean
-    PaymentQueries paymentQueries(UnitOfWork unitOfWork, PaymentReadRepository payments, RefundReadRepository refunds) {
-        return new PaymentQueries(unitOfWork, payments, refunds);
+    PaymentQueries paymentQueries(
+            UnitOfWork unitOfWork, PaymentReadRepository payments, RefundReadRepository refunds, CustomerLookup customers) {
+        return new PaymentQueries(unitOfWork, payments, refunds, customers);
     }
 
     @Bean
-    RefundQueries refundQueries(UnitOfWork unitOfWork, RefundReadRepository refunds) {
-        return new RefundQueries(unitOfWork, refunds);
+    RefundQueries refundQueries(
+            UnitOfWork unitOfWork, RefundReadRepository refunds, PaymentReadRepository payments, CustomerLookup customers) {
+        return new RefundQueries(unitOfWork, refunds, payments, customers);
     }
 
     @Bean

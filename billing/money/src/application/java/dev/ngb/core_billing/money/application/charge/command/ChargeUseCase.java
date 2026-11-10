@@ -4,6 +4,7 @@ import dev.ngb.core_billing.money.api.charge.ChargeCommand;
 import dev.ngb.core_billing.money.api.charge.ChargeResult;
 import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.domain.charge.Charge;
 import dev.ngb.core_billing.money.domain.charge.ChargeService;
 import dev.ngb.core_billing.money.domain.event.MoneyEvents;
@@ -18,6 +19,7 @@ import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Instant;
+import java.util.UUID;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
@@ -41,6 +43,7 @@ public class ChargeUseCase implements ChargeWallet {
     private final LedgerRepository ledger;
     private final EventPublisher events;
     private final ChargeService chargeService;
+    private final CustomerLookup customers;
     private final IdGenerator ids;
     private final Clock clock;
 
@@ -51,6 +54,7 @@ public class ChargeUseCase implements ChargeWallet {
             ChargeRepository charges,
             LedgerRepository ledger,
             EventPublisher events,
+            CustomerLookup customers,
             IdGenerator ids,
             Clock clock) {
         this.unitOfWork = unitOfWork;
@@ -60,6 +64,7 @@ public class ChargeUseCase implements ChargeWallet {
         this.ledger = ledger;
         this.events = events;
         this.chargeService = new ChargeService(ids);
+        this.customers = customers;
         this.ids = ids;
         this.clock = clock;
     }
@@ -71,6 +76,7 @@ public class ChargeUseCase implements ChargeWallet {
         return unitOfWork.transactional(() -> {
             WalletId walletId = walletOf(command);
             Wallet wallet = wallets.lockById(walletId).orElseThrow(() -> new NotFoundException("wallet not found"));
+            requireVisible(wallet, command.caller());
 
             var existing = charges.findByIdempotencyKey(command.idempotencyKey());
             if (existing.isPresent()) {
@@ -115,6 +121,12 @@ public class ChargeUseCase implements ChargeWallet {
             throw new IllegalArgumentException("the reservation belongs to another wallet");
         }
         return reservation.walletId();
+    }
+
+    private void requireVisible(Wallet wallet, UUID caller) {
+        if (caller != null && customers.findFor(wallet.customerId(), caller).isEmpty()) {
+            throw new NotFoundException("wallet not found");
+        }
     }
 
     private ChargeResult replay(Charge original, String hash, ChargeCommand command) {

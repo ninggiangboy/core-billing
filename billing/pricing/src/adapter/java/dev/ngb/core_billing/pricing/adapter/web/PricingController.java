@@ -245,7 +245,7 @@ public class PricingController {
         ReserveFromEstimateUseCase.Result result = reserve.reserve(new ReserveFromEstimateUseCase.Command(
                 WalletId.of(required(request.walletId(), "walletId")), PlanId.of(required(request.planId(), "planId")), request.version(), request.at(),
                 measures(request.usage()),
-                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key));
+                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, caller()));
         return new ReserveResponse(EstimateResponse.of(result.estimate()), ReservationDto.of(result.reservation()));
     }
 
@@ -262,7 +262,7 @@ public class PricingController {
         }
         ChargeFromUsageUseCase.Result result = chargeUsage.execute(new ChargeFromUsageUseCase.Command(
                 CustomerId.of(required(request.customerId(), "customerId")), WalletId.of(required(request.walletId(), "walletId")),
-                PlanId.of(required(request.planId(), "planId")), request.version(), request.from(), request.to()));
+                PlanId.of(required(request.planId(), "planId")), request.version(), request.from(), request.to(), caller()));
         HttpStatus status = switch (result.outcome()) {
             case CHARGED -> result.replayed() ? HttpStatus.OK : HttpStatus.CREATED;
             case FAILED -> HttpStatus.PAYMENT_REQUIRED;
@@ -274,7 +274,12 @@ public class PricingController {
     @GetMapping("/pricing/usage-charges/{id}")
     @RequiresPermission(Permission.PRICING_READ)
     public RatingResponse getRating(@PathVariable String id) {
-        return RatingResponse.ofView(ratings.get(UUID.fromString(id)));
+        return RatingResponse.ofView(ratings.get(UUID.fromString(id), caller()));
+    }
+
+    private java.util.UUID caller() {
+        var system = currentActor.get().tenantSystemId();
+        return system == null ? null : system.value();
     }
 
     private static PlanAdministration.Terms terms(VersionRequest v, PricingModel model) {

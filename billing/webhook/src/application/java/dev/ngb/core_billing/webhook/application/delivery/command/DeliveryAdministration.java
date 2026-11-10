@@ -5,6 +5,7 @@ import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -14,6 +15,7 @@ import dev.ngb.core_billing.webhook.application.shared.command.Audit;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
 import java.time.Instant;
+import java.util.UUID;
 
 /** Changes delivery state: resending a stored event. The history is read through DeliveryQueries. */
 public class DeliveryAdministration {
@@ -43,12 +45,19 @@ public class DeliveryAdministration {
      * The original keeps its history. Only a delivery that has finished can be resent.
      */
     public WebhookDelivery resend(Audit audit, WebhookDeliveryId id) {
+        return resend(audit, id, null);
+    }
+
+    public WebhookDelivery resend(Audit audit, WebhookDeliveryId id, UUID caller) {
         return unitOfWork.transactional(() -> {
             WebhookDelivery original = deliveries.findById(id).orElseThrow(() -> new NotFoundException("webhook delivery not found"));
+            var endpoint = endpoints.findById(original.endpointId()).orElseThrow(() -> new NotFoundException("webhook endpoint not found"));
+            if (caller != null && (endpoint.tenantSystemId() == null || !endpoint.tenantSystemId().equals(new TenantSystemId(caller)))) {
+                throw new NotFoundException("webhook delivery not found");
+            }
             if (!original.isFinished()) {
                 throw new ConflictException("this delivery is still being attempted");
             }
-            endpoints.findById(original.endpointId()).orElseThrow(() -> new NotFoundException("webhook endpoint not found"));
             Instant now = clock.now();
             WebhookDeliveryId root = original.resendOf() != null ? original.resendOf() : original.id();
             WebhookDelivery copy = WebhookDelivery.queue(

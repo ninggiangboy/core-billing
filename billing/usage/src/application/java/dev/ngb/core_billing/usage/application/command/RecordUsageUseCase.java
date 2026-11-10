@@ -62,11 +62,19 @@ public class RecordUsageUseCase {
     }
 
     public Recorded record(Item item) {
-        return record(List.of(item)).get(0);
+        return record(item, null);
+    }
+
+    public Recorded record(Item item, java.util.UUID caller) {
+        return record(List.of(item), caller).get(0);
+    }
+
+    public List<Recorded> record(List<Item> items) {
+        return record(items, null);
     }
 
     /** @return one result per item, in order */
-    public List<Recorded> record(List<Item> items) {
+    public List<Recorded> record(List<Item> items, java.util.UUID caller) {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("at least one usage event is required");
         }
@@ -80,7 +88,7 @@ public class RecordUsageUseCase {
             List<UsageEvent> prepared = new ArrayList<>();
             for (int i = 0; i < items.size(); i++) {
                 try {
-                    prepared.add(prepare(items.get(i), tenantId, knownCustomers, now));
+                    prepared.add(prepare(items.get(i), tenantId, caller, knownCustomers, now));
                 } catch (IllegalArgumentException invalid) {
                     throw new IllegalArgumentException("usage event " + i + ": " + invalid.getMessage(), invalid);
                 }
@@ -93,7 +101,7 @@ public class RecordUsageUseCase {
         });
     }
 
-    private UsageEvent prepare(Item item, TenantId tenantId, Map<CustomerId, CustomerSummary> knownCustomers, Instant now) {
+    private UsageEvent prepare(Item item, TenantId tenantId, java.util.UUID caller, Map<CustomerId, CustomerSummary> knownCustomers, Instant now) {
         RecordKey.require(item.idempotencyKey());
         if (item.customerId() == null) {
             throw new IllegalArgumentException("customerId is required");
@@ -107,7 +115,7 @@ public class RecordUsageUseCase {
             throw new IllegalArgumentException("metric '" + item.metric() + "' is measured in '" + expected + "', not '" + item.unit() + "'");
         }
         CustomerSummary customer = knownCustomers.computeIfAbsent(item.customerId(),
-                id -> customers.find(id).orElseThrow(() -> new NotFoundException("customer not found")));
+                id -> customers.findFor(id, caller).orElseThrow(() -> new NotFoundException("customer not found")));
         if (!customer.active()) {
             throw new ConflictException("the customer is deactivated");
         }

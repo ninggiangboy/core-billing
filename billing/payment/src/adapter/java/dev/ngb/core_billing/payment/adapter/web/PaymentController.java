@@ -255,7 +255,7 @@ public class PaymentController {
             throw new IllegalArgumentException("walletId and currency are required");
         }
         CreateTopUpUseCase.Result result = topUp.execute(new CreateTopUpUseCase.Command(WalletId.of(request.walletId()),
-                Money.of(request.amount(), Currency.of(request.currency())), key, audit(requestId)));
+                Money.of(request.amount(), Currency.of(request.currency())), key, audit(requestId), caller()));
         return ResponseEntity.status(result.replayed() ? HttpStatus.OK : HttpStatus.CREATED).body(PaymentResponse.of(result.payment()));
     }
 
@@ -265,13 +265,13 @@ public class PaymentController {
             @RequestParam(required = false) String walletId, @RequestParam(required = false) String status, @RequestParam(required = false) String before,
             @RequestParam(defaultValue = "50") int limit) {
         return queries.list(walletId == null ? null : WalletId.of(walletId), status == null ? null : PaymentStatus.valueOf(status),
-                before == null ? null : UUID.fromString(before), limit).stream().map(PaymentResponse::ofView).toList();
+                before == null ? null : UUID.fromString(before), limit, caller()).stream().map(PaymentResponse::ofView).toList();
     }
 
     @GetMapping("/payments/{id}")
     @RequiresPermission(Permission.PAYMENT_READ)
     public PaymentDetailResponse payment(@PathVariable String id) {
-        PaymentQueries.PaymentDetail detail = queries.payment(UUID.fromString(id));
+        PaymentQueries.PaymentDetail detail = queries.payment(UUID.fromString(id), caller());
         return new PaymentDetailResponse(PaymentResponse.ofView(detail.payment()), detail.refunds().stream().map(RefundResponse::ofView).toList(),
                 detail.attempts().stream().map(AttemptResponse::ofView).toList());
     }
@@ -300,7 +300,7 @@ public class PaymentController {
     @GetMapping("/refunds/{id}")
     @RequiresPermission(Permission.PAYMENT_READ)
     public RefundResponse getRefund(@PathVariable String id) {
-        return RefundResponse.ofView(refundQueries.get(UUID.fromString(id)));
+        return RefundResponse.ofView(refundQueries.get(UUID.fromString(id), caller()));
     }
 
     /** Newest first. Pass the last {@code id} of a page as {@code before} for the next one. */
@@ -370,5 +370,10 @@ public class PaymentController {
     private Audit audit(String requestId) {
         boolean usable = requestId != null && !requestId.isBlank() && requestId.length() <= 64 && requestId.chars().allMatch(c -> c > 32 && c < 127);
         return new Audit(currentActor.get().auditName(), usable ? requestId : UUID.randomUUID().toString());
+    }
+
+    private UUID caller() {
+        var system = currentActor.get().tenantSystemId();
+        return system == null ? null : system.value();
     }
 }

@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface PaymentReadRepository {
 
     /** Newest first; {@code before} is the id of the last payment of the previous page. */
-    List<PaymentView> list(WalletId walletId, PaymentStatus status, UUID before, int limit);
+    List<PaymentView> list(WalletId walletId, PaymentStatus status, UUID before, int limit, List<UUID> customerIds);
 
     Optional<PaymentView> findById(UUID id);
 

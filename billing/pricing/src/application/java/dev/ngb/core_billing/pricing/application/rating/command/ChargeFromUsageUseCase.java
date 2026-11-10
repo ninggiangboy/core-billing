@@ -6,6 +6,7 @@ import dev.ngb.core_billing.money.api.charge.ChargeStatus;
 import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
@@ -59,7 +60,11 @@ public class ChargeFromUsageUseCase {
     public static final int MAX_EVENTS = 10_000;
 
     /** The period is half-open: {@code from} included, {@code to} excluded. {@code version} defaults to the one in force at the end of the period. */
-    public record Command(CustomerId customerId, WalletId walletId, PlanId planId, Integer version, Instant from, Instant to) {}
+    public record Command(CustomerId customerId, WalletId walletId, PlanId planId, Integer version, Instant from, Instant to, UUID caller) {
+        public Command(CustomerId customerId, WalletId walletId, PlanId planId, Integer version, Instant from, Instant to) {
+            this(customerId, walletId, planId, version, from, to, null);
+        }
+    }
 
     public enum Outcome { CHARGED, FAILED, NO_CHARGE, NO_USAGE }
 
@@ -81,6 +86,7 @@ public class ChargeFromUsageUseCase {
     private final UsageLookup usage;
     private final ChargeWallet money;
     private final WalletLookup wallets;
+    private final CustomerLookup customers;
     private final EventPublisher events;
     private final TenantContext tenantContext;
     private final IdGenerator ids;
@@ -88,13 +94,14 @@ public class ChargeFromUsageUseCase {
 
     public ChargeFromUsageUseCase(
             UnitOfWork unitOfWork, PlanRepository plans, RatingRepository ratings, UsageLookup usage, ChargeWallet money, WalletLookup wallets,
-            EventPublisher events, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+            CustomerLookup customers, EventPublisher events, TenantContext tenantContext, IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.plans = plans;
         this.ratings = ratings;
         this.usage = usage;
         this.money = money;
         this.wallets = wallets;
+        this.customers = customers;
         this.events = events;
         this.tenantContext = tenantContext;
         this.ids = ids;
@@ -121,6 +128,7 @@ public class ChargeFromUsageUseCase {
         if (!wallet.customerId().equals(c.customerId())) {
             throw new IllegalArgumentException("the wallet belongs to another customer");
         }
+        customers.findFor(c.customerId(), c.caller()).orElseThrow(() -> new NotFoundException("customer not found"));
         PricingPlan plan = plans.findById(c.planId()).orElseThrow(() -> new NotFoundException("pricing plan not found"));
         if (!wallet.currency().equals(plan.currency())) {
             throw new IllegalArgumentException("the wallet is in " + wallet.currency() + " but the plan is priced in " + plan.currency());
@@ -157,7 +165,8 @@ public class ChargeFromUsageUseCase {
         String failure = null;
         if (amount.isPositive()) {
             ChargeResult charge = money.charge(new ChargeCommand(
-                    c.walletId(), null, amount, "usage-set:" + setKey, "plan:" + plan.code() + "@v" + version.number(), "rating:" + setKey + ":" + attempt));
+                    c.walletId(), null, amount, "usage-set:" + setKey, "plan:" + plan.code() + "@v" + version.number(), "rating:" + setKey + ":" + attempt,
+                    c.caller()));
             chargeId = charge.id().value();
             status = charge.status() == ChargeStatus.FAILED ? RatingStatus.FAILED : RatingStatus.CHARGED;
             failure = charge.status() == ChargeStatus.FAILED ? charge.failureReason() : null;

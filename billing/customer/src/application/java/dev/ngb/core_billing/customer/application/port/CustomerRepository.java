@@ -2,6 +2,7 @@ package dev.ngb.core_billing.customer.application.port;
 
 import dev.ngb.core_billing.customer.domain.customer.Customer;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import java.util.Optional;
 
@@ -16,4 +17,6 @@ public interface CustomerRepository {
     Optional<Customer> findById(CustomerId id);
 
     Optional<Customer> findByExternalIdentity(ExternalIdentity identity);
+
+    boolean isMappedTo(CustomerId id, TenantSystemId tenantSystem);
 }

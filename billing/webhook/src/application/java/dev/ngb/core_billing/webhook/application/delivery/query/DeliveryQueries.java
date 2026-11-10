@@ -21,16 +21,24 @@ public class DeliveryQueries {
         this.deliveries = deliveries;
     }
 
-    /** Newest first. {@code status}, {@code endpointId} and {@code before} (the last id of the previous page) are optional filters. */
     public List<WebhookDeliveryView> list(DeliveryStatus status, UUID endpointId, UUID before, int limit) {
+        return list(status, endpointId, before, limit, null);
+    }
+
+    /** Newest first. {@code status}, {@code endpointId} and {@code before} (the last id of the previous page) are optional filters. */
+    public List<WebhookDeliveryView> list(DeliveryStatus status, UUID endpointId, UUID before, int limit, UUID caller) {
         if (limit < 1) {
             throw new IllegalArgumentException("limit must be at least 1");
         }
-        return unitOfWork.transactional(() -> deliveries.list(status, endpointId, before, Math.min(limit, MAX_PAGE)));
+        return unitOfWork.transactional(() -> deliveries.list(status, endpointId, before, Math.min(limit, MAX_PAGE), caller));
     }
 
     public Detail get(UUID id) {
-        return unitOfWork.transactional(() -> deliveries.findById(id)
+        return get(id, null);
+    }
+
+    public Detail get(UUID id, UUID caller) {
+        return unitOfWork.transactional(() -> deliveries.findById(id, caller)
                 .map(delivery -> new Detail(delivery, deliveries.attempts(id)))
                 .orElseThrow(() -> new NotFoundException("webhook delivery not found")));
     }

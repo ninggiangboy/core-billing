@@ -56,6 +56,14 @@ public class JdbcCustomerRepository implements CustomerRepository {
                 .flatMap(id -> findById(new CustomerId(id)));
     }
 
+    @Override
+    public boolean isMappedTo(CustomerId id, TenantSystemId tenantSystem) {
+        return sql.sql("select exists (select 1 from customer_mappings where customer_id = ? and tenant_system_id = ?)")
+                .params(id.value(), tenantSystem.value())
+                .query(Boolean.class)
+                .single();
+    }
+
     private static CustomerRow toRow(Customer customer) {
         return new CustomerRow(
                 customer.id().value(),

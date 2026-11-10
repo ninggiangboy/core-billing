@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.boot.config;
 
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.money.api.reservation.ReserveBudget;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
@@ -88,15 +89,16 @@ class PricingConfiguration {
     }
 
     @Bean
-    ReserveFromEstimateUseCase reserveFromEstimateUseCase(UnitOfWork unitOfWork, EstimateCostUseCase estimates, ReserveBudget reserve, WalletLookup wallets) {
-        return new ReserveFromEstimateUseCase(unitOfWork, estimates, reserve, wallets);
+    ReserveFromEstimateUseCase reserveFromEstimateUseCase(
+            UnitOfWork unitOfWork, EstimateCostUseCase estimates, ReserveBudget reserve, WalletLookup wallets, CustomerLookup customers) {
+        return new ReserveFromEstimateUseCase(unitOfWork, estimates, reserve, wallets, customers);
     }
 
     @Bean
     ChargeFromUsageUseCase chargeFromUsageUseCase(
             UnitOfWork unitOfWork, PlanRepository plans, RatingRepository ratings, UsageLookup usage, ChargeWallet money, WalletLookup wallets,
-            EventPublisher events, TenantContext tenantContext, IdGenerator ids, Clock clock) {
-        return new ChargeFromUsageUseCase(unitOfWork, plans, ratings, usage, money, wallets, events, tenantContext, ids, clock);
+            CustomerLookup customers, EventPublisher events, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new ChargeFromUsageUseCase(unitOfWork, plans, ratings, usage, money, wallets, customers, events, tenantContext, ids, clock);
     }
 
     @Bean
@@ -105,7 +107,7 @@ class PricingConfiguration {
     }
 
     @Bean
-    RatingQueries ratingQueries(UnitOfWork unitOfWork, RatingReadRepository ratings) {
-        return new RatingQueries(unitOfWork, ratings);
+    RatingQueries ratingQueries(UnitOfWork unitOfWork, RatingReadRepository ratings, CustomerLookup customers) {
+        return new RatingQueries(unitOfWork, ratings, customers);
     }
 }

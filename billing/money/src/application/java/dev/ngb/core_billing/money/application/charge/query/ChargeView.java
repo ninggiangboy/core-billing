@@ -4,10 +4,12 @@ import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.WalletId;
 
 /** A charge as the read API shows it. */
 public record ChargeView(
         ChargeId id,
+        WalletId walletId,
         ChargeStatus status,
         String failureReason,
         Money amount,

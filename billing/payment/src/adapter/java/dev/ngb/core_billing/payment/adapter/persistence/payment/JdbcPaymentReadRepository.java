@@ -65,12 +65,19 @@ public class JdbcPaymentReadRepository implements PaymentReadRepository {
     }
 
     @Override
-    public List<PaymentView> list(WalletId walletId, PaymentStatus status, UUID before, int limit) {
+    public List<PaymentView> list(WalletId walletId, PaymentStatus status, UUID before, int limit, List<UUID> customerIds) {
+        if (customerIds != null && customerIds.isEmpty()) {
+            return List.of();
+        }
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder("select " + COLUMNS + " from payments where true");
         if (walletId != null) {
             sql.append(" and wallet_id = ?");
             params.add(walletId.value());
+        }
+        if (customerIds != null) {
+            sql.append(" and customer_id = any(?)");
+            params.add(customerIds.toArray(UUID[]::new));
         }
         if (status != null) {
             sql.append(" and status = ?");

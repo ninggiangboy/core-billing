@@ -4,6 +4,7 @@ import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.api.reservation.ReservationResult;
 import dev.ngb.core_billing.money.api.reservation.ReserveBudget;
 import dev.ngb.core_billing.money.api.reservation.ReserveBudgetCommand;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.domain.event.MoneyEvents;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
@@ -32,15 +33,18 @@ public class ReserveBudgetUseCase implements ReserveBudget {
     private final WalletRepository wallets;
     private final ReservationRepository reservations;
     private final EventPublisher events;
+    private final CustomerLookup customers;
     private final IdGenerator ids;
     private final Clock clock;
 
     public ReserveBudgetUseCase(
-            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, IdGenerator ids, Clock clock) {
+            UnitOfWork unitOfWork, WalletRepository wallets, ReservationRepository reservations, EventPublisher events, CustomerLookup customers,
+            IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.wallets = wallets;
         this.reservations = reservations;
         this.events = events;
+        this.customers = customers;
         this.ids = ids;
         this.clock = clock;
     }
@@ -54,6 +58,7 @@ public class ReserveBudgetUseCase implements ReserveBudget {
         String hash = RequestFingerprint.of(command.walletId(), command.amount(), command.ttl().toSeconds(), command.reference());
         return unitOfWork.transactional(() -> {
             Wallet wallet = wallets.lockById(command.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));
+            requireVisible(wallet, command.caller());
             var existing = reservations.findByIdempotencyKey(command.idempotencyKey());
             if (existing.isPresent()) {
                 Reservation reservation = existing.get();
@@ -75,5 +80,11 @@ public class ReserveBudgetUseCase implements ReserveBudget {
 
     static ReservationResult result(Reservation reservation, boolean replayed) {
         return new ReservationResult(reservation.id(), reservation.status(), reservation.amount(), reservation.expiresAt(), replayed);
+    }
+
+    private void requireVisible(Wallet wallet, java.util.UUID caller) {
+        if (caller != null && customers.findFor(wallet.customerId(), caller).isEmpty()) {
+            throw new NotFoundException("wallet not found");
+        }
     }
 }

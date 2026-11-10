@@ -20,12 +20,28 @@ public class JdbcWebhookEndpointReadRepository implements EndpointReadRepository
     }
 
     @Override
-    public List<WebhookEndpointView> list() {
-        return jdbc.sql("select " + COLUMNS + " from webhook_endpoints order by created_at, id").query(WebhookEndpointView.class).list();
+    public List<WebhookEndpointView> list(UUID tenantSystemId) {
+        if (tenantSystemId == null) {
+            return jdbc.sql("select " + COLUMNS + " from webhook_endpoints order by created_at, id")
+                    .query(WebhookEndpointView.class).list();
+        }
+        return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where tenant_system_id = ? order by created_at, id")
+                .param(tenantSystemId)
+                .query(WebhookEndpointView.class)
+                .list();
     }
 
     @Override
-    public Optional<WebhookEndpointView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where id = ?").param(id).query(WebhookEndpointView.class).optional();
+    public Optional<WebhookEndpointView> findById(UUID id, UUID tenantSystemId) {
+        if (tenantSystemId == null) {
+            return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where id = ?")
+                    .param(id)
+                    .query(WebhookEndpointView.class)
+                    .optional();
+        }
+        return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where id = ? and tenant_system_id = ?")
+                .params(id, tenantSystemId)
+                .query(WebhookEndpointView.class)
+                .optional();
     }
 }

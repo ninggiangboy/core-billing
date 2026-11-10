@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.webhook.adapter.persistence;
 
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.webhook.domain.endpoint.EndpointStatus;
 import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpoint;
@@ -14,6 +15,7 @@ import org.springframework.data.relational.core.mapping.Table;
 record WebhookEndpointRow(
         @Id UUID id,
         UUID tenantId,
+        UUID tenantSystemId,
         String url,
         String description,
         String eventTypesCsv,
@@ -28,6 +30,7 @@ record WebhookEndpointRow(
         return new WebhookEndpointRow(
                 endpoint.id().value(),
                 endpoint.tenantId().value(),
+                endpoint.tenantSystemId() == null ? null : endpoint.tenantSystemId().value(),
                 endpoint.url(),
                 endpoint.description(),
                 String.join(",", endpoint.eventTypes()),
@@ -43,6 +46,7 @@ record WebhookEndpointRow(
         return WebhookEndpoint.restore(
                 new WebhookEndpointId(id),
                 new TenantId(tenantId),
+                tenantSystemId == null ? null : new TenantSystemId(tenantSystemId),
                 url,
                 description,
                 eventTypesCsv == null || eventTypesCsv.isEmpty() ? List.of() : List.of(eventTypesCsv.split(",")),

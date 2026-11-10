@@ -17,6 +17,7 @@ import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
+import java.util.UUID;
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 
 /**
@@ -25,7 +26,11 @@ import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
  */
 public class OpenWalletUseCase {
 
-    public record Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, String actor, String requestId) {}
+    public record Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, String actor, String requestId, UUID caller) {
+        public Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, String actor, String requestId) {
+            this(customerId, currency, mode, creditLimit, actor, requestId, null);
+        }
+    }
 
     /** {@code created} is false when the wallet already existed with these settings. */
     public record Result(Wallet wallet, boolean created) {}
@@ -53,7 +58,8 @@ public class OpenWalletUseCase {
     public Result execute(Command command) {
         return unitOfWork.transactional(() -> {
             TenantId tenantId = tenantContext.requireTenant();
-            CustomerSummary customer = customers.find(command.customerId()).orElseThrow(() -> new NotFoundException("customer not found"));
+            CustomerSummary customer = customers.findFor(command.customerId(), command.caller())
+                    .orElseThrow(() -> new NotFoundException("customer not found"));
             if (!customer.active()) {
                 throw new ConflictException("the customer is deactivated");
             }

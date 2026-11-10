@@ -4,6 +4,7 @@ import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -12,6 +13,7 @@ import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpoint;
 import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpointId;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
 import dev.ngb.core_billing.webhook.application.shared.command.Audit;
 import dev.ngb.core_billing.webhook.application.shared.port.EventTypeCatalog;
@@ -52,10 +54,14 @@ public class EndpointAdministration {
     }
 
     public WebhookEndpoint update(Audit audit, WebhookEndpointId id, Change change) {
+        return update(audit, id, change, null);
+    }
+
+    public WebhookEndpoint update(Audit audit, WebhookEndpointId id, Change change, UUID caller) {
         String url = change.url() == null ? null : EndpointRules.url(change.url(), settings);
         var types = change.eventTypes() == null ? null : EndpointRules.eventTypes(change.eventTypes(), catalog);
         return unitOfWork.transactional(() -> {
-            WebhookEndpoint endpoint = endpoints.findById(id).orElseThrow(() -> new NotFoundException("webhook endpoint not found"));
+            WebhookEndpoint endpoint = requireVisible(id, caller);
             Instant now = clock.now();
             endpoint.reconfigure(
                     url == null ? endpoint.url() : url,
@@ -73,8 +79,12 @@ public class EndpointAdministration {
 
     /** Replaces the signing secret at once. Deliveries still waiting are signed with the new one. */
     public Rotated rotateSecret(Audit audit, WebhookEndpointId id) {
+        return rotateSecret(audit, id, null);
+    }
+
+    public Rotated rotateSecret(Audit audit, WebhookEndpointId id, UUID caller) {
         return unitOfWork.transactional(() -> {
-            WebhookEndpoint endpoint = endpoints.findById(id).orElseThrow(() -> new NotFoundException("webhook endpoint not found"));
+            WebhookEndpoint endpoint = requireVisible(id, caller);
             Instant now = clock.now();
             SigningKeys.Key key = keys.generate();
             endpoint.rotateSecret(key.keyId(), cipher.encrypt(key.secret(), id.toString()), now);
@@ -82,6 +92,14 @@ public class EndpointAdministration {
             record(audit, "webhook-endpoint.secret-rotated", id, now);
             return new Rotated(endpoint, key.secret());
         });
+    }
+
+    private WebhookEndpoint requireVisible(WebhookEndpointId id, UUID caller) {
+        WebhookEndpoint endpoint = endpoints.findById(id).orElseThrow(() -> new NotFoundException("webhook endpoint not found"));
+        if (caller != null && (endpoint.tenantSystemId() == null || !endpoint.tenantSystemId().equals(new TenantSystemId(caller)))) {
+            throw new NotFoundException("webhook endpoint not found");
+        }
+        return endpoint;
     }
 
     private void record(Audit audit, String action, WebhookEndpointId id, Instant now) {

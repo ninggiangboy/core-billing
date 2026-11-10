@@ -3,11 +3,13 @@ plugins {
 }
 
 dependencies {
-    // The platform contract, and the money contract: crediting a verified top-up, holding and taking back a refund.
+    // The platform contract, the customer lookup, and the money contract: crediting a verified top-up, holding and taking back a refund.
     "domainImplementation"(project(":platform"))
     "applicationImplementation"(project(":platform"))
+    "applicationImplementation"(project(":customer"))
     "applicationImplementation"(project(":money"))
     "adapterImplementation"(project(":platform"))
+    "adapterImplementation"(project(":customer"))
     "adapterImplementation"(project(":money"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-data-jdbc")
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")

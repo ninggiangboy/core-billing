@@ -71,6 +71,7 @@ Refunding a top-up debits the wallet, so it is limited to the unspent balance: a
 ## Cross-cutting guarantees
 
 - Idempotency: nothing is recorded twice on retry. This covers Usage, Reservation, Charge, Payment and Refund.
+- An idempotency key identifies one operation within a Tenant. Repeating a request with the same key returns the original result; reusing the key for a different request, or for a different kind of operation, is a conflict.
 - Reservation holds and releases stay consistent with the Wallet and Ledger in the same transaction.
 - Events that report these changes are published through the transactional outbox, see [security-and-reliability.md](security-and-reliability.md).
 

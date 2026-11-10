@@ -54,6 +54,12 @@ class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, "Too many requests.");
     }
 
+    /** Money arithmetic never wraps; an amount that does not fit in 64-bit minor units is a bad request. */
+    @ExceptionHandler(ArithmeticException.class)
+    ProblemDetail outOfRange(ArithmeticException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The amount is out of range.");
+    }
+
     @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class, ServletRequestBindingException.class})
     ProblemDetail badRequest(Exception e) {
         String detail = e instanceof IllegalArgumentException

@@ -12,7 +12,9 @@ Keycloak is the shared Identity Provider for the whole Platform.
 - Billing uses the OIDC Subject (`sub`) to link to its internal User.
 - A User's identity is distinguished per Tenant. Email is never the sole identifier across the Platform, and the same email may exist in several Tenants under independent identities.
 
-Keycloak must be configured to allow duplicate emails. Usernames are unique within a Realm by default, so the username, or whatever login identifier is used, must be Tenant-scoped. The concrete scheme is an open decision in [architecture.md](architecture.md).
+Keycloak must be configured to allow duplicate emails. Usernames are unique within a Realm by default, so the login identifier is the Tenant-scoped username `{tenant-code}:{email}`, built by the Billing UI from the hostname. Platform Users use the reserved code `platform`. The Realm is configured by `ops/keycloak/realm-export.json`.
+
+Every token carries a `tenant_code` claim, set from a user attribute that only an administrator can edit. Billing accepts a token only when that claim equals the Tenant the request hostname resolved to; a mismatch is a 403, so a session for one Tenant cannot be used in another. Billing creates the Keycloak identity when it creates a user, and removes it again if storing the user fails.
 
 ## Billing Users
 

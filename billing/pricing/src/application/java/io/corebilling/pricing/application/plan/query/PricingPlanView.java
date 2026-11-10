@@ -1,7 +1,7 @@
 package io.corebilling.pricing.application.plan.query;
 
 import io.corebilling.pricing.domain.plan.PlanStatus;
-import io.corebilling.pricing.domain.plan.PricingModel;
+import io.corebilling.pricing.domain.model.PricingModel;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

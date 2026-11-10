@@ -1,7 +1,7 @@
 ---
 title: "Billing package, persistence and CQRS restructure"
 description: "Group every billing module's packages by feature then role, split each module into a command (write) side with Row-based persistence and a query (read) side with read models, and enforce it with ArchUnit."
-status: in-progress
+status: completed
 priority: P1
 effort: 15d
 branch: dev
@@ -38,14 +38,14 @@ Source of the decisions: the advisory interview of 2026-11-10, the later request
 
 | # | Phase | Status | Depends on |
 |---|-------|--------|------------|
-| 1 | [Baseline and layout rules](./phase-01-baseline-and-layout-rules.md) | Pending | none |
-| 2 | [Layout: customer, usage, webhook](./phase-02-layout-customer-usage-webhook.md) | Pending | 1 |
-| 3 | [Layout: pricing, payment, money](./phase-03-layout-pricing-payment-money.md) | Pending | 2 |
-| 4 | [Layout: platform and app-boot imports](./phase-04-layout-platform-and-app-boot.md) | Pending | 3 |
-| 5 | [Write and read models: usage, webhook, pricing](./phase-05-write-and-read-models-usage-webhook-pricing.md) | Pending | 4 |
-| 6 | [Write and read models: payment and money](./phase-06-write-and-read-models-payment-money.md) | Pending | 5 |
-| 7 | [Write and read models: platform and customer](./phase-07-write-and-read-models-platform-customer.md) | Pending | 6 |
-| 8 | [Docs and closure](./phase-08-docs-and-closure.md) | Pending | 7 |
+| 1 | [Baseline and layout rules](./phase-01-baseline-and-layout-rules.md) | Completed | none |
+| 2 | [Layout: customer, usage, webhook](./phase-02-layout-customer-usage-webhook.md) | Completed | 1 |
+| 3 | [Layout: pricing, payment, money](./phase-03-layout-pricing-payment-money.md) | Completed | 2 |
+| 4 | [Layout: platform and app-boot imports](./phase-04-layout-platform-and-app-boot.md) | Completed | 3 |
+| 5 | [Write and read models: usage, webhook, pricing](./phase-05-write-and-read-models-usage-webhook-pricing.md) | Completed | 4 |
+| 6 | [Write and read models: payment and money](./phase-06-write-and-read-models-payment-money.md) | Completed | 5 |
+| 7 | [Write and read models: platform and customer](./phase-07-write-and-read-models-platform-customer.md) | Completed | 6 |
+| 8 | [Docs and closure](./phase-08-docs-and-closure.md) | Completed | 7 |
 
 Phases run in sequence: all modules share `platform.api` and `app-boot`, so parallel edits would conflict on imports. The effort of 15 days is an estimate, not measured.
 
@@ -63,13 +63,13 @@ Phases run in sequence: all modules share `platform.api` and `app-boot`, so para
 
 ## Success Criteria
 
-- [ ] `cd billing && ./gradlew build` is green, including Testcontainers tests, `ModulithVerificationTest` and the OpenAPI contract test, and the test count is not below the baseline recorded in phase 1.
-- [ ] No Java file sits directly in a layer root package in any module (other than `package-info`).
-- [ ] No class in `adapter.persistence` maps a result set straight into a domain type; every aggregate has a `@Table` Row.
-- [ ] Every module has `*View` read models and `*ReadRepository` ports; no query class depends on a write port; the write side does not depend on `query/`; no write port declares a list, page or search method.
-- [ ] `billing/app-boot/src/main/resources/db/migration/` and the HTTP and event contracts are unchanged.
-- [ ] The new ArchUnit rules pass with no exemption, and the meta-test fails when any one is removed.
-- [ ] `docs/architecture.md` describes the new layout, persistence and read and write split, and no longer says the project has no CQRS.
+- [x] `cd billing && ./gradlew build` is green, including Testcontainers tests, `ModulithVerificationTest` and the OpenAPI contract test, and the test count is not below the baseline recorded in phase 1.
+- [x] No Java file sits directly in a layer root package in any module (other than `package-info`).
+- [x] No class in `adapter.persistence` maps a result set straight into a domain type; every aggregate has a `@Table` Row.
+- [x] Every module has `*View` read models and `*ReadRepository` ports; no query class depends on a write port; the write side does not depend on `query/`; no write port declares a list, page or search method.
+- [x] `billing/app-boot/src/main/resources/db/migration/` and the HTTP and event contracts are unchanged.
+- [x] The new ArchUnit rules pass with no exemption, and the meta-test fails when any one is removed.
+- [x] `docs/architecture.md` describes the new layout, persistence and read and write split, and no longer says the project has no CQRS.
 
 ## Validation notes
 

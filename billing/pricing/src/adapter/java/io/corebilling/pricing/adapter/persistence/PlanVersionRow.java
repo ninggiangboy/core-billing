@@ -3,7 +3,7 @@ package io.corebilling.pricing.adapter.persistence;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanId;
 import io.corebilling.pricing.domain.plan.PlanVersion;
-import io.corebilling.pricing.domain.plan.PricingModel;
+import io.corebilling.pricing.domain.model.PricingModel;
 import io.corebilling.pricing.domain.plan.RoundingPolicy;
 import io.corebilling.sharedkernel.TenantId;
 import java.time.Instant;

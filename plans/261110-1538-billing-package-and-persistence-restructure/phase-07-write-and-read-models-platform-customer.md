@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "Write and read models: platform and customer"
-status: pending
+status: completed
 priority: P1
 effort: "3d"
 dependencies: [6]

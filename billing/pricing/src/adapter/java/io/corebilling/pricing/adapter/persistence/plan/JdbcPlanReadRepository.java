@@ -5,7 +5,7 @@ import io.corebilling.pricing.application.plan.query.PlanVersionView;
 import io.corebilling.pricing.application.plan.query.PricingPlanView;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanStatus;
-import io.corebilling.pricing.domain.plan.PricingModel;
+import io.corebilling.pricing.domain.model.PricingModel;
 import io.corebilling.pricing.domain.plan.RoundingPolicy;
 import java.time.Instant;
 import java.util.ArrayList;

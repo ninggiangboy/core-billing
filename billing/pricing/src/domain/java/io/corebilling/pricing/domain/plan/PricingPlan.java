@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import io.corebilling.pricing.domain.model.PriceRule;
+import io.corebilling.pricing.domain.model.PricingModel;
 
 /**
  * A named price list for one pricing model and one currency. Its terms live in immutable {@link PlanVersion}s;

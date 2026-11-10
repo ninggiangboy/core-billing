@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Layout: platform and app-boot imports"
-status: pending
+status: completed
 priority: P1
 effort: "1.5d"
 dependencies: [3]

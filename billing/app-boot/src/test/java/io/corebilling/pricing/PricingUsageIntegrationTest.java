@@ -24,7 +24,7 @@ import io.corebilling.pricing.application.rating.query.PriceLineView;
 import io.corebilling.pricing.application.rating.query.RatingQueries;
 import io.corebilling.pricing.application.rating.query.UsageRatingView;
 import io.corebilling.pricing.application.rating.command.ReserveFromEstimateUseCase;
-import io.corebilling.pricing.domain.plan.EventBased;
+import io.corebilling.pricing.domain.model.EventBased;
 import io.corebilling.pricing.domain.metric.Measure;
 import io.corebilling.pricing.domain.plan.PlanId;
 import io.corebilling.pricing.domain.plan.PlanVersion;

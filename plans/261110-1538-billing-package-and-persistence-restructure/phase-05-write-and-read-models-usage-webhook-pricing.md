@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Write and read models: usage, webhook, pricing"
-status: pending
+status: completed
 priority: P1
 effort: "3d"
 dependencies: [4]

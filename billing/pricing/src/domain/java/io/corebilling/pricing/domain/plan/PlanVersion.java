@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import io.corebilling.pricing.domain.metric.UsageSummary;
 import io.corebilling.pricing.domain.rating.Quote;
+import io.corebilling.pricing.domain.model.PriceRule;
+import io.corebilling.pricing.domain.model.PricingModel;
 
 /**
  * One immutable version of a plan: the rule, the cycle, the charge limits, the rounding and the period it is valid.

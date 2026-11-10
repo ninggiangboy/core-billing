@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Write and read models: payment and money"
-status: pending
+status: completed
 priority: P1
 effort: "4d"
 dependencies: [5]

@@ -8,7 +8,7 @@ import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanId;
 import io.corebilling.pricing.domain.plan.PlanVersion;
-import io.corebilling.pricing.domain.plan.PriceRule;
+import io.corebilling.pricing.domain.model.PriceRule;
 import io.corebilling.pricing.domain.plan.PricingEvents;
 import io.corebilling.pricing.domain.plan.PricingPlan;
 import io.corebilling.pricing.domain.plan.RoundingPolicy;

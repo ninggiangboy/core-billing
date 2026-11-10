@@ -7,7 +7,6 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,12 +21,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ArchitectureMetaTest {
 
     private static final String FIXTURE_ROOT = "archfixtures";
-
-    /**
-     * The fixture contexts. Every one is treated as fully converted, so all three context sets are
-     * exercised and no new rule can pass vacuously.
-     */
-    private static final Set<String> FIXTURE_CONTEXTS = Set.of("alpha", "beta", "money", "payment", "webhook", "layout", "split");
 
     /** Each rule and the fixture class that must be named in its failure report. */
     private static final Map<String, String> CULPRIT_BY_RULE_ID = new LinkedHashMap<>();
@@ -65,12 +58,12 @@ class ArchitectureMetaTest {
     }
 
     static Stream<ArchitectureRules.NamedRule> rules() {
-        return ArchitectureRules.all(FIXTURE_ROOT, ArchitectureRules.ContextSets.every(FIXTURE_CONTEXTS)).stream();
+        return ArchitectureRules.all(FIXTURE_ROOT).stream();
     }
 
     @Test
     void ruleSetIsExactlyTheExpectedOne() {
-        assertThat(ArchitectureRules.all(FIXTURE_ROOT, ArchitectureRules.ContextSets.every(FIXTURE_CONTEXTS)))
+        assertThat(ArchitectureRules.all(FIXTURE_ROOT))
                 .extracting(ArchitectureRules.NamedRule::id)
                 .containsExactlyElementsOf(CULPRIT_BY_RULE_ID.keySet());
     }

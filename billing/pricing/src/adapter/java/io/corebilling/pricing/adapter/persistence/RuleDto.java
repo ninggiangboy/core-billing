@@ -1,15 +1,15 @@
 package io.corebilling.pricing.adapter.persistence;
 
-import io.corebilling.pricing.domain.plan.EventBased;
-import io.corebilling.pricing.domain.plan.Hybrid;
-import io.corebilling.pricing.domain.plan.PriceRule;
-import io.corebilling.pricing.domain.plan.PricingModel;
-import io.corebilling.pricing.domain.plan.Subscription;
-import io.corebilling.pricing.domain.plan.Tier;
-import io.corebilling.pricing.domain.plan.TierMode;
-import io.corebilling.pricing.domain.plan.TimeBased;
-import io.corebilling.pricing.domain.plan.UsageBased;
-import io.corebilling.pricing.domain.plan.WorkloadBased;
+import io.corebilling.pricing.domain.model.EventBased;
+import io.corebilling.pricing.domain.model.Hybrid;
+import io.corebilling.pricing.domain.model.PriceRule;
+import io.corebilling.pricing.domain.model.PricingModel;
+import io.corebilling.pricing.domain.model.Subscription;
+import io.corebilling.pricing.domain.model.Tier;
+import io.corebilling.pricing.domain.model.TierMode;
+import io.corebilling.pricing.domain.model.TimeBased;
+import io.corebilling.pricing.domain.model.UsageBased;
+import io.corebilling.pricing.domain.model.WorkloadBased;
 import java.math.BigDecimal;
 import java.util.List;
 

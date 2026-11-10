@@ -1,14 +1,14 @@
 package io.corebilling.boot.config;
 
 import io.corebilling.platform.adapter.keycloak.KeycloakIdentityProvider;
-import io.corebilling.platform.adapter.persistence.JdbcCredentialRepository;
-import io.corebilling.platform.adapter.persistence.JdbcPermissionCatalogRepository;
-import io.corebilling.platform.adapter.persistence.JdbcRoleRepository;
-import io.corebilling.platform.adapter.persistence.JdbcTenantDomainRepository;
-import io.corebilling.platform.adapter.persistence.JdbcTenantSystemRepository;
-import io.corebilling.platform.adapter.persistence.JdbcUserRepository;
+import io.corebilling.platform.adapter.persistence.credential.JdbcCredentialRepository;
+import io.corebilling.platform.adapter.persistence.role.JdbcPermissionCatalogRepository;
+import io.corebilling.platform.adapter.persistence.role.JdbcRoleRepository;
+import io.corebilling.platform.adapter.persistence.tenant.JdbcTenantDomainRepository;
+import io.corebilling.platform.adapter.persistence.tenantsystem.JdbcTenantSystemRepository;
+import io.corebilling.platform.adapter.persistence.user.JdbcUserRepository;
 import io.corebilling.platform.adapter.security.InMemoryRateLimiter;
-import io.corebilling.platform.adapter.persistence.JdbcTenantRepository;
+import io.corebilling.platform.adapter.persistence.tenant.JdbcTenantRepository;
 import io.corebilling.platform.adapter.persistence.credential.JdbcCredentialReadRepository;
 import io.corebilling.platform.adapter.persistence.role.JdbcRoleReadRepository;
 import io.corebilling.platform.adapter.persistence.tenant.JdbcTenantReadRepository;

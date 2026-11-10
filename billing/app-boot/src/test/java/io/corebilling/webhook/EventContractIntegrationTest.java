@@ -7,7 +7,7 @@ import io.corebilling.money.MoneyTestWorld;
 import io.corebilling.pricing.PricingTestWorld;
 import io.corebilling.pricing.application.rating.command.ChargeFromUsageUseCase;
 import io.corebilling.pricing.application.plan.command.PlanAdministration;
-import io.corebilling.pricing.domain.plan.EventBased;
+import io.corebilling.pricing.domain.model.EventBased;
 import java.time.Instant;
 import io.corebilling.money.MoneyTestWorld.World;
 import io.corebilling.money.api.charge.ChargeCommand;

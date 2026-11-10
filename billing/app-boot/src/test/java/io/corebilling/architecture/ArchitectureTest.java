@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,11 +14,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ArchitectureTest {
 
     static final String ROOT = "io.corebilling";
-
-    // A context joins one of these sets only once it has adopted that part of the target architecture.
-    private static final Set<String> LAYOUT = Set.of("customer", "usage", "webhook", "pricing", "payment", "money", "platform");
-    private static final Set<String> PERSISTENCE = Set.of("customer", "usage", "webhook", "pricing", "money", "payment", "platform");
-    private static final Set<String> READ_WRITE = Set.of("customer", "usage", "webhook", "pricing", "money", "payment", "platform");
 
     private static JavaClasses production;
 
@@ -77,7 +71,7 @@ class ArchitectureTest {
     }
 
     static Stream<ArchitectureRules.NamedRule> rules() {
-        return ArchitectureRules.all(ROOT, new ArchitectureRules.ContextSets(LAYOUT, PERSISTENCE, READ_WRITE)).stream();
+        return ArchitectureRules.all(ROOT).stream();
     }
 
     @ParameterizedTest(name = "{0}")

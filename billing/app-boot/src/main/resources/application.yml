@@ -18,3 +18,8 @@ billing:
   tenancy:
     # Platform Administration is platform.<base-domain>; a Tenant is <tenant-code>.<base-domain>.
     base-domain: ${BILLING_BASE_DOMAIN:localhost}
+  keycloak:
+    base-url: ${BILLING_KEYCLOAK_URL:http://localhost:8081}
+    realm: corebilling
+    admin-client-id: billing-admin
+    admin-client-secret: ${BILLING_KEYCLOAK_ADMIN_CLIENT_SECRET:}

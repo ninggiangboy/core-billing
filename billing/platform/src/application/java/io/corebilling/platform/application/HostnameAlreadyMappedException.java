@@ -1,6 +1,6 @@
 package io.corebilling.platform.application;
 
-public class HostnameAlreadyMappedException extends RuntimeException {
+public class HostnameAlreadyMappedException extends ConflictException {
 
     private static final long serialVersionUID = 1L;
 

@@ -7,7 +7,8 @@ import java.util.regex.Pattern;
 public record TenantCode(String value) {
 
     private static final Pattern FORMAT = Pattern.compile("^[a-z][a-z0-9-]{1,38}[a-z0-9]$");
-    private static final String RESERVED = "platform";
+    /** The code of the reserved platform tenant; no customer tenant may use it. */
+    public static final String PLATFORM = "platform";
 
     public TenantCode {
         Objects.requireNonNull(value, "value");
@@ -15,9 +16,15 @@ public record TenantCode(String value) {
             throw new IllegalArgumentException(
                     "tenant code must be 3-40 lowercase letters, digits or hyphens, starting with a letter");
         }
-        if (RESERVED.equals(value)) {
+    }
+
+    /** The code for a tenant being created now: valid and not reserved. */
+    public static TenantCode forNewTenant(String value) {
+        TenantCode code = new TenantCode(value);
+        if (PLATFORM.equals(code.value)) {
             throw new IllegalArgumentException("tenant code is reserved: " + value);
         }
+        return code;
     }
 
     @Override

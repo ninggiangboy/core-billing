@@ -67,6 +67,11 @@ class PlatformUseCaseTest {
         public Optional<Tenant> findByCode(TenantCode code) {
             return tenantStore.values().stream().filter(t -> t.code().equals(code)).findFirst();
         }
+
+        @Override
+        public List<Tenant> list() {
+            return List.copyOf(tenantStore.values());
+        }
     };
     private final TenantDomainRepository domains = new TenantDomainRepository() {
         @Override

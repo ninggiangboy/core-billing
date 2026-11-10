@@ -1,6 +1,6 @@
 package io.corebilling.platform.application;
 
-public class TenantCodeAlreadyUsedException extends RuntimeException {
+public class TenantCodeAlreadyUsedException extends ConflictException {
 
     private static final long serialVersionUID = 1L;
 

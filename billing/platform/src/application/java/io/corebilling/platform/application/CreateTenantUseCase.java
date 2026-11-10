@@ -45,7 +45,7 @@ public class CreateTenantUseCase {
 
     public Tenant execute(Command command) {
         return unitOfWork.transactional(() -> {
-            TenantCode code = new TenantCode(command.code());
+            TenantCode code = TenantCode.forNewTenant(command.code());
             if (tenants.findByCode(code).isPresent()) {
                 throw new TenantCodeAlreadyUsedException(code.value());
             }

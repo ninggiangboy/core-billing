@@ -1,9 +1,11 @@
 /*
- * A bounded context is one Gradle module with three layers, each its own source set:
+ * A bounded context is one Gradle module with a published contract and three layers, each its own
+ * source set:
  *
- *   domain       sees only shared-kernel and the JDK
- *   application  sees domain and shared-kernel (plain Java, no framework)
- *   adapter      sees domain, application and the framework
+ *   api          the contract other contexts may use; sees only shared-kernel and the JDK
+ *   domain       sees api, shared-kernel and the JDK
+ *   application  sees domain, api and shared-kernel (plain Java, no framework)
+ *   adapter      sees all of the above plus the framework
  *
  * Because the classpaths differ, importing Spring into domain or application is a compile
  * error rather than a convention. ArchUnit covers what a classpath cannot (cross-context
@@ -15,10 +17,11 @@ plugins {
 
 val catalog = project.extensions.getByType<VersionCatalogsExtension>().named("libs")
 
+val api = sourceSets.create("api")
 val domain = sourceSets.create("domain")
 val application = sourceSets.create("application")
 val adapter = sourceSets.create("adapter")
-val layers = listOf(domain, application, adapter)
+val layers = listOf(api, domain, application, adapter)
 
 if (project.name != "shared-kernel") {
     dependencies {
@@ -26,16 +29,18 @@ if (project.name != "shared-kernel") {
     }
 }
 
-// Layer direction: application -> domain, adapter -> application + domain.
-application.compileClasspath += domain.output
-application.runtimeClasspath += domain.output
-adapter.compileClasspath += domain.output + application.output
-adapter.runtimeClasspath += domain.output + application.output
+// Layer direction: adapter -> application -> domain -> api.
+domain.compileClasspath += api.output
+domain.runtimeClasspath += api.output
+application.compileClasspath += api.output + domain.output
+application.runtimeClasspath += api.output + domain.output
+adapter.compileClasspath += api.output + domain.output + application.output
+adapter.runtimeClasspath += api.output + domain.output + application.output
 
 // The Gradle `main` source set is unused; tests see every layer.
 sourceSets.test {
-    compileClasspath += domain.output + application.output + adapter.output
-    runtimeClasspath += domain.output + application.output + adapter.output
+    compileClasspath += api.output + domain.output + application.output + adapter.output
+    runtimeClasspath += api.output + domain.output + application.output + adapter.output
 }
 
 // BOM-managed versions for the adapter layer; the inner layers get no framework BOM at all.

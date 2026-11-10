@@ -1,0 +1,63 @@
+package io.corebilling.platform.application;
+
+import io.corebilling.platform.api.Permission;
+import io.corebilling.platform.api.PermissionScope;
+import io.corebilling.platform.api.RequestScope;
+import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.domain.Role;
+import io.corebilling.platform.domain.RoleId;
+import io.corebilling.sharedkernel.Clock;
+import io.corebilling.sharedkernel.IdGenerator;
+import io.corebilling.sharedkernel.UnitOfWork;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/** Creates the default roles of the current scope when they are missing. Runs when a Platform or Tenant starts. */
+public class SeedDefaultRolesUseCase {
+
+    public static final String PLATFORM_ADMIN = "Platform Admin";
+    public static final String TENANT_ADMIN = "Tenant Admin";
+    public static final String TENANT_VIEWER = "Tenant Viewer";
+
+    private final UnitOfWork unitOfWork;
+    private final RoleRepository roles;
+    private final TenantContext tenantContext;
+    private final IdGenerator ids;
+    private final Clock clock;
+
+    public SeedDefaultRolesUseCase(
+            UnitOfWork unitOfWork, RoleRepository roles, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        this.unitOfWork = unitOfWork;
+        this.roles = roles;
+        this.tenantContext = tenantContext;
+        this.ids = ids;
+        this.clock = clock;
+    }
+
+    public void execute() {
+        unitOfWork.transactional(() -> {
+            RequestScope current = tenantContext.current();
+            PermissionScope scope = current instanceof RequestScope.Platform ? PermissionScope.PLATFORM : PermissionScope.TENANT;
+            defaults(scope).forEach((name, permissions) -> {
+                if (roles.findByName(name).isEmpty()) {
+                    roles.add(Role.create(new RoleId(ids.newId()), current.dataTenantId(), scope, name, true, permissions, clock.now()));
+                }
+            });
+        });
+    }
+
+    private static Map<String, Set<Permission>> defaults(PermissionScope scope) {
+        Set<Permission> all = Arrays.stream(Permission.values()).filter(p -> p.validIn(scope)).collect(Collectors.toSet());
+        Map<String, Set<Permission>> result = new LinkedHashMap<>();
+        if (scope == PermissionScope.PLATFORM) {
+            result.put(PLATFORM_ADMIN, all);
+        } else {
+            result.put(TENANT_ADMIN, all);
+            result.put(TENANT_VIEWER, all.stream().filter(p -> p.code().endsWith(":read")).collect(Collectors.toSet()));
+        }
+        return result;
+    }
+}

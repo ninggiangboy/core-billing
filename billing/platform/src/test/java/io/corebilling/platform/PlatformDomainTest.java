@@ -27,7 +27,7 @@ class PlatformDomainTest {
     @Test
     void tenantCodeRejectsUnsafeOrReservedCodes() {
         for (String bad : new String[] {"ab", "Acme", "1acme", "acme-", "acme_corp", "acme.corp", "platform", "x".repeat(41)}) {
-            assertThatThrownBy(() -> new TenantCode(bad)).as(bad).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> TenantCode.forNewTenant(bad)).as(bad).isInstanceOf(IllegalArgumentException.class);
         }
     }
 

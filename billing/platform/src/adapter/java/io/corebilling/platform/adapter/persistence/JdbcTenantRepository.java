@@ -9,9 +9,12 @@ import io.corebilling.platform.domain.Tenant;
 import io.corebilling.platform.domain.TenantCode;
 import io.corebilling.platform.domain.TenantStatus;
 import io.corebilling.sharedkernel.TenantId;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
+import org.springframework.data.relational.core.query.Query;
 
 public class JdbcTenantRepository implements TenantRepository {
 
@@ -47,6 +50,13 @@ public class JdbcTenantRepository implements TenantRepository {
     public Optional<Tenant> findByCode(TenantCode code) {
         return jdbc.findOne(query(where("code").is(code.value())), TenantRow.class)
                 .map(JdbcTenantRepository::toDomain);
+    }
+
+    @Override
+    public List<Tenant> list() {
+        return jdbc.findAll(Query.empty().sort(Sort.by("createdAt")), TenantRow.class).stream()
+                .map(JdbcTenantRepository::toDomain)
+                .toList();
     }
 
     private static TenantRow toRow(Tenant tenant) {

@@ -1,7 +1,7 @@
 package io.corebilling.money.application;
 
-import io.corebilling.customer.api.CustomerLookup;
-import io.corebilling.customer.api.CustomerSummary;
+import io.corebilling.customer.api.lookup.CustomerLookup;
+import io.corebilling.customer.api.lookup.CustomerSummary;
 import io.corebilling.money.api.WalletMode;
 import io.corebilling.money.domain.Wallet;
 import io.corebilling.platform.api.AuditEntry;

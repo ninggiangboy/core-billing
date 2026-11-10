@@ -1,8 +1,8 @@
-package io.corebilling.customer.application;
+package io.corebilling.customer.application.command;
 
-import io.corebilling.customer.domain.Customer;
-import io.corebilling.customer.domain.CustomerCreated;
-import io.corebilling.customer.domain.ExternalIdentity;
+import io.corebilling.customer.domain.customer.Customer;
+import io.corebilling.customer.domain.customer.CustomerCreated;
+import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.AuditEntry;
 import io.corebilling.platform.api.AuditLog;
 import io.corebilling.platform.api.IdempotencyStore;
@@ -20,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HexFormat;
+import io.corebilling.customer.application.port.CustomerRepository;
 
 /**
  * Creates a Customer, optionally mapped to a Tenant System user, once per idempotency key. The key, the

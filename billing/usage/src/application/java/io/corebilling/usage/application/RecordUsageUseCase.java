@@ -1,7 +1,7 @@
 package io.corebilling.usage.application;
 
-import io.corebilling.customer.api.CustomerLookup;
-import io.corebilling.customer.api.CustomerSummary;
+import io.corebilling.customer.api.lookup.CustomerLookup;
+import io.corebilling.customer.api.lookup.CustomerSummary;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.platform.api.NotFoundException;

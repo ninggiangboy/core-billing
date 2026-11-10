@@ -1,4 +1,4 @@
-package io.corebilling.customer.domain;
+package io.corebilling.customer.domain.customer;
 
 public enum CustomerStatus {
     ACTIVE,

@@ -1,4 +1,4 @@
-package io.corebilling.customer.domain;
+package io.corebilling.customer.domain.customer;
 
 import io.corebilling.platform.api.TenantSystemId;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package io.corebilling.customer.application;
+package io.corebilling.customer.application.command;
 
 import java.util.Objects;
 

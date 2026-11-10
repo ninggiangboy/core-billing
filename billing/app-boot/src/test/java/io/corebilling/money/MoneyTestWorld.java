@@ -1,7 +1,7 @@
 package io.corebilling.money;
 
-import io.corebilling.customer.application.AuditContext;
-import io.corebilling.customer.application.CreateCustomerUseCase;
+import io.corebilling.customer.application.command.AuditContext;
+import io.corebilling.customer.application.command.CreateCustomerUseCase;
 import io.corebilling.money.api.CreditCommand;
 import io.corebilling.money.api.CreditWallet;
 import io.corebilling.money.api.WalletMode;
@@ -14,6 +14,7 @@ import io.corebilling.sharedkernel.Money;
 import io.corebilling.support.ScopeTestSupport;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
+import io.corebilling.customer.domain.customer.Customer;
 
 /** Builds tenants with a customer and a wallet for the money tests. */
 @Component

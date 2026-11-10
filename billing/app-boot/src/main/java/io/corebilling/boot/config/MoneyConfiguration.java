@@ -1,6 +1,6 @@
 package io.corebilling.boot.config;
 
-import io.corebilling.customer.api.CustomerLookup;
+import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.money.adapter.persistence.JdbcChargeRepository;
 import io.corebilling.money.adapter.persistence.JdbcLedgerRepository;
 import io.corebilling.money.adapter.persistence.JdbcLedgerVerifier;

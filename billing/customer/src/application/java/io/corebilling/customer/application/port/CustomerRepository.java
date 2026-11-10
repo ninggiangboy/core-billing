@@ -1,7 +1,7 @@
-package io.corebilling.customer.application;
+package io.corebilling.customer.application.port;
 
-import io.corebilling.customer.domain.Customer;
-import io.corebilling.customer.domain.ExternalIdentity;
+import io.corebilling.customer.domain.customer.Customer;
+import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.sharedkernel.CustomerId;
 import java.util.List;
 import java.util.Optional;

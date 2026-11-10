@@ -1,10 +1,11 @@
-package io.corebilling.customer.application;
+package io.corebilling.customer.application.query;
 
-import io.corebilling.customer.api.CustomerLookup;
-import io.corebilling.customer.api.CustomerSummary;
+import io.corebilling.customer.api.lookup.CustomerLookup;
+import io.corebilling.customer.api.lookup.CustomerSummary;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.util.Optional;
+import io.corebilling.customer.application.port.CustomerRepository;
 
 public class CustomerLookupService implements CustomerLookup {
 

@@ -1,9 +1,9 @@
 package io.corebilling.customer.adapter.persistence;
 
-import io.corebilling.customer.application.CustomerRepository;
-import io.corebilling.customer.domain.Customer;
-import io.corebilling.customer.domain.CustomerStatus;
-import io.corebilling.customer.domain.ExternalIdentity;
+import io.corebilling.customer.application.port.CustomerRepository;
+import io.corebilling.customer.domain.customer.Customer;
+import io.corebilling.customer.domain.customer.CustomerStatus;
+import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.TenantSystemId;
 import io.corebilling.sharedkernel.CustomerId;

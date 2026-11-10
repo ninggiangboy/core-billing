@@ -1,4 +1,4 @@
-package io.corebilling.customer.api;
+package io.corebilling.customer.api.lookup;
 
 import io.corebilling.sharedkernel.CustomerId;
 import java.util.Optional;

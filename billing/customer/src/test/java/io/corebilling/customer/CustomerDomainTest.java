@@ -3,9 +3,9 @@ package io.corebilling.customer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.corebilling.customer.domain.Customer;
-import io.corebilling.customer.domain.CustomerCreated;
-import io.corebilling.customer.domain.ExternalIdentity;
+import io.corebilling.customer.domain.customer.Customer;
+import io.corebilling.customer.domain.customer.CustomerCreated;
+import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.TenantSystemId;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.TenantId;

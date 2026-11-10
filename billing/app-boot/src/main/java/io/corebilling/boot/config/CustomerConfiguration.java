@@ -1,11 +1,11 @@
 package io.corebilling.boot.config;
 
 import io.corebilling.customer.adapter.persistence.JdbcCustomerRepository;
-import io.corebilling.customer.api.CustomerLookup;
-import io.corebilling.customer.application.CreateCustomerUseCase;
-import io.corebilling.customer.application.CustomerAdministration;
-import io.corebilling.customer.application.CustomerLookupService;
-import io.corebilling.customer.application.CustomerRepository;
+import io.corebilling.customer.api.lookup.CustomerLookup;
+import io.corebilling.customer.application.command.CreateCustomerUseCase;
+import io.corebilling.customer.application.command.CustomerAdministration;
+import io.corebilling.customer.application.query.CustomerLookupService;
+import io.corebilling.customer.application.port.CustomerRepository;
 import io.corebilling.platform.api.AuditLog;
 import io.corebilling.platform.api.IdempotencyStore;
 import io.corebilling.platform.api.TenantContext;

@@ -1,10 +1,10 @@
 package io.corebilling.customer.adapter.web;
 
-import io.corebilling.customer.application.AuditContext;
-import io.corebilling.customer.application.CreateCustomerUseCase;
-import io.corebilling.customer.application.CustomerAdministration;
-import io.corebilling.customer.domain.Customer;
-import io.corebilling.customer.domain.ExternalIdentity;
+import io.corebilling.customer.application.command.AuditContext;
+import io.corebilling.customer.application.command.CreateCustomerUseCase;
+import io.corebilling.customer.application.command.CustomerAdministration;
+import io.corebilling.customer.domain.customer.Customer;
+import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.AccessDeniedException;
 import io.corebilling.platform.api.Actor;
 import io.corebilling.platform.api.CurrentActor;

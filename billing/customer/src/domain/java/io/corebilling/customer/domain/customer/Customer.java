@@ -1,4 +1,4 @@
-package io.corebilling.customer.domain;
+package io.corebilling.customer.domain.customer;
 
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.TenantId;

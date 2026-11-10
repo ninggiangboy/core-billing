@@ -1,7 +1,7 @@
-package io.corebilling.customer.application;
+package io.corebilling.customer.application.command;
 
-import io.corebilling.customer.domain.Customer;
-import io.corebilling.customer.domain.ExternalIdentity;
+import io.corebilling.customer.domain.customer.Customer;
+import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.AuditEntry;
 import io.corebilling.platform.api.AuditLog;
 import io.corebilling.platform.api.ConflictException;
@@ -11,6 +11,7 @@ import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.util.List;
+import io.corebilling.customer.application.port.CustomerRepository;
 
 /** Reading and maintaining the Customers of the current tenant. */
 public class CustomerAdministration {

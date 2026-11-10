@@ -16,3 +16,5 @@ out/
 *.key
 # node
 node_modules/
+# local agent config
+.commandcode/

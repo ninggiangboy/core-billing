@@ -42,7 +42,7 @@ Items 1, 2, 3, 6 and 7 were confirmed by the project owner on 2026-11-09; items 
 |---|-------|--------|-----------|--------|
 | 1 | [Foundation and enforcement](./phase-01-foundation-and-enforcement.md) | 3d | none | Completed |
 | 2 | [Tenancy core, UnitOfWork and RLS](./phase-02-tenancy-core-unit-of-work-rls.md) | 4d | 1 | Completed |
-| 3 | [Identity and access](./phase-03-identity-and-access.md) | 6d | 2 | Pending |
+| 3 | [Identity and access](./phase-03-identity-and-access.md) | 6d | 2 | Completed |
 | 4 | [Customers and tenant mapping](./phase-04-customers-and-mapping.md) | 2d | 3 | Pending |
 | 5 | [Money: wallet, ledger, reservation, charge](./phase-05-money-wallet-ledger-reservation-charge.md) | 7d | 4 | Pending |
 | 6 | [Outbox relay and outbound webhooks](./phase-06-outbox-relay-and-outbound-webhooks.md) | 4d | 5 | Pending |

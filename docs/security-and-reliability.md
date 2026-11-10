@@ -21,7 +21,9 @@ Requirements beyond business functions.
 ## Payment security
 
 - Encrypt the Stripe Secret Key and Webhook Secret.
-- Verify the Stripe Webhook signature.
+- Verify the Stripe Webhook signature, with a bounded timestamp tolerance, before anything in the body is read; the tenant is found from Billing's routing table, not from the request. The webhook endpoints are the only unauthenticated ones and are listed explicitly; a failed verification is recorded as an incident. Because they are open, rate limiting in front of the deployment is advised.
+- Keep Stripe's own types inside the Stripe adapter (enforced by an architecture rule) and never copy Stripe's error text into a response, log or exception: it can echo parts of a credential.
+- Hold no database row lock across a call to Stripe: what an event needs from Stripe is read before its transaction opens.
 - Never store payment card information directly.
 - Use Stripe-hosted Checkout or the Payment Element where appropriate.
 - Reconcile transactions, and handle Webhooks that arrive late or out of order.

@@ -47,7 +47,7 @@ Items 1, 2, 3, 6 and 7 were confirmed by the project owner on 2026-11-09; items 
 | 5 | [Money: wallet, ledger, reservation, charge](./phase-05-money-wallet-ledger-reservation-charge.md) | 7d | 4 | Completed |
 | 6 | [Outbox relay and outbound webhooks](./phase-06-outbox-relay-and-outbound-webhooks.md) | 4d | 5 | Completed |
 | 7 | [Pricing, usage and cost estimation](./phase-07-pricing-usage-estimation.md) | 6d | 5 | Completed |
-| 8 | [Payments and Stripe](./phase-08-payments-and-stripe.md) | 7d | 5, 6 | Pending |
+| 8 | [Payments and Stripe](./phase-08-payments-and-stripe.md) | 7d | 5, 6 | Completed |
 | 9 | [Invoicing and subscriptions](./phase-09-invoicing-and-subscriptions.md) | 6d | 7, 8 | Pending |
 | 10 | [Billing session and portal API](./phase-10-billing-session-and-portal-api.md) | 3d | 5, 8 | Pending |
 | 11 | [Sample Tenant System backend](./phase-11-sample-tenant-backend.md) | 8d | 7, 8, 9, 10 | Pending |

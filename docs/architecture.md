@@ -119,7 +119,8 @@ Decided before code exists:
 - The module set is `platform`, `customer`, `pricing`, `usage`, `money`, `invoicing`, `payment`, `webhook`, plus `shared-kernel` and `app-boot`.
 - `money` owns Wallet, Ledger, Reservation and Charge, so the whole money path commits in one transaction that includes its outbox row.
 - `shared-kernel` holds value objects and framework-free technical ports only. It takes no module dependency and stays small; a growing kernel is split, not extended.
-- A module exposes a public `api` package. Another context may depend only on that package, and only the money path may call it synchronously.
+- A module exposes a public `api` package. Another context may depend only on that package, and only the money path may call another context's business operations synchronously.
+- `platform.api` is the exception that every context uses: the request scope, the authenticated actor and its permissions, idempotency, audit and the shared not-found and conflict errors. It carries no business operation, so depending on it does not couple contexts.
 - Inside a module the dependency direction is `adapter → application → domain`. `app-boot` only wires and never holds business rules.
 - Persistence row types live in the adapter, not in the domain. A domain type never carries Spring Data annotations.
 

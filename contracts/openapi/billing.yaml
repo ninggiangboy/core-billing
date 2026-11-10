@@ -78,6 +78,54 @@ paths:
               schema:
                 $ref: "#/components/schemas/RoleResponse"
       x-required-permission: role:manage
+  /api/v1/customers/{id}:
+    get:
+      tags:
+      - customer-controller
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+      x-required-permission: customer:read
+    put:
+      tags:
+      - customer-controller
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCustomerRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+      x-required-permission: customer:write
   /api/v1/users:
     get:
       tags:
@@ -343,11 +391,79 @@ paths:
               schema:
                 $ref: "#/components/schemas/RoleResponse"
       x-required-permission: role:manage
+  /api/v1/customers:
+    get:
+      tags:
+      - customer-controller
+      operationId: list_4
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerResponse"
+      x-required-permission: customer:read
+    post:
+      tags:
+      - customer-controller
+      operationId: create_4
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+      x-required-permission: customer:write
+  /api/v1/customers/{id}/deactivate:
+    post:
+      tags:
+      - customer-controller
+      operationId: deactivate_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+      x-required-permission: customer:write
   /api/v1/users/{id}:
     get:
       tags:
       - user-controller
-      operationId: get
+      operationId: get_1
       parameters:
       - name: id
         in: path
@@ -366,7 +482,7 @@ paths:
     get:
       tags:
       - tenant-controller
-      operationId: get_1
+      operationId: get_2
       parameters:
       - name: id
         in: path
@@ -385,7 +501,7 @@ paths:
     get:
       tags:
       - tenant-system-controller
-      operationId: get_2
+      operationId: get_3
       parameters:
       - name: id
         in: path
@@ -404,7 +520,7 @@ paths:
     get:
       tags:
       - role-controller
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: id
         in: path
@@ -446,6 +562,30 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MeResponse"
+  /api/v1/customers/by-external-user/{externalUserId}:
+    get:
+      tags:
+      - customer-controller
+      operationId: byExternalUser
+      parameters:
+      - name: externalUserId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: tenantSystemId
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+      x-required-permission: customer:read
   /api/v1/tenant-systems/{systemId}/credentials/{credentialId}:
     delete:
       tags:
@@ -520,6 +660,38 @@ components:
         createdAt:
           type: string
           format: date-time
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        email:
+          type: string
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        identities:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentityResponse"
+    IdentityResponse:
+      type: object
+      properties:
+        tenantSystemId:
+          type: string
+        externalUserId:
+          type: string
     CreateUserRequest:
       type: object
       properties:
@@ -650,6 +822,17 @@ components:
           type: array
           items:
             type: string
+    CreateCustomerRequest:
+      type: object
+      properties:
+        tenantSystemId:
+          type: string
+        externalUserId:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
     MeResponse:
       type: object
       properties:

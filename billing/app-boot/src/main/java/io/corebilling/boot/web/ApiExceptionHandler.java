@@ -7,9 +7,11 @@ import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.platform.application.RateLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,6 +31,13 @@ class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
+    /** A reference to something missing in this tenant, or a clash with existing data. Details stay in the log. */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ProblemDetail integrity(DataIntegrityViolationException e) {
+        LOG.warn("data integrity violation: {}", e.getMostSpecificCause().getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "The request refers to something that does not exist here, or clashes with existing data.");
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     ProblemDetail forbidden(AccessDeniedException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "You do not have permission to do this.");
@@ -39,9 +48,11 @@ class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, "Too many requests.");
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class, ServletRequestBindingException.class})
     ProblemDetail badRequest(Exception e) {
-        String detail = e instanceof IllegalArgumentException ? e.getMessage() : "The request body is not valid.";
+        String detail = e instanceof IllegalArgumentException
+                ? e.getMessage()
+                : e instanceof ServletRequestBindingException ? "A required header or parameter is missing." : "The request body is not valid.";
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
     }
 

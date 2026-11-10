@@ -1,14 +1,14 @@
 package io.corebilling.pricing.adapter.persistence;
 
-import io.corebilling.pricing.adapter.RuleDto;
-import io.corebilling.pricing.application.PlanRepository;
-import io.corebilling.pricing.domain.BillingCycle;
-import io.corebilling.pricing.domain.PlanId;
-import io.corebilling.pricing.domain.PlanStatus;
-import io.corebilling.pricing.domain.PlanVersion;
-import io.corebilling.pricing.domain.PricingModel;
-import io.corebilling.pricing.domain.PricingPlan;
-import io.corebilling.pricing.domain.RoundingPolicy;
+import io.corebilling.pricing.adapter.persistence.RuleDto;
+import io.corebilling.pricing.application.plan.port.PlanRepository;
+import io.corebilling.pricing.domain.plan.BillingCycle;
+import io.corebilling.pricing.domain.plan.PlanId;
+import io.corebilling.pricing.domain.plan.PlanStatus;
+import io.corebilling.pricing.domain.plan.PlanVersion;
+import io.corebilling.pricing.domain.plan.PricingModel;
+import io.corebilling.pricing.domain.plan.PricingPlan;
+import io.corebilling.pricing.domain.plan.RoundingPolicy;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.TenantId;
 import java.sql.Timestamp;

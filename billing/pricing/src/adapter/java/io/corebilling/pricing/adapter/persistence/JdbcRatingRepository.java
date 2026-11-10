@@ -1,12 +1,12 @@
 package io.corebilling.pricing.adapter.persistence;
 
-import io.corebilling.pricing.adapter.RuleDto;
-import io.corebilling.pricing.application.RatingRepository;
-import io.corebilling.pricing.domain.PlanId;
-import io.corebilling.pricing.domain.PriceLine;
-import io.corebilling.pricing.domain.RatingId;
-import io.corebilling.pricing.domain.RatingStatus;
-import io.corebilling.pricing.domain.UsageRating;
+import io.corebilling.pricing.adapter.persistence.RuleDto;
+import io.corebilling.pricing.application.rating.port.RatingRepository;
+import io.corebilling.pricing.domain.plan.PlanId;
+import io.corebilling.pricing.domain.plan.PriceLine;
+import io.corebilling.pricing.domain.rating.RatingId;
+import io.corebilling.pricing.domain.rating.RatingStatus;
+import io.corebilling.pricing.domain.rating.UsageRating;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.Money;

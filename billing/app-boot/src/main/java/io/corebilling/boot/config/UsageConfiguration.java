@@ -2,7 +2,7 @@ package io.corebilling.boot.config;
 
 import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.platform.api.TenantContext;
-import io.corebilling.pricing.api.MetricCatalog;
+import io.corebilling.pricing.api.metric.MetricCatalog;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;

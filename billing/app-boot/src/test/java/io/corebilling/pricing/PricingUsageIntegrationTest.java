@@ -15,17 +15,17 @@ import io.corebilling.money.application.WalletQueries;
 import io.corebilling.platform.api.ConflictException;
 import io.corebilling.platform.api.IdempotencyConflictException;
 import io.corebilling.platform.api.NotFoundException;
-import io.corebilling.pricing.application.ChargeFromUsageUseCase;
-import io.corebilling.pricing.application.EstimateCostUseCase;
-import io.corebilling.pricing.application.PlanAdministration;
-import io.corebilling.pricing.application.RatingQueries;
-import io.corebilling.pricing.application.ReserveFromEstimateUseCase;
-import io.corebilling.pricing.domain.EventBased;
-import io.corebilling.pricing.domain.Measure;
-import io.corebilling.pricing.domain.PlanId;
-import io.corebilling.pricing.domain.PlanVersion;
-import io.corebilling.pricing.domain.PricingPlan;
-import io.corebilling.pricing.domain.UsageRating;
+import io.corebilling.pricing.application.rating.command.ChargeFromUsageUseCase;
+import io.corebilling.pricing.application.rating.command.EstimateCostUseCase;
+import io.corebilling.pricing.application.plan.command.PlanAdministration;
+import io.corebilling.pricing.application.rating.query.RatingQueries;
+import io.corebilling.pricing.application.rating.command.ReserveFromEstimateUseCase;
+import io.corebilling.pricing.domain.plan.EventBased;
+import io.corebilling.pricing.domain.metric.Measure;
+import io.corebilling.pricing.domain.plan.PlanId;
+import io.corebilling.pricing.domain.plan.PlanVersion;
+import io.corebilling.pricing.domain.plan.PricingPlan;
+import io.corebilling.pricing.domain.rating.UsageRating;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.support.OwnerDatabase;
@@ -54,6 +54,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import io.corebilling.pricing.domain.plan.BillingCycle;
+import io.corebilling.pricing.domain.plan.PlanStatus;
 
 /** Plans, usage, estimation and charging against real PostgreSQL: idempotency, versions, atomicity and isolation. */
 @SpringBootTest(classes = Application.class)
@@ -231,7 +233,7 @@ class PricingUsageIntegrationTest {
         TenantId tenant = w.tenant().id();
         String storage = worlds.metric();
         String calls = worlds.metric();
-        worlds.plan(tenant, "pkg", worlds.cloudPackage(storage, calls), io.corebilling.pricing.domain.BillingCycle.MONTHLY, null, null);
+        worlds.plan(tenant, "pkg", worlds.cloudPackage(storage, calls), io.corebilling.pricing.domain.plan.BillingCycle.MONTHLY, null, null);
         worlds.record(tenant, w.customerId(), storage, "gb", "10.5", DAY);
         worlds.record(tenant, w.customerId(), storage, "gb", "4.5", DAY.plusSeconds(60));
         worlds.record(tenant, w.customerId(), calls, "call", "100", DAY.plusSeconds(120));
@@ -269,8 +271,8 @@ class PricingUsageIntegrationTest {
                 .isInstanceOf(ConflictException.class).hasMessageContaining("already measured in 'call'");
 
         scopes.inTenant(tenant, () -> planAdmin.retire(AUDIT, plan.id()));
-        assertThat(scopes.inTenant(tenant, () -> planAdmin.list(io.corebilling.pricing.domain.PlanStatus.ACTIVE))).extracting(PricingPlan::id).doesNotContain(plan.id());
-        assertThat(scopes.inTenant(tenant, () -> planAdmin.list(io.corebilling.pricing.domain.PlanStatus.RETIRED))).extracting(PricingPlan::id).contains(plan.id());
+        assertThat(scopes.inTenant(tenant, () -> planAdmin.list(io.corebilling.pricing.domain.plan.PlanStatus.ACTIVE))).extracting(PricingPlan::id).doesNotContain(plan.id());
+        assertThat(scopes.inTenant(tenant, () -> planAdmin.list(io.corebilling.pricing.domain.plan.PlanStatus.RETIRED))).extracting(PricingPlan::id).contains(plan.id());
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
                 worlds.calls(metric), null, null, null, null, null, null)))).isInstanceOf(ConflictException.class).hasMessageContaining("retired");
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.retire(AUDIT, plan.id()))).isInstanceOf(ConflictException.class);
@@ -522,7 +524,7 @@ class PricingUsageIntegrationTest {
                 .hasMessageContaining("before");
         assertThatThrownBy(() -> charge(w, new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), plan.id(), 7, DAY, DAY.plusSeconds(60))))
                 .isInstanceOf(NotFoundException.class);
-        PricingPlan subscription = worlds.plan(tenant, "pro", worlds.pro(), io.corebilling.pricing.domain.BillingCycle.MONTHLY, null, null);
+        PricingPlan subscription = worlds.plan(tenant, "pro", worlds.pro(), io.corebilling.pricing.domain.plan.BillingCycle.MONTHLY, null, null);
         assertThatThrownBy(() -> charge(w, window(w, subscription, null))).hasMessageContaining("no metered usage");
         assertThatThrownBy(() -> charge(other, new ChargeFromUsageUseCase.Command(other.customerId(), other.wallet().id(), plan.id(), null, DAY, DAY.plusSeconds(60))))
                 .isInstanceOf(NotFoundException.class);

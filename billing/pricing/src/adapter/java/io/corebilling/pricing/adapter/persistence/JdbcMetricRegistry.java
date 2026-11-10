@@ -1,7 +1,7 @@
 package io.corebilling.pricing.adapter.persistence;
 
 import io.corebilling.platform.api.ConflictException;
-import io.corebilling.pricing.application.MetricRegistry;
+import io.corebilling.pricing.application.metric.port.MetricRegistry;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 

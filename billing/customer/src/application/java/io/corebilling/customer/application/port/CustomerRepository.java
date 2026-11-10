@@ -9,7 +9,7 @@ import java.util.Optional;
 /** Reads see only the current tenant's customers, because the database enforces it. */
 public interface CustomerRepository {
 
-    /** @throws io.corebilling.platform.api.ConflictException when an external user is already mapped to a customer */
+    /** @throws io.corebilling.platform.api.error.ConflictException when an external user is already mapped to a customer */
     void add(Customer customer);
 
     void update(Customer customer);

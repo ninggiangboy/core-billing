@@ -1,8 +1,8 @@
 package io.corebilling.boot.web;
 
-import io.corebilling.platform.api.RequestScope;
-import io.corebilling.platform.api.TenantContext;
-import io.corebilling.platform.application.ResolveHostUseCase;
+import io.corebilling.platform.api.actor.RequestScope;
+import io.corebilling.platform.api.tenant.TenantContext;
+import io.corebilling.platform.application.tenant.command.ResolveHostUseCase;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

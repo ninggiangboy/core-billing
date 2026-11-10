@@ -3,7 +3,7 @@ package io.corebilling.http;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.corebilling.Application;
-import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
+import io.corebilling.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import io.corebilling.support.HttpWorld;
 import io.corebilling.support.HttpWorld.Account;
 import io.corebilling.support.PostgresContainerConfig;

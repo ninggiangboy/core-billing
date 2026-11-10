@@ -1,11 +1,11 @@
 package io.corebilling.platform.adapter.web;
 
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
-import io.corebilling.platform.application.UserAdministration;
-import io.corebilling.platform.domain.BillingUser;
-import io.corebilling.platform.domain.RoleId;
-import io.corebilling.platform.domain.UserId;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
+import io.corebilling.platform.application.user.command.UserAdministration;
+import io.corebilling.platform.domain.user.BillingUser;
+import io.corebilling.platform.domain.role.RoleId;
+import io.corebilling.platform.domain.user.UserId;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;

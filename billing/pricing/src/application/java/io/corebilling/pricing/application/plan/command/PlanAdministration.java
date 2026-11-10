@@ -1,10 +1,10 @@
 package io.corebilling.pricing.application.plan.command;
 
-import io.corebilling.platform.api.AuditEntry;
-import io.corebilling.platform.api.AuditLog;
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.NotFoundException;
-import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.api.audit.AuditEntry;
+import io.corebilling.platform.api.audit.AuditLog;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.NotFoundException;
+import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.pricing.domain.plan.BillingCycle;
 import io.corebilling.pricing.domain.plan.PlanId;
 import io.corebilling.pricing.domain.plan.PlanStatus;

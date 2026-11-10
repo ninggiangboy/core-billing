@@ -1,8 +1,8 @@
 package io.corebilling.webhook.adapter.web;
 
-import io.corebilling.platform.api.CurrentActor;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
+import io.corebilling.platform.api.actor.CurrentActor;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.webhook.application.shared.command.Audit;
 import io.corebilling.webhook.application.endpoint.command.CreateEndpointUseCase;
 import io.corebilling.webhook.application.delivery.command.DeliveryAdministration;

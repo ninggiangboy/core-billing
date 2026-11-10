@@ -1,22 +1,22 @@
 package io.corebilling.identity;
 
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.Application;
-import io.corebilling.platform.api.Actor;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.application.Authentication;
-import io.corebilling.platform.application.Caller;
-import io.corebilling.platform.application.ProvisionTenantUseCase;
-import io.corebilling.platform.application.RoleAdministration;
-import io.corebilling.platform.application.SeedDefaultRolesUseCase;
-import io.corebilling.platform.application.TenantMismatchException;
-import io.corebilling.platform.application.UserAdministration;
-import io.corebilling.platform.domain.BillingUser;
-import io.corebilling.platform.domain.Role;
-import io.corebilling.platform.domain.Tenant;
+import io.corebilling.platform.api.actor.Actor;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.application.auth.query.Authentication;
+import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.tenant.command.ProvisionTenantUseCase;
+import io.corebilling.platform.application.role.command.RoleAdministration;
+import io.corebilling.platform.application.role.command.SeedDefaultRolesUseCase;
+import io.corebilling.platform.application.tenant.command.TenantMismatchException;
+import io.corebilling.platform.application.user.command.UserAdministration;
+import io.corebilling.platform.domain.user.BillingUser;
+import io.corebilling.platform.domain.role.Role;
+import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.support.FakeIdentityConfig;
 import io.corebilling.support.OwnerDatabase;
 import io.corebilling.support.PostgresContainerConfig;
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import io.corebilling.platform.api.actor.PermissionScope;
 
 @SpringBootTest(classes = Application.class)
 @Import({PostgresContainerConfig.class, FakeIdentityConfig.class})
@@ -68,7 +69,7 @@ class UserAdministrationIntegrationTest {
         BillingUser admin = scopes.inTenant(tenant.id(), () -> userAdmin.list()).getFirst();
         Actor actor = scopes.inTenant(tenant.id(), () -> authentication.authenticateUser(admin.keycloakSubject(), code)).orElseThrow();
         assertThat(actor.permissions()).contains(Permission.USER_MANAGE, Permission.CREDENTIAL_MANAGE, Permission.CUSTOMER_WRITE);
-        assertThat(actor.permissions()).noneMatch(p -> !p.validIn(io.corebilling.platform.api.PermissionScope.TENANT));
+        assertThat(actor.permissions()).noneMatch(p -> !p.validIn(io.corebilling.platform.api.actor.PermissionScope.TENANT));
         assertThat(owner.count("select count(*) from audit_log where tenant_id = ? and action = 'user.created' and actor = 'user/root'",
                         tenant.id().value()))
                 .isEqualTo(1);

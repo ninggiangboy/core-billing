@@ -1,8 +1,8 @@
 package io.corebilling.boot.infrastructure;
 
-import io.corebilling.platform.api.IdempotencyConflictException;
-import io.corebilling.platform.api.IdempotencyStore;
-import io.corebilling.platform.api.StoredResponse;
+import io.corebilling.platform.api.error.IdempotencyConflictException;
+import io.corebilling.platform.api.idempotency.IdempotencyStore;
+import io.corebilling.platform.api.idempotency.StoredResponse;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;

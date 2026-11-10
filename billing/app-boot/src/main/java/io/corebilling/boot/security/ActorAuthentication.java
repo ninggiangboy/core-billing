@@ -1,6 +1,6 @@
 package io.corebilling.boot.security;
 
-import io.corebilling.platform.api.Actor;
+import io.corebilling.platform.api.actor.Actor;
 import java.util.List;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 

@@ -1,7 +1,7 @@
 package io.corebilling.usage.application.query;
 
 import io.corebilling.customer.api.lookup.CustomerLookup;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.usage.api.usage.UsageEventId;

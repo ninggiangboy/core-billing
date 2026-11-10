@@ -3,12 +3,12 @@ package io.corebilling.platform.adapter.persistence;
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static org.springframework.data.relational.core.query.Query.query;
 
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.TenantSystemId;
-import io.corebilling.platform.application.CredentialRepository;
-import io.corebilling.platform.domain.ApiCredential;
-import io.corebilling.platform.domain.CredentialId;
-import io.corebilling.platform.domain.CredentialStatus;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.tenant.TenantSystemId;
+import io.corebilling.platform.application.credential.port.CredentialRepository;
+import io.corebilling.platform.domain.credential.ApiCredential;
+import io.corebilling.platform.domain.credential.CredentialId;
+import io.corebilling.platform.domain.credential.CredentialStatus;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.Arrays;
 import java.util.List;

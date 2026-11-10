@@ -2,7 +2,7 @@ package io.corebilling.support;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 
-import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
+import io.corebilling.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpMethod;

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.Application;
-import io.corebilling.platform.domain.Tenant;
+import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.sharedkernel.EventPublisher;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.support.OwnerDatabase;

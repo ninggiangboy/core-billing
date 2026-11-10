@@ -6,11 +6,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.corebilling.Application;
-import io.corebilling.platform.api.RequestScope;
-import io.corebilling.platform.api.TenantContext;
-import io.corebilling.platform.application.AddTenantDomainUseCase;
-import io.corebilling.platform.application.DeactivateTenantUseCase;
-import io.corebilling.platform.domain.Tenant;
+import io.corebilling.platform.api.actor.RequestScope;
+import io.corebilling.platform.api.tenant.TenantContext;
+import io.corebilling.platform.application.tenant.command.AddTenantDomainUseCase;
+import io.corebilling.platform.application.tenant.command.DeactivateTenantUseCase;
+import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.support.PostgresContainerConfig;
 import io.corebilling.support.ScopeTestSupport;
 import org.junit.jupiter.api.Test;
@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.corebilling.platform.api.actor.Authenticated;
 
 @SpringBootTest(classes = {Application.class, TenantResolutionIntegrationTest.ScopeEcho.class, TenantResolutionIntegrationTest.OpenTestPaths.class})
 @AutoConfigureMockMvc
@@ -38,7 +39,7 @@ class TenantResolutionIntegrationTest {
         }
 
         @GetMapping("/test/scope")
-        @io.corebilling.platform.api.Authenticated
+        @io.corebilling.platform.api.actor.Authenticated
         String scope() {
             return switch (tenantContext.current()) {
                 case RequestScope.Platform platform -> "platform";

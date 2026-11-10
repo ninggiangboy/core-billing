@@ -3,12 +3,12 @@ package io.corebilling.platform;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.corebilling.platform.domain.DomainKind;
-import io.corebilling.platform.domain.Hostname;
-import io.corebilling.platform.domain.Tenant;
-import io.corebilling.platform.domain.TenantCode;
-import io.corebilling.platform.domain.TenantDomain;
-import io.corebilling.platform.domain.TenantStatus;
+import io.corebilling.platform.domain.tenant.DomainKind;
+import io.corebilling.platform.domain.tenant.Hostname;
+import io.corebilling.platform.domain.tenant.Tenant;
+import io.corebilling.platform.domain.tenant.TenantCode;
+import io.corebilling.platform.domain.tenant.TenantDomain;
+import io.corebilling.platform.domain.tenant.TenantStatus;
 import io.corebilling.sharedkernel.TenantId;
 import java.time.Instant;
 import java.util.UUID;

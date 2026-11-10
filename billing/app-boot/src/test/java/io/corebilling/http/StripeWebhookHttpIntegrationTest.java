@@ -9,7 +9,7 @@ import io.corebilling.payment.PaymentTestWorld;
 import io.corebilling.payment.PaymentTestWorld.PayWorld;
 import io.corebilling.payment.domain.payment.Payment;
 import io.corebilling.payment.domain.payment.PaymentId;
-import io.corebilling.platform.api.RequestScope;
+import io.corebilling.platform.api.actor.RequestScope;
 import io.corebilling.support.FakeIdentityConfig;
 import io.corebilling.support.OwnerDatabase;
 import io.corebilling.support.PostgresContainerConfig;

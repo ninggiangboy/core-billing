@@ -1,9 +1,9 @@
 package io.corebilling.usage.adapter.web;
 
-import io.corebilling.platform.api.Actor;
-import io.corebilling.platform.api.CurrentActor;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
+import io.corebilling.platform.api.actor.Actor;
+import io.corebilling.platform.api.actor.CurrentActor;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.usage.api.usage.UsageEventId;
 import io.corebilling.usage.api.usage.UsageTotal;

@@ -1,7 +1,7 @@
 package io.corebilling.boot.infrastructure;
 
-import io.corebilling.platform.api.AuditEntry;
-import io.corebilling.platform.api.AuditLog;
+import io.corebilling.platform.api.audit.AuditEntry;
+import io.corebilling.platform.api.audit.AuditLog;
 import io.corebilling.sharedkernel.IdGenerator;
 import java.sql.Timestamp;
 import org.springframework.jdbc.core.simple.JdbcClient;

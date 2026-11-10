@@ -1,7 +1,7 @@
 package io.corebilling.pricing.application.rating.command;
 
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.pricing.domain.metric.Measure;
 import io.corebilling.pricing.domain.plan.PlanId;
 import io.corebilling.pricing.domain.plan.PlanStatus;

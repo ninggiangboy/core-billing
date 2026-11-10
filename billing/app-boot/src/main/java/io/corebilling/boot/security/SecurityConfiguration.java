@@ -1,12 +1,12 @@
 package io.corebilling.boot.security;
 
-import io.corebilling.platform.api.Actor;
-import io.corebilling.platform.api.AccessDeniedException;
-import io.corebilling.platform.api.Authorizer;
-import io.corebilling.platform.api.CurrentActor;
-import io.corebilling.platform.application.Authentication;
-import io.corebilling.platform.domain.AuthorizationPolicy;
-import io.corebilling.platform.domain.ApiKey;
+import io.corebilling.platform.api.actor.Actor;
+import io.corebilling.platform.api.error.AccessDeniedException;
+import io.corebilling.platform.api.actor.Authorizer;
+import io.corebilling.platform.api.actor.CurrentActor;
+import io.corebilling.platform.application.auth.query.Authentication;
+import io.corebilling.platform.domain.role.AuthorizationPolicy;
+import io.corebilling.platform.domain.credential.ApiKey;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;

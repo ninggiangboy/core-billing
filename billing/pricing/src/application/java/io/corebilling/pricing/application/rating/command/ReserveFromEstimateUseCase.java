@@ -5,7 +5,7 @@ import io.corebilling.money.api.reservation.ReserveBudget;
 import io.corebilling.money.api.reservation.ReserveBudgetCommand;
 import io.corebilling.money.api.wallet.WalletLookup;
 import io.corebilling.money.api.wallet.WalletSummary;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.pricing.domain.metric.Measure;
 import io.corebilling.pricing.domain.plan.PlanId;
 import io.corebilling.sharedkernel.UnitOfWork;

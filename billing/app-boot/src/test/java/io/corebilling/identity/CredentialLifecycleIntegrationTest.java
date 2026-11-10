@@ -1,20 +1,20 @@
 package io.corebilling.identity;
 
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.Application;
-import io.corebilling.platform.api.Actor;
-import io.corebilling.platform.api.ActorType;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.application.Authentication;
-import io.corebilling.platform.application.Caller;
-import io.corebilling.platform.application.CredentialAdministration;
-import io.corebilling.platform.application.RateLimitExceededException;
-import io.corebilling.platform.application.TenantSystemAdministration;
-import io.corebilling.platform.domain.Tenant;
-import io.corebilling.platform.domain.TenantSystem;
+import io.corebilling.platform.api.actor.Actor;
+import io.corebilling.platform.api.actor.ActorType;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.application.auth.query.Authentication;
+import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.credential.command.CredentialAdministration;
+import io.corebilling.platform.application.auth.query.RateLimitExceededException;
+import io.corebilling.platform.application.tenantsystem.command.TenantSystemAdministration;
+import io.corebilling.platform.domain.tenant.Tenant;
+import io.corebilling.platform.domain.tenantsystem.TenantSystem;
 import io.corebilling.support.OwnerDatabase;
 import io.corebilling.support.PostgresContainerConfig;
 import io.corebilling.support.ScopeTestSupport;

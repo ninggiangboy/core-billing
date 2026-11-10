@@ -13,7 +13,7 @@ import java.util.Optional;
  */
 public interface WalletRepository {
 
-    /** @throws io.corebilling.platform.api.ConflictException when the customer already has a wallet in that currency */
+    /** @throws io.corebilling.platform.api.error.ConflictException when the customer already has a wallet in that currency */
     void add(Wallet wallet);
 
     /** Writes the wallet's balance, held total and last sequence. */

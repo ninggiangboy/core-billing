@@ -6,7 +6,7 @@ import io.corebilling.money.domain.charge.Charge;
 import io.corebilling.money.domain.ledger.LedgerEntry;
 import io.corebilling.money.domain.reservation.Reservation;
 import io.corebilling.money.domain.wallet.Wallet;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.sharedkernel.WalletId;

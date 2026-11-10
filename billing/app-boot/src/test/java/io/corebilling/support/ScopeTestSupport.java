@@ -1,9 +1,9 @@
 package io.corebilling.support;
 
-import io.corebilling.platform.api.RequestScope;
-import io.corebilling.platform.api.TenantContext;
-import io.corebilling.platform.application.CreateTenantUseCase;
-import io.corebilling.platform.domain.Tenant;
+import io.corebilling.platform.api.actor.RequestScope;
+import io.corebilling.platform.api.tenant.TenantContext;
+import io.corebilling.platform.application.tenant.command.CreateTenantUseCase;
+import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.UUID;
 import java.util.function.Supplier;

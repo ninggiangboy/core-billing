@@ -1,9 +1,9 @@
 package io.corebilling.boot.web;
 
 import io.corebilling.platform.adapter.web.CallerResolver;
-import io.corebilling.platform.api.Authorizer;
-import io.corebilling.platform.api.CurrentActor;
-import io.corebilling.platform.api.RequiresPermission;
+import io.corebilling.platform.api.actor.Authorizer;
+import io.corebilling.platform.api.actor.CurrentActor;
+import io.corebilling.platform.api.actor.RequiresPermission;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

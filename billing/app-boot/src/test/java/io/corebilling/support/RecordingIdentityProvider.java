@@ -1,6 +1,6 @@
 package io.corebilling.support;
 
-import io.corebilling.platform.application.IdentityProviderPort;
+import io.corebilling.platform.application.auth.port.IdentityProviderPort;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

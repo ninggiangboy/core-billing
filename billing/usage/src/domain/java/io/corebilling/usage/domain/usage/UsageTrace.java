@@ -1,6 +1,6 @@
 package io.corebilling.usage.domain.usage;
 
-import io.corebilling.platform.api.TenantSystemId;
+import io.corebilling.platform.api.tenant.TenantSystemId;
 
 /** Where a usage event came from: the tenant system that reported it, its resource, and its own event id. */
 public record UsageTrace(TenantSystemId tenantSystemId, String resourceRef, String sourceEventId) {

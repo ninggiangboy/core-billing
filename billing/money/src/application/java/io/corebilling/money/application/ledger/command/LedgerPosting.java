@@ -4,7 +4,7 @@ import io.corebilling.money.api.ledger.LedgerEntryId;
 import io.corebilling.money.api.ledger.LedgerPostingResult;
 import io.corebilling.money.domain.ledger.LedgerEntry;
 import io.corebilling.money.domain.wallet.Wallet;
-import io.corebilling.platform.api.IdempotencyConflictException;
+import io.corebilling.platform.api.error.IdempotencyConflictException;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.Money;
 import java.time.Instant;

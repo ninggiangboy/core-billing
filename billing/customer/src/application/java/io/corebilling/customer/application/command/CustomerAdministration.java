@@ -2,11 +2,11 @@ package io.corebilling.customer.application.command;
 
 import io.corebilling.customer.domain.customer.Customer;
 import io.corebilling.customer.domain.customer.ExternalIdentity;
-import io.corebilling.platform.api.AuditEntry;
-import io.corebilling.platform.api.AuditLog;
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.NotFoundException;
-import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.api.audit.AuditEntry;
+import io.corebilling.platform.api.audit.AuditLog;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.NotFoundException;
+import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;

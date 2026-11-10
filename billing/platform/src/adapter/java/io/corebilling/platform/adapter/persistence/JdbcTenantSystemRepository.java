@@ -1,10 +1,10 @@
 package io.corebilling.platform.adapter.persistence;
 
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.TenantSystemId;
-import io.corebilling.platform.application.TenantSystemRepository;
-import io.corebilling.platform.domain.TenantSystem;
-import io.corebilling.platform.domain.TenantSystemStatus;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.tenant.TenantSystemId;
+import io.corebilling.platform.application.tenantsystem.port.TenantSystemRepository;
+import io.corebilling.platform.domain.tenantsystem.TenantSystem;
+import io.corebilling.platform.domain.tenantsystem.TenantSystemStatus;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.List;
 import java.util.Optional;

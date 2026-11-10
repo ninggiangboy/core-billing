@@ -1,8 +1,8 @@
 package io.corebilling.boot.infrastructure;
 
-import io.corebilling.platform.api.AuditLog;
-import io.corebilling.platform.api.IdempotencyStore;
-import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.api.audit.AuditLog;
+import io.corebilling.platform.api.idempotency.IdempotencyStore;
+import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.EventInbox;
 import io.corebilling.sharedkernel.EventPublisher;

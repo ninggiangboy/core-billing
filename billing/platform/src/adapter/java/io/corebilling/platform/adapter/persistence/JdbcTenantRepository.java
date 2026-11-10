@@ -3,11 +3,11 @@ package io.corebilling.platform.adapter.persistence;
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static org.springframework.data.relational.core.query.Query.query;
 
-import io.corebilling.platform.application.TenantCodeAlreadyUsedException;
-import io.corebilling.platform.application.TenantRepository;
-import io.corebilling.platform.domain.Tenant;
-import io.corebilling.platform.domain.TenantCode;
-import io.corebilling.platform.domain.TenantStatus;
+import io.corebilling.platform.application.tenant.command.TenantCodeAlreadyUsedException;
+import io.corebilling.platform.application.tenant.port.TenantRepository;
+import io.corebilling.platform.domain.tenant.Tenant;
+import io.corebilling.platform.domain.tenant.TenantCode;
+import io.corebilling.platform.domain.tenant.TenantStatus;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.List;
 import java.util.Optional;

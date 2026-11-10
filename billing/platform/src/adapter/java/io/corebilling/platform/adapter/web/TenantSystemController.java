@@ -1,14 +1,14 @@
 package io.corebilling.platform.adapter.web;
 
-import io.corebilling.platform.api.NotFoundException;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
-import io.corebilling.platform.api.TenantSystemId;
-import io.corebilling.platform.application.CredentialAdministration;
-import io.corebilling.platform.application.TenantSystemAdministration;
-import io.corebilling.platform.domain.ApiCredential;
-import io.corebilling.platform.domain.CredentialId;
-import io.corebilling.platform.domain.TenantSystem;
+import io.corebilling.platform.api.error.NotFoundException;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
+import io.corebilling.platform.api.tenant.TenantSystemId;
+import io.corebilling.platform.application.credential.command.CredentialAdministration;
+import io.corebilling.platform.application.tenantsystem.command.TenantSystemAdministration;
+import io.corebilling.platform.domain.credential.ApiCredential;
+import io.corebilling.platform.domain.credential.CredentialId;
+import io.corebilling.platform.domain.tenantsystem.TenantSystem;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;

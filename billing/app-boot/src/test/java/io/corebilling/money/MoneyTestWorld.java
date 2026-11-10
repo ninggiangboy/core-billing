@@ -7,7 +7,7 @@ import io.corebilling.money.api.wallet.CreditWallet;
 import io.corebilling.money.api.wallet.WalletMode;
 import io.corebilling.money.application.wallet.command.OpenWalletUseCase;
 import io.corebilling.money.domain.wallet.Wallet;
-import io.corebilling.platform.domain.Tenant;
+import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.Money;

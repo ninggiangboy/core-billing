@@ -1,6 +1,6 @@
 package io.corebilling.customer.domain.customer;
 
-import io.corebilling.platform.api.TenantSystemId;
+import io.corebilling.platform.api.tenant.TenantSystemId;
 import java.util.Objects;
 
 /** A user account in a Tenant System, identified by that system's own id for it. */

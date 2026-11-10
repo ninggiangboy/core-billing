@@ -1,9 +1,9 @@
 package io.corebilling.boot.jobs;
 
-import io.corebilling.platform.api.RequestScope;
-import io.corebilling.platform.api.TenantContext;
-import io.corebilling.platform.application.TenantQueries;
-import io.corebilling.platform.domain.Tenant;
+import io.corebilling.platform.api.actor.RequestScope;
+import io.corebilling.platform.api.tenant.TenantContext;
+import io.corebilling.platform.application.tenant.query.TenantQueries;
+import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.List;
 import java.util.function.Consumer;

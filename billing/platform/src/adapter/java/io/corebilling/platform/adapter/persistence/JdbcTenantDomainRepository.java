@@ -3,11 +3,11 @@ package io.corebilling.platform.adapter.persistence;
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static org.springframework.data.relational.core.query.Query.query;
 
-import io.corebilling.platform.application.HostnameAlreadyMappedException;
-import io.corebilling.platform.application.TenantDomainRepository;
-import io.corebilling.platform.domain.DomainKind;
-import io.corebilling.platform.domain.Hostname;
-import io.corebilling.platform.domain.TenantDomain;
+import io.corebilling.platform.application.tenant.command.HostnameAlreadyMappedException;
+import io.corebilling.platform.application.tenant.port.TenantDomainRepository;
+import io.corebilling.platform.domain.tenant.DomainKind;
+import io.corebilling.platform.domain.tenant.Hostname;
+import io.corebilling.platform.domain.tenant.TenantDomain;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.List;
 import java.util.Optional;

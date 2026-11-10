@@ -1,6 +1,6 @@
 package io.corebilling.usage.adapter.persistence;
 
-import io.corebilling.platform.api.TenantSystemId;
+import io.corebilling.platform.api.tenant.TenantSystemId;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.usage.api.usage.UsageEventId;

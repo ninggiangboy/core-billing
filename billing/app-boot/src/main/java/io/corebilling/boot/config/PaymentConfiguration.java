@@ -32,8 +32,8 @@ import io.corebilling.payment.application.stripe.command.StripeEventAdministrati
 import io.corebilling.payment.application.stripe.command.StripeEventProcessor;
 import io.corebilling.payment.application.stripe.port.StripeEventRepository;
 import io.corebilling.payment.application.stripe.port.StripeRoutes;
-import io.corebilling.platform.api.AuditLog;
-import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.api.audit.AuditLog;
+import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Backoff;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.EventPublisher;

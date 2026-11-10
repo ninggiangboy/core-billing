@@ -29,8 +29,8 @@ import io.corebilling.money.application.ledger.command.VerifyLedgerUseCase;
 import io.corebilling.money.application.wallet.query.WalletQueries;
 import io.corebilling.money.domain.ledger.LedgerEntry;
 import io.corebilling.money.domain.wallet.Wallet;
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.IdempotencyConflictException;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.IdempotencyConflictException;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.support.OwnerDatabase;
@@ -53,6 +53,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import io.corebilling.platform.api.error.NotFoundException;
 
 @SpringBootTest(classes = Application.class)
 @Import(PostgresContainerConfig.class)
@@ -483,10 +484,10 @@ class MoneyIntegrationTest {
         World b = worlds.prepaid(2_000);
 
         assertThatThrownBy(() -> scopes.inTenant(b.tenant().id(), () -> queries.wallet(a.wallet().id())))
-                .isInstanceOf(io.corebilling.platform.api.NotFoundException.class);
+                .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
         assertThatThrownBy(() -> scopes.inTenant(b.tenant().id(), () -> charge.charge(
                         new ChargeCommand(a.wallet().id(), null, usd(1), null, "x", "cross"))))
-                .isInstanceOf(io.corebilling.platform.api.NotFoundException.class);
+                .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
         assertThat(scopes.inTenant(b.tenant().id(), () -> ledger.findByIdempotencyKey("anything"))).isEmpty();
         assertThat(wallet(a).balance()).isEqualTo(usd(1_000));
     }

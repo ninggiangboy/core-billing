@@ -1,11 +1,11 @@
 package io.corebilling.identity;
 
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.platform.adapter.keycloak.KeycloakIdentityProvider;
-import io.corebilling.platform.application.IdentityProviderPort.NewIdentity;
+import io.corebilling.platform.application.auth.port.IdentityProviderPort.NewIdentity;
 import io.corebilling.support.KeycloakFixture;
 import java.util.Base64;
 import java.util.Map;

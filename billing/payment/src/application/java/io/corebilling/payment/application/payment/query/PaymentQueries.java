@@ -6,7 +6,7 @@ import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.payment.domain.payment.PaymentStatus;
 import io.corebilling.payment.domain.refund.Refund;
 import io.corebilling.payment.domain.refund.RefundId;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.sharedkernel.WalletId;
 import java.util.List;

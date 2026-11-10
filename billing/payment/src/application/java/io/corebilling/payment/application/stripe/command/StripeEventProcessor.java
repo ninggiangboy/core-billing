@@ -6,7 +6,7 @@ import io.corebilling.payment.domain.stripe.IntegrationMode;
 import io.corebilling.payment.domain.stripe.StoredEventId;
 import io.corebilling.payment.domain.stripe.StripeConfiguration;
 import io.corebilling.payment.domain.stripe.StripeEvent;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;

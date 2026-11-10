@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.corebilling.Application;
 import io.corebilling.boot.infrastructure.outbox.OutboxRelay;
-import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
+import io.corebilling.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.support.EventSchemas;
 import io.corebilling.support.HttpWorld;

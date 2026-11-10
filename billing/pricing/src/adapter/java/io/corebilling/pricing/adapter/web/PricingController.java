@@ -1,9 +1,9 @@
 package io.corebilling.pricing.adapter.web;
 
 import io.corebilling.money.api.reservation.ReservationResult;
-import io.corebilling.platform.api.CurrentActor;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
+import io.corebilling.platform.api.actor.CurrentActor;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.pricing.adapter.persistence.RuleDto;
 import io.corebilling.pricing.application.shared.command.Audit;
 import io.corebilling.pricing.application.rating.command.ChargeFromUsageUseCase;

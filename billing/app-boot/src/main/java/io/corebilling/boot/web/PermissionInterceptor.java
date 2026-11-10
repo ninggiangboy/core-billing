@@ -1,9 +1,9 @@
 package io.corebilling.boot.web;
 
-import io.corebilling.platform.api.Authenticated;
-import io.corebilling.platform.api.Authorizer;
-import io.corebilling.platform.api.PublicEndpoint;
-import io.corebilling.platform.api.RequiresPermission;
+import io.corebilling.platform.api.actor.Authenticated;
+import io.corebilling.platform.api.actor.Authorizer;
+import io.corebilling.platform.api.actor.PublicEndpoint;
+import io.corebilling.platform.api.actor.RequiresPermission;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.method.HandlerMethod;

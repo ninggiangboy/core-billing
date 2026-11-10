@@ -1,6 +1,6 @@
 package io.corebilling.pricing.application.rating.query;
 
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.pricing.domain.rating.RatingId;
 import io.corebilling.pricing.domain.rating.UsageRating;
 import io.corebilling.sharedkernel.UnitOfWork;

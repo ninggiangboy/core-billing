@@ -48,6 +48,8 @@ import org.springframework.context.annotation.Import;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import io.corebilling.webhook.domain.delivery.DeliveryAttempt;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.NotFoundException;
 
 /** The webhook path against real PostgreSQL: outbox, queued deliveries, signed sends, retries, the dead state and resends. */
 @SpringBootTest(classes = Application.class)
@@ -222,7 +224,7 @@ class WebhookDeliveryIntegrationTest {
             relay(tenant);
             WebhookDelivery pending = deliveriesOf(tenant, hook.endpoint().id()).get(0);
             org.assertj.core.api.Assertions.assertThatThrownBy(() -> scopes.inTenant(tenant, () -> deliveryAdmin.resend(AUDIT, pending.id())))
-                    .isInstanceOf(io.corebilling.platform.api.ConflictException.class);
+                    .isInstanceOf(io.corebilling.platform.api.error.ConflictException.class);
         }
     }
 
@@ -452,7 +454,7 @@ class WebhookDeliveryIntegrationTest {
             assertThat(second.get(0).id().value()).isLessThan(first.get(1).id().value());
             WebhookDeliveryId unknown = new WebhookDeliveryId(UUID.randomUUID());
             org.assertj.core.api.Assertions.assertThatThrownBy(() -> scopes.inTenant(tenant, () -> deliveryAdmin.get(unknown)))
-                    .isInstanceOf(io.corebilling.platform.api.NotFoundException.class);
+                    .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
         }
     }
 }

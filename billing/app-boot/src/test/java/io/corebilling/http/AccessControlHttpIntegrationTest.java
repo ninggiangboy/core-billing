@@ -3,9 +3,9 @@ package io.corebilling.http;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.corebilling.Application;
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
-import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
+import io.corebilling.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import io.corebilling.support.HttpWorld;
 import io.corebilling.support.HttpWorld.Account;
 import io.corebilling.support.KeycloakFixture;
@@ -30,6 +30,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import io.corebilling.platform.api.actor.Authenticated;
+import io.corebilling.platform.api.actor.PublicEndpoint;
 
 /** Real Keycloak tokens against the real filter chain: who gets in, on which host, and with which rights. */
 @SpringBootTest(classes = Application.class)
@@ -121,14 +123,14 @@ class AccessControlHttpIntegrationTest {
                 continue;
             }
             checked++;
-            if (method.hasMethodAnnotation(io.corebilling.platform.api.PublicEndpoint.class)) {
+            if (method.hasMethodAnnotation(io.corebilling.platform.api.actor.PublicEndpoint.class)) {
                 // Open to callers that prove themselves another way; the list is deliberate and short.
                 assertThat(method.getBeanType().getName()).as("only Stripe's signed webhooks are open endpoints")
                         .isEqualTo("io.corebilling.payment.adapter.web.StripeWebhookController");
                 publicEndpoints++;
                 continue;
             }
-            assertThat(method.hasMethodAnnotation(RequiresPermission.class) || method.hasMethodAnnotation(io.corebilling.platform.api.Authenticated.class))
+            assertThat(method.hasMethodAnnotation(RequiresPermission.class) || method.hasMethodAnnotation(io.corebilling.platform.api.actor.Authenticated.class))
                     .as("%s declares neither @RequiresPermission nor @Authenticated", method.getShortLogMessage()).isTrue();
         }
         assertThat(publicEndpoints).as("the direct and the connect webhook").isEqualTo(2);

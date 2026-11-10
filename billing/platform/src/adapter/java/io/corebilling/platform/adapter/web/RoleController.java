@@ -1,13 +1,13 @@
 package io.corebilling.platform.adapter.web;
 
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.PermissionScope;
-import io.corebilling.platform.api.RequestScope;
-import io.corebilling.platform.api.RequiresPermission;
-import io.corebilling.platform.api.TenantContext;
-import io.corebilling.platform.application.RoleAdministration;
-import io.corebilling.platform.domain.Role;
-import io.corebilling.platform.domain.RoleId;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.PermissionScope;
+import io.corebilling.platform.api.actor.RequestScope;
+import io.corebilling.platform.api.actor.RequiresPermission;
+import io.corebilling.platform.api.tenant.TenantContext;
+import io.corebilling.platform.application.role.command.RoleAdministration;
+import io.corebilling.platform.domain.role.Role;
+import io.corebilling.platform.domain.role.RoleId;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;

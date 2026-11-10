@@ -1,14 +1,14 @@
 package io.corebilling.platform.adapter.persistence;
 
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static org.springframework.data.relational.core.query.Query.query;
 
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.PermissionScope;
-import io.corebilling.platform.application.RoleRepository;
-import io.corebilling.platform.domain.Role;
-import io.corebilling.platform.domain.RoleId;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.PermissionScope;
+import io.corebilling.platform.application.role.port.RoleRepository;
+import io.corebilling.platform.domain.role.Role;
+import io.corebilling.platform.domain.role.RoleId;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.ArrayList;
 import java.util.Collection;

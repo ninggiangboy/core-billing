@@ -26,11 +26,44 @@ Move `platform`, the largest module (94 files), to the layout, and bring every i
 
 ## Tasks & Steps
 
-- [ ] 1. Write the file-to-package mapping for `platform` in the phase notes, including the split of `platform.api`.
-- [ ] 2. Move `platform` in one commit, compile every module, fix imports.
-- [ ] 3. Run `./gradlew build`; fix residual references (string class names in Spring config, `@ComponentScan`, test resources that mention a moved package).
-- [ ] 4. Add `platform` to the layout set; run the architecture tests.
-- [ ] 5. Verify no Java file sits directly in a layer root package in any module (the rules now cover all 8).
+- [x] 1. Write the file-to-package mapping for `platform` in the phase notes, including the split of `platform.api`.
+- [x] 2. Move `platform` in one commit, compile every module, fix imports.
+- [x] 3. Run `./gradlew build`; fix residual references (string class names in Spring config, `@ComponentScan`, test resources that mention a moved package).
+- [x] 4. Add `platform` to the layout set; run the architecture tests.
+- [x] 5. Verify no Java file sits directly in a layer root package in any module (the rules now cover all 8).
+
+## Phase notes
+
+### Mapping
+
+- `platform.domain.tenant`: Tenant, TenantCode, TenantStatus, TenantDomain, DomainKind, Hostname.
+- `platform.domain.role`: Role, RoleId, AuthorizationPolicy.
+- `platform.domain.user`: BillingUser, UserId, UserStatus.
+- `platform.domain.credential`: ApiCredential, ApiKey, CredentialId, CredentialStatus.
+- `platform.domain.tenantsystem`: TenantSystem, TenantSystemStatus.
+- `platform.application.tenant.command`: AddTenantDomainUseCase, CreateTenantUseCase, DeactivateTenantUseCase, EnsurePlatformDomainUseCase, ProvisionTenantUseCase, ResolveHostUseCase, HostnameAlreadyMappedException, TenantCodeAlreadyUsedException, TenantMismatchException, TenantNotFoundException; `.tenant.query`: TenantQueries; `.tenant.port`: TenantRepository, TenantDomainRepository.
+- `platform.application.role.command`: RoleAdministration, SeedDefaultRolesUseCase, SeedPermissionsUseCase; `.role.port`: RoleRepository, PermissionCatalogRepository.
+- `platform.application.user.command`: UserAdministration, BootstrapPlatformAdminUseCase; `.user.port`: UserRepository.
+- `platform.application.credential.command`: CredentialAdministration; `.credential.port`: CredentialRepository.
+- `platform.application.tenantsystem.command`: TenantSystemAdministration; `.tenantsystem.port`: TenantSystemRepository.
+- `platform.application.auth.query`: Authentication, Caller, RateLimitExceededException; `.auth.port`: IdentityProviderPort, RateLimiter. These are the request-pipeline lookups phase 7 keeps as they are.
+- `platform.api.actor`: Actor, ActorType, Authenticated, Authorizer, CurrentActor, Permission, PermissionScope, PublicEndpoint, RequestScope, RequiresPermission.
+- `platform.api.error`: AccessDeniedException, ConflictException, IdempotencyConflictException, NotFoundException.
+- `platform.api.audit`: AuditEntry, AuditLog.
+- `platform.api.idempotency`: IdempotencyStore, StoredResponse.
+- `platform.api.tenant`: TenantContext, TenantSystemId.
+- Each `platform.api` sub-package gets `@NamedInterface("platform-<name>")` in the adapter source set; the root `platform.api` package-info stays.
+
+### Persistence placement
+
+- `platform.adapter.persistence` stays one role package in this phase. Its rows are package-private and the package-private `Causes` helper is shared by five repositories (tenant, role, user and tenant-system); splitting the package now would force either widening `Causes` or duplicating it. The read repositories introduced in phases 5 and 7 use `adapter.persistence.<feature>` packages, which is where phase 5 puts them.
+- This matches the `customer` reference (`CustomerRow` and `JdbcCustomerRepository` in one `adapter.persistence` package).
+
+### Result
+
+- `./gradlew build` green; 551 tests, 0 failures (same as phase 1).
+- `ArchitectureTest` and `ModulithVerificationTest` pass with all 8 modules in the layout set and the split `platform.api` named interfaces.
+- `git grep -nE '^package io\.corebilling\.[a-z]+\.(api|domain|application|adapter);'` finds only `package-info.java` files.
 
 ## Verification
 

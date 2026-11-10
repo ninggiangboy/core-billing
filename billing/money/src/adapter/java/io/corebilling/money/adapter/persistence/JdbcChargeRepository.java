@@ -6,7 +6,7 @@ import io.corebilling.money.api.charge.ChargeStatus;
 import io.corebilling.money.api.reservation.ReservationId;
 import io.corebilling.money.application.charge.port.ChargeRepository;
 import io.corebilling.money.domain.charge.Charge;
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.TenantId;

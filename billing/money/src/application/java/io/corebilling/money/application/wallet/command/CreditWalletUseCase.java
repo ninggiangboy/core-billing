@@ -6,7 +6,7 @@ import io.corebilling.money.api.ledger.LedgerPostingResult;
 import io.corebilling.money.domain.ledger.LedgerEntry;
 import io.corebilling.money.domain.event.MoneyEvents;
 import io.corebilling.money.domain.wallet.Wallet;
-import io.corebilling.platform.api.NotFoundException;
+import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.EventPublisher;
 import io.corebilling.sharedkernel.IdGenerator;

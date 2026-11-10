@@ -4,7 +4,7 @@ import io.corebilling.money.api.reservation.ReservationId;
 import io.corebilling.money.api.reservation.ReservationStatus;
 import io.corebilling.money.application.reservation.port.ReservationRepository;
 import io.corebilling.money.domain.reservation.Reservation;
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.TenantId;

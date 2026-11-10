@@ -2,10 +2,10 @@ package io.corebilling.usage.application.command;
 
 import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.customer.api.lookup.CustomerSummary;
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.IdempotencyConflictException;
-import io.corebilling.platform.api.NotFoundException;
-import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.IdempotencyConflictException;
+import io.corebilling.platform.api.error.NotFoundException;
+import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.IdGenerator;

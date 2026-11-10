@@ -1,7 +1,7 @@
 package io.corebilling.boot.infrastructure;
 
-import io.corebilling.platform.api.RequestScope;
-import io.corebilling.platform.api.TenantContext;
+import io.corebilling.platform.api.actor.RequestScope;
+import io.corebilling.platform.api.tenant.TenantContext;
 import java.util.function.Supplier;
 
 /**

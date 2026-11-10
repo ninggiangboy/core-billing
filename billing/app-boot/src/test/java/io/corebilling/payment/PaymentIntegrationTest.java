@@ -27,8 +27,8 @@ import io.corebilling.payment.domain.payment.PaymentId;
 import io.corebilling.payment.domain.payment.PaymentStatus;
 import io.corebilling.payment.domain.refund.Refund;
 import io.corebilling.payment.domain.refund.RefundStatus;
-import io.corebilling.platform.api.ConflictException;
-import io.corebilling.platform.api.IdempotencyConflictException;
+import io.corebilling.platform.api.error.ConflictException;
+import io.corebilling.platform.api.error.IdempotencyConflictException;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.WalletId;
 import io.corebilling.support.EventSchemas;
@@ -48,6 +48,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import io.corebilling.payment.application.stripe.command.StripeConfigurationService;
 import io.corebilling.money.application.reservation.command.ExpireReservationsUseCase;
+import io.corebilling.platform.domain.tenant.Tenant;
 
 /**
  * The payment flows against real PostgreSQL, with Stripe replaced by an in-memory provider (which keeps real
@@ -522,7 +523,7 @@ class PaymentIntegrationTest {
 
         assertThat(second.id()).isNotEqualTo(first.configuration().id());
         assertThatThrownBy(() -> paid(first, p, StripeEvents.newEventId(), "pi_x" + sfx)).as("the old endpoint is gone")
-                .isInstanceOf(io.corebilling.platform.api.NotFoundException.class);
+                .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
         assertThat(paid(rotated, p, StripeEvents.newEventId(), "pi_rot" + sfx).disposition()).as("the new endpoint settles the old payment")
                 .isEqualTo(Disposition.PROCESSED);
         assertThat(balance(rotated)).isEqualTo(5000);
@@ -893,7 +894,7 @@ class PaymentIntegrationTest {
         assertThat(scopes.inTenant(b.money().tenant().id(), () -> queries.list((WalletId) null, null, null, 50))).isEmpty();
         assertThat(scopes.inTenant(b.money().tenant().id(), () -> eventAdmin.list(null, null, 50))).isEmpty();
         assertThatThrownBy(() -> scopes.inTenant(b.money().tenant().id(), () -> queries.payment(p.id())))
-                .isInstanceOf(io.corebilling.platform.api.NotFoundException.class);
+                .isInstanceOf(io.corebilling.platform.api.error.NotFoundException.class);
     }
 
     // ---- contract ------------------------------------------------------------------------------------------------

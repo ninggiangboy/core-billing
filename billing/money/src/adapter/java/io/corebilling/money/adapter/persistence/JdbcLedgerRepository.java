@@ -6,7 +6,7 @@ import io.corebilling.money.api.ledger.LedgerEntryId;
 import io.corebilling.money.api.reservation.ReservationId;
 import io.corebilling.money.application.ledger.port.LedgerRepository;
 import io.corebilling.money.domain.ledger.LedgerEntry;
-import io.corebilling.platform.api.ConflictException;
+import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.sharedkernel.Currency;
 import io.corebilling.sharedkernel.Money;
 import io.corebilling.sharedkernel.TenantId;

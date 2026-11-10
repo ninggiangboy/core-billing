@@ -1,7 +1,7 @@
 package io.corebilling.platform.adapter.persistence;
 
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.application.PermissionCatalogRepository;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.application.role.port.PermissionCatalogRepository;
 import java.util.Collection;
 import org.springframework.jdbc.core.simple.JdbcClient;
 

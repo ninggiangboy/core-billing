@@ -1,14 +1,14 @@
 package io.corebilling.platform.adapter.web;
 
-import io.corebilling.platform.api.Permission;
-import io.corebilling.platform.api.RequiresPermission;
-import io.corebilling.platform.application.AddTenantDomainUseCase;
-import io.corebilling.platform.application.Caller;
-import io.corebilling.platform.application.DeactivateTenantUseCase;
-import io.corebilling.platform.application.ProvisionTenantUseCase;
-import io.corebilling.platform.application.TenantQueries;
-import io.corebilling.platform.domain.Tenant;
-import io.corebilling.platform.domain.TenantDomain;
+import io.corebilling.platform.api.actor.Permission;
+import io.corebilling.platform.api.actor.RequiresPermission;
+import io.corebilling.platform.application.tenant.command.AddTenantDomainUseCase;
+import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.tenant.command.DeactivateTenantUseCase;
+import io.corebilling.platform.application.tenant.command.ProvisionTenantUseCase;
+import io.corebilling.platform.application.tenant.query.TenantQueries;
+import io.corebilling.platform.domain.tenant.Tenant;
+import io.corebilling.platform.domain.tenant.TenantDomain;
 import io.corebilling.sharedkernel.TenantId;
 import java.time.Instant;
 import java.util.List;

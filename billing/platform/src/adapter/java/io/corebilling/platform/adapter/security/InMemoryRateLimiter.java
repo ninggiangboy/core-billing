@@ -1,6 +1,6 @@
 package io.corebilling.platform.adapter.security;
 
-import io.corebilling.platform.application.RateLimiter;
+import io.corebilling.platform.application.auth.port.RateLimiter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.LongSupplier;

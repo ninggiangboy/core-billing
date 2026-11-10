@@ -7,7 +7,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import io.corebilling.Application;
-import io.corebilling.platform.application.BootstrapPlatformAdminUseCase;
+import io.corebilling.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import io.corebilling.support.FakePaymentProvider;
 import io.corebilling.support.FakePaymentProviderConfig;
 import io.corebilling.support.HttpWorld;

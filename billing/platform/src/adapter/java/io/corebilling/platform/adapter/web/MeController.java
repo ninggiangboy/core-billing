@@ -1,9 +1,9 @@
 package io.corebilling.platform.adapter.web;
 
-import io.corebilling.platform.api.Actor;
-import io.corebilling.platform.api.Authenticated;
-import io.corebilling.platform.api.CurrentActor;
-import io.corebilling.platform.api.Permission;
+import io.corebilling.platform.api.actor.Actor;
+import io.corebilling.platform.api.actor.Authenticated;
+import io.corebilling.platform.api.actor.CurrentActor;
+import io.corebilling.platform.api.actor.Permission;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,0 +1,1 @@
+-- Empty baseline. Real schema starts at V1; this file proves the migration pipeline runs.

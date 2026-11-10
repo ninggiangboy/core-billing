@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: core-billing
+  datasource:
+    url: ${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}
+    username: ${BILLING_DB_USER:corebilling}
+    password: ${BILLING_DB_PASSWORD:corebilling}
+  flyway:
+    locations: classpath:db/migration

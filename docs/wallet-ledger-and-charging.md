@@ -18,6 +18,10 @@
 - Entries are ordered by a monotonic sequence, not by timestamp, so audit replay is deterministic.
 - Idempotency is enforced by a database unique constraint on the entry's idempotency key; an application-level check is only an optimization.
 
+- Entry amounts are signed minor units: a credit is positive, a debit negative, and a reversal carries the negation of the entry it corrects, so a balance is the sum of its entries and an entry plus its reversal sum to zero. An entry can be reversed once, and a reversal cannot itself be reversed.
+- Every flow locks the wallet row first and assigns the entry's sequence number while holding it, so sequences are gap-free and one wallet's operations are naturally serial. Idempotency is checked under that lock and backed by the unique constraints, so a concurrent duplicate waits and then finds the first result.
+- A verify job recomputes each wallet's balance and sequence from its entries. It reports and audits a mismatch and never rewrites the projection; deciding which side is right is a person's job.
+
 Rejected alternatives: mutating entries in place, a mutable balance row as the source of truth, soft-delete or void flags instead of reversal, and double-entry bookkeeping at this stage. The first three break the audit trail; double-entry has no two-sided account requirement yet and remains a seam to open later.
 
 ## Reservation
@@ -32,6 +36,8 @@ Lets the Tenant System hold a budget before executing a Resource.
 - Supports Expiration and the handling of expired Reservations.
 - Guarantees Idempotency and avoids duplicate holds.
 
+A capture charges the actual cost, which cannot exceed the held amount, and returns the unused remainder in the same step; capturing after the hold has expired is refused. Release and expiry return the whole hold. Expiry runs per Tenant and skips a wallet that is busy, to be picked up on the next run.
+
 ## Charge
 
 Calculates and records the actual cost incurred.
@@ -42,6 +48,7 @@ Calculates and records the actual cost incurred.
 - Validates the transaction.
 - Updates Wallet and Ledger.
 - Records Charge status and history.
+- A Charge the wallet cannot pay is recorded as failed with the reason `insufficient_funds` and announced as `charge.failed`; it is an outcome, not an error. Repeating the request returns the same recorded failure. The REST API answers 402 for it, and for a reservation or debit that the wallet cannot cover.
 
 ## Prepaid and Postpaid
 
@@ -51,11 +58,15 @@ Calculates and records the actual cost incurred.
 - Cost is deducted from the available balance.
 
 **Postpaid**
-- The Customer uses the service first and pays later.
+- The Customer uses the service first and pays later; the debt is how far the balance is below zero, and a payment is a credit that reduces it.
 - Billing manages the Credit Limit and the Outstanding Balance.
 - Incurred debt is recorded.
 - Supports aggregation cycles and Invoice generation, see [invoicing-and-subscriptions.md](invoicing-and-subscriptions.md).
 - Supports paying off the debt.
+
+## Refunds and top-ups
+
+Refunding a top-up debits the wallet, so it is limited to the unspent balance: a refund must not drive a Prepaid wallet negative or into money that is held for a Reservation.
 
 ## Cross-cutting guarantees
 

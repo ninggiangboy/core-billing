@@ -30,6 +30,7 @@ Requirements beyond business functions.
 - Bounded Retry with Backoff.
 - Dead Letter Queue.
 - Idempotent Consumer.
+- Background jobs run once per Tenant, each inside that Tenant's scope, because Row-Level Security lets a job see one Tenant at a time. A failure in one Tenant does not stop the others.
 - Audit Log of administrative actions and transactions.
 - Monitoring and Distributed Tracing.
 

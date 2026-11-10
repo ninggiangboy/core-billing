@@ -6,10 +6,6 @@ import io.corebilling.money.adapter.persistence.JdbcLedgerRepository;
 import io.corebilling.money.adapter.persistence.JdbcLedgerVerifier;
 import io.corebilling.money.adapter.persistence.JdbcReservationRepository;
 import io.corebilling.money.adapter.persistence.JdbcWalletRepository;
-import io.corebilling.money.api.ChargeWallet;
-import io.corebilling.money.api.CreditWallet;
-import io.corebilling.money.api.DebitWallet;
-import io.corebilling.money.api.ReserveBudget;
 import io.corebilling.money.application.ChargeRepository;
 import io.corebilling.money.application.ChargeUseCase;
 import io.corebilling.money.application.CreditWalletUseCase;
@@ -35,7 +31,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Wires the money module. Holds no business rules. */
+/**
+ * Wires the money module. Holds no business rules. The use cases implement the money api
+ * (ReserveBudget, ChargeWallet, CreditWallet, DebitWallet), so other contexts inject those interfaces.
+ */
 @Configuration(proxyBeanMethods = false)
 class MoneyConfiguration {
 
@@ -124,27 +123,5 @@ class MoneyConfiguration {
     WalletQueries walletQueries(
             UnitOfWork unitOfWork, WalletRepository wallets, LedgerRepository ledger, ReservationRepository reservations, ChargeRepository charges) {
         return new WalletQueries(unitOfWork, wallets, ledger, reservations, charges);
-    }
-
-    // The contract other contexts use; the same beans, seen through the money api.
-
-    @Bean
-    ReserveBudget reserveBudget(ReserveBudgetUseCase useCase) {
-        return useCase;
-    }
-
-    @Bean
-    ChargeWallet chargeWallet(ChargeUseCase useCase) {
-        return useCase;
-    }
-
-    @Bean
-    CreditWallet creditWallet(CreditWalletUseCase useCase) {
-        return useCase;
-    }
-
-    @Bean
-    DebitWallet debitWallet(DebitWalletUseCase useCase) {
-        return useCase;
     }
 }

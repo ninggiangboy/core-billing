@@ -126,6 +126,51 @@ paths:
               schema:
                 $ref: "#/components/schemas/CustomerResponse"
       x-required-permission: customer:write
+  /api/v1/wallets:
+    get:
+      tags:
+      - money-controller
+      operationId: wallets
+      parameters:
+      - name: customerId
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WalletResponse"
+      x-required-permission: wallet:read
+    post:
+      tags:
+      - money-controller
+      operationId: openWallet
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenWalletRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+      x-required-permission: wallet:manage
   /api/v1/users:
     get:
       tags:
@@ -391,6 +436,105 @@ paths:
               schema:
                 $ref: "#/components/schemas/RoleResponse"
       x-required-permission: role:manage
+  /api/v1/reservations:
+    post:
+      tags:
+      - money-controller
+      operationId: reserve
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReserveRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+      x-required-permission: reservation:manage
+  /api/v1/reservations/{id}/release:
+    post:
+      tags:
+      - money-controller
+      operationId: release
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+      x-required-permission: reservation:manage
+  /api/v1/reservations/{id}/capture:
+    post:
+      tags:
+      - money-controller
+      operationId: capture
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaptureRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChargeResponse"
+      x-required-permission: charge:create
+  /api/v1/ledger-entries/{id}/reverse:
+    post:
+      tags:
+      - money-controller
+      operationId: reverse
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReverseRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReversalResponse"
+      x-required-permission: ledger:reverse
   /api/v1/customers:
     get:
       tags:
@@ -459,6 +603,85 @@ paths:
               schema:
                 $ref: "#/components/schemas/CustomerResponse"
       x-required-permission: customer:write
+  /api/v1/charges:
+    post:
+      tags:
+      - money-controller
+      operationId: charge
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChargeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChargeResponse"
+      x-required-permission: charge:create
+  /api/v1/wallets/{id}:
+    get:
+      tags:
+      - money-controller
+      operationId: wallet
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+      x-required-permission: wallet:read
+  /api/v1/wallets/{id}/ledger:
+    get:
+      tags:
+      - money-controller
+      operationId: ledger
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: afterSequence
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LedgerEntryResponse"
+      x-required-permission: wallet:read
   /api/v1/users/{id}:
     get:
       tags:
@@ -535,6 +758,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/RoleResponse"
       x-required-permission: role:read
+  /api/v1/reservations/{id}:
+    get:
+      tags:
+      - money-controller
+      operationId: reservation
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+      x-required-permission: wallet:read
   /api/v1/permissions:
     get:
       tags:
@@ -586,6 +828,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/CustomerResponse"
       x-required-permission: customer:read
+  /api/v1/charges/{id}:
+    get:
+      tags:
+      - money-controller
+      operationId: getCharge
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChargeResponse"
+      x-required-permission: wallet:read
   /api/v1/tenant-systems/{systemId}/credentials/{credentialId}:
     delete:
       tags:
@@ -692,6 +953,53 @@ components:
           type: string
         externalUserId:
           type: string
+    OpenWalletRequest:
+      type: object
+      properties:
+        customerId:
+          type: string
+        currency:
+          type: string
+        mode:
+          type: string
+        creditLimit:
+          type: integer
+          format: int64
+    MoneyDto:
+      type: object
+      properties:
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    WalletResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        currency:
+          type: string
+        mode:
+          type: string
+        balance:
+          $ref: "#/components/schemas/MoneyDto"
+        held:
+          $ref: "#/components/schemas/MoneyDto"
+        available:
+          $ref: "#/components/schemas/MoneyDto"
+        creditLimit:
+          $ref: "#/components/schemas/MoneyDto"
+        outstanding:
+          $ref: "#/components/schemas/MoneyDto"
+        lastSequence:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
     CreateUserRequest:
       type: object
       properties:
@@ -822,6 +1130,129 @@ components:
           type: array
           items:
             type: string
+    ReserveRequest:
+      type: object
+      properties:
+        walletId:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        ttlSeconds:
+          type: integer
+          format: int64
+        reference:
+          type: string
+    ReservationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        status:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        captured:
+          $ref: "#/components/schemas/MoneyDto"
+        expiresAt:
+          type: string
+          format: date-time
+        reference:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+    CaptureRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        reference:
+          type: string
+    ChargeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        failureReason:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        ledgerEntryId:
+          type: string
+        reservationId:
+          type: string
+        usageRef:
+          type: string
+        reference:
+          type: string
+    ReplacementRequest:
+      type: object
+      properties:
+        type:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        reference:
+          type: string
+    ReverseRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+        replacement:
+          $ref: "#/components/schemas/ReplacementRequest"
+    LedgerEntryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        sequence:
+          type: integer
+          format: int64
+        type:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        reference:
+          type: string
+        reservationId:
+          type: string
+        chargeId:
+          type: string
+        reversalOf:
+          type: string
+        actor:
+          type: string
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ReversalResponse:
+      type: object
+      properties:
+        reversal:
+          $ref: "#/components/schemas/LedgerEntryResponse"
+        replacement:
+          $ref: "#/components/schemas/LedgerEntryResponse"
+        replayed:
+          type: boolean
     CreateCustomerRequest:
       type: object
       properties:
@@ -832,6 +1263,20 @@ components:
         displayName:
           type: string
         email:
+          type: string
+    ChargeRequest:
+      type: object
+      properties:
+        walletId:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        usageRef:
+          type: string
+        reference:
           type: string
     MeResponse:
       type: object

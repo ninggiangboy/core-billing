@@ -72,7 +72,7 @@ class AccessControlHttpIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired BootstrapPlatformAdminUseCase bootstrap;
     @Autowired ScopeTestSupport scopes;
-    @Autowired RequestMappingHandlerMapping handlerMapping;
+    @Autowired @org.springframework.beans.factory.annotation.Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping handlerMapping;
     @Value("${billing.tenancy.base-domain}") String baseDomain;
 
     HttpWorld world;
@@ -109,6 +109,21 @@ class AccessControlHttpIntegrationTest {
             info.getMethodsCondition().getMethods().forEach(m -> actual.add(m + " " + required.value().code()));
         }
         assertThat(actual).as("the endpoint tables in this test must list every protected endpoint").containsExactlyElementsOf(documented);
+    }
+
+    @Test
+    void everyControllerEndpointInEveryModuleDeclaresAnAccessRule() {
+        int checked = 0;
+        for (var entry : handlerMapping.getHandlerMethods().entrySet()) {
+            HandlerMethod method = entry.getValue();
+            if (!method.getBeanType().getName().matches("io\\.corebilling\\.[a-z]+\\.adapter\\.web\\..*")) {
+                continue;
+            }
+            checked++;
+            assertThat(method.hasMethodAnnotation(RequiresPermission.class) || method.hasMethodAnnotation(io.corebilling.platform.api.Authenticated.class))
+                    .as("%s declares neither @RequiresPermission nor @Authenticated", method.getShortLogMessage()).isTrue();
+        }
+        assertThat(checked).as("controllers of platform, customer and money were all inspected").isGreaterThan(40);
     }
 
     @Test

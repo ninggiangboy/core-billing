@@ -1,7 +1,7 @@
 ---
 title: "Core Billing implementation"
 description: "Phased delivery of the Core Billing System, the Sample Tenant System and the web apps, from build foundation to the 15 integration scenarios."
-status: pending
+status: in-progress
 priority: P1
 effort: 76d
 branch: dev
@@ -44,7 +44,7 @@ Items 1, 2, 3, 6 and 7 were confirmed by the project owner on 2026-11-09; items 
 | 2 | [Tenancy core, UnitOfWork and RLS](./phase-02-tenancy-core-unit-of-work-rls.md) | 4d | 1 | Completed |
 | 3 | [Identity and access](./phase-03-identity-and-access.md) | 6d | 2 | Completed |
 | 4 | [Customers and tenant mapping](./phase-04-customers-and-mapping.md) | 2d | 3 | Completed |
-| 5 | [Money: wallet, ledger, reservation, charge](./phase-05-money-wallet-ledger-reservation-charge.md) | 7d | 4 | Pending |
+| 5 | [Money: wallet, ledger, reservation, charge](./phase-05-money-wallet-ledger-reservation-charge.md) | 7d | 4 | Completed |
 | 6 | [Outbox relay and outbound webhooks](./phase-06-outbox-relay-and-outbound-webhooks.md) | 4d | 5 | Pending |
 | 7 | [Pricing, usage and cost estimation](./phase-07-pricing-usage-estimation.md) | 6d | 5 | Pending |
 | 8 | [Payments and Stripe](./phase-08-payments-and-stripe.md) | 7d | 5, 6 | Pending |

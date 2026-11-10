@@ -1,4 +1,4 @@
-package io.corebilling.usage.application;
+package io.corebilling.usage.application.command;
 
 /** The shape of a usage idempotency key. */
 final class RecordKey {

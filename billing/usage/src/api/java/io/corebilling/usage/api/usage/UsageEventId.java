@@ -1,4 +1,4 @@
-package io.corebilling.usage.api;
+package io.corebilling.usage.api.usage;
 
 import java.util.Objects;
 import java.util.UUID;

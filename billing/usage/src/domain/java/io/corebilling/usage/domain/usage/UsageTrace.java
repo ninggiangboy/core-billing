@@ -1,4 +1,4 @@
-package io.corebilling.usage.domain;
+package io.corebilling.usage.domain.usage;
 
 import io.corebilling.platform.api.TenantSystemId;
 

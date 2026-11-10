@@ -1,4 +1,4 @@
-package io.corebilling.usage.application;
+package io.corebilling.usage.application.port;
 
 import java.util.Optional;
 

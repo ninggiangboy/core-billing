@@ -1,8 +1,8 @@
-package io.corebilling.usage.domain;
+package io.corebilling.usage.domain.usage;
 
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.TenantId;
-import io.corebilling.usage.api.UsageEventId;
+import io.corebilling.usage.api.usage.UsageEventId;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;

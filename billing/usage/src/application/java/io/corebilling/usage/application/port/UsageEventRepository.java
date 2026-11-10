@@ -1,10 +1,10 @@
-package io.corebilling.usage.application;
+package io.corebilling.usage.application.port;
 
 import io.corebilling.sharedkernel.CustomerId;
-import io.corebilling.usage.api.UsageEventId;
-import io.corebilling.usage.api.UsageRecord;
-import io.corebilling.usage.api.UsageTotal;
-import io.corebilling.usage.domain.UsageEvent;
+import io.corebilling.usage.api.usage.UsageEventId;
+import io.corebilling.usage.api.usage.UsageRecord;
+import io.corebilling.usage.api.usage.UsageTotal;
+import io.corebilling.usage.domain.usage.UsageEvent;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

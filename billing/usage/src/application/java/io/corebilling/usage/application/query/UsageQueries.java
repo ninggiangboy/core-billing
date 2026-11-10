@@ -1,17 +1,18 @@
-package io.corebilling.usage.application;
+package io.corebilling.usage.application.query;
 
 import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.platform.api.NotFoundException;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
-import io.corebilling.usage.api.UsageEventId;
-import io.corebilling.usage.api.UsageLookup;
-import io.corebilling.usage.api.UsageRecord;
-import io.corebilling.usage.api.UsageTotal;
-import io.corebilling.usage.domain.UsageEvent;
+import io.corebilling.usage.api.usage.UsageEventId;
+import io.corebilling.usage.api.usage.UsageLookup;
+import io.corebilling.usage.api.usage.UsageRecord;
+import io.corebilling.usage.api.usage.UsageTotal;
+import io.corebilling.usage.domain.usage.UsageEvent;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import io.corebilling.usage.application.port.UsageEventRepository;
 
 /** Reads usage of the current tenant: history for the API, and the {@link UsageLookup} other contexts use. */
 public class UsageQueries implements UsageLookup {

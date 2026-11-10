@@ -1,4 +1,4 @@
-package io.corebilling.usage.api;
+package io.corebilling.usage.api.usage;
 
 import io.corebilling.sharedkernel.CustomerId;
 import java.math.BigDecimal;

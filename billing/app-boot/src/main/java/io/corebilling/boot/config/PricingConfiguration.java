@@ -22,7 +22,7 @@ import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.EventPublisher;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
-import io.corebilling.usage.api.UsageLookup;
+import io.corebilling.usage.api.usage.UsageLookup;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.simple.JdbcClient;

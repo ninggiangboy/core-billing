@@ -1,4 +1,4 @@
-package io.corebilling.usage.application;
+package io.corebilling.usage.application.command;
 
 import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.customer.api.lookup.CustomerSummary;
@@ -11,9 +11,9 @@ import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.sharedkernel.UnitOfWork;
-import io.corebilling.usage.api.UsageEventId;
-import io.corebilling.usage.domain.UsageEvent;
-import io.corebilling.usage.domain.UsageTrace;
+import io.corebilling.usage.api.usage.UsageEventId;
+import io.corebilling.usage.domain.usage.UsageEvent;
+import io.corebilling.usage.domain.usage.UsageTrace;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import io.corebilling.usage.application.port.MetricUnits;
+import io.corebilling.usage.application.port.UsageEventRepository;
 
 /**
  * Records usage, once per idempotency key. A request is validated as a whole before anything is stored, and

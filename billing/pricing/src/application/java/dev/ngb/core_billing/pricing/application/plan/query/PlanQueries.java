@@ -1,0 +1,28 @@
+package dev.ngb.core_billing.pricing.application.plan.query;
+
+import dev.ngb.core_billing.platform.api.error.NotFoundException;
+import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
+import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import java.util.List;
+import java.util.UUID;
+
+/** Reads plans for the admin GET handlers; the write side is not involved. */
+public class PlanQueries {
+
+    private final UnitOfWork unitOfWork;
+    private final PlanReadRepository plans;
+
+    public PlanQueries(UnitOfWork unitOfWork, PlanReadRepository plans) {
+        this.unitOfWork = unitOfWork;
+        this.plans = plans;
+    }
+
+    /** Newest first; {@code status} filters when given. */
+    public List<PricingPlanView> list(PlanStatus status) {
+        return unitOfWork.transactional(() -> plans.list(status));
+    }
+
+    public PricingPlanView get(UUID id) {
+        return unitOfWork.transactional(() -> plans.findById(id).orElseThrow(() -> new NotFoundException("pricing plan not found")));
+    }
+}

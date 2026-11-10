@@ -1,0 +1,25 @@
+package dev.ngb.core_billing.customer.application.query;
+
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
+import dev.ngb.core_billing.customer.api.lookup.CustomerSummary;
+import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import java.util.Optional;
+import dev.ngb.core_billing.customer.application.query.CustomerReadRepository;
+
+public class CustomerLookupService implements CustomerLookup {
+
+    private final UnitOfWork unitOfWork;
+    private final CustomerReadRepository customers;
+
+    public CustomerLookupService(UnitOfWork unitOfWork, CustomerReadRepository customers) {
+        this.unitOfWork = unitOfWork;
+        this.customers = customers;
+    }
+
+    @Override
+    public Optional<CustomerSummary> find(CustomerId id) {
+        return unitOfWork.transactional(
+                () -> customers.findById(id).map(c -> new CustomerSummary(c.id(), c.displayName(), c.isActive())));
+    }
+}

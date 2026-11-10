@@ -117,6 +117,7 @@ Bounded contexts follow the functional areas in [overview-and-scope.md](overview
 
 Decisions:
 
+- The Java root package is `dev.ngb.core_billing` and every module's code sits under it, so Modulith still discovers the modules across Gradle modules by that shared root. The Gradle group is `dev.ngb`, set once for all projects in `billing/build.gradle.kts`.
 - The module set is `platform`, `customer`, `pricing`, `usage`, `money`, `invoicing`, `payment`, `webhook`, plus `shared-kernel` and `app-boot`.
 - `money` owns Wallet, Ledger, Reservation and Charge, so the whole money path commits in one transaction that includes its outbox row.
 - `shared-kernel` holds value objects and framework-free technical ports only. It takes no module dependency and stays small; a growing kernel is split, not extended.

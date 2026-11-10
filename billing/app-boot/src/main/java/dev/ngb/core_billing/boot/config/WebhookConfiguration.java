@@ -1,0 +1,181 @@
+package dev.ngb.core_billing.boot.config;
+
+import dev.ngb.core_billing.boot.infrastructure.AesGcmSecretCipher;
+import dev.ngb.core_billing.boot.infrastructure.SchemaEventTypeCatalog;
+import dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay;
+import dev.ngb.core_billing.platform.api.audit.AuditLog;
+import dev.ngb.core_billing.platform.api.tenant.TenantContext;
+import dev.ngb.core_billing.sharedkernel.Backoff;
+import dev.ngb.core_billing.sharedkernel.Clock;
+import dev.ngb.core_billing.sharedkernel.EventInbox;
+import dev.ngb.core_billing.sharedkernel.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.webhook.adapter.crypto.HmacSha256Signer;
+import dev.ngb.core_billing.webhook.adapter.crypto.RandomSigningKeys;
+import dev.ngb.core_billing.webhook.adapter.http.HttpComponentsWebhookSender;
+import dev.ngb.core_billing.webhook.adapter.messaging.JacksonEventBodyWriter;
+import dev.ngb.core_billing.webhook.adapter.messaging.WebhookEventListener;
+import dev.ngb.core_billing.webhook.adapter.persistence.JdbcWebhookDeliveryRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.JdbcWebhookEndpointRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.delivery.JdbcWebhookDeliveryReadRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.endpoint.JdbcWebhookEndpointReadRepository;
+import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryQueries;
+import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryReadRepository;
+import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
+import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointReadRepository;
+import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
+import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;
+import dev.ngb.core_billing.webhook.application.delivery.command.DeliveryAdministration;
+import dev.ngb.core_billing.webhook.application.endpoint.command.EndpointAdministration;
+import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
+import dev.ngb.core_billing.webhook.application.shared.port.EventTypeCatalog;
+import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
+import dev.ngb.core_billing.webhook.application.delivery.command.RecordDeliveriesUseCase;
+import dev.ngb.core_billing.webhook.application.shared.port.SecretCipher;
+import dev.ngb.core_billing.webhook.application.shared.port.SigningKeys;
+import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
+import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
+import dev.ngb.core_billing.webhook.application.delivery.port.WebhookSender;
+import dev.ngb.core_billing.webhook.application.shared.port.WebhookSettings;
+import dev.ngb.core_billing.webhook.domain.delivery.DeliveryPolicy;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Duration;
+import java.util.concurrent.ThreadLocalRandom;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jdbc.core.JdbcAggregateOperations;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import tools.jackson.databind.json.JsonMapper;
+
+/** Wires the outbox relay and the webhook module. Holds no business rules. */
+@Configuration(proxyBeanMethods = false)
+class WebhookConfiguration {
+
+    @Bean
+    OutboxRelay outboxRelay(
+            UnitOfWork unitOfWork, JdbcClient jdbc, JsonMapper json, ApplicationEventPublisher publisher, Clock clock, MeterRegistry meters,
+            @Value("${billing.outbox.batch-size:100}") int batchSize,
+            @Value("${billing.outbox.max-attempts:10}") int maxAttempts,
+            @Value("${billing.outbox.backoff-base:PT10S}") Duration backoffBase,
+            @Value("${billing.outbox.backoff-cap:PT1H}") Duration backoffCap) {
+        return new OutboxRelay(unitOfWork, jdbc, json, publisher, clock, meters, batchSize, maxAttempts, new Backoff(backoffBase, backoffCap, 0.2));
+    }
+
+    @Bean
+    WebhookSettings webhookSettings(
+            @Value("${billing.webhooks.allow-insecure-targets:false}") boolean allowInsecureTargets,
+            @Value("${billing.webhooks.batch-size:25}") int batchSize,
+            @Value("${billing.webhooks.max-attempts:10}") int maxAttempts,
+            @Value("${billing.webhooks.backoff-base:PT30S}") Duration backoffBase,
+            @Value("${billing.webhooks.backoff-cap:PT6H}") Duration backoffCap,
+            @Value("${billing.webhooks.lease:PT2M}") Duration lease) {
+        return new WebhookSettings(allowInsecureTargets, batchSize, new DeliveryPolicy(maxAttempts, new Backoff(backoffBase, backoffCap, 0.2), lease));
+    }
+
+    @Bean
+    WebhookEndpointRepository webhookEndpointRepository(JdbcClient jdbc) {
+        return new JdbcWebhookEndpointRepository(jdbc);
+    }
+
+    @Bean
+    WebhookDeliveryRepository webhookDeliveryRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcWebhookDeliveryRepository(aggregates, jdbc);
+    }
+
+    @Bean
+    EndpointReadRepository endpointReadRepository(JdbcClient jdbc) {
+        return new JdbcWebhookEndpointReadRepository(jdbc);
+    }
+
+    @Bean
+    DeliveryReadRepository deliveryReadRepository(JdbcClient jdbc) {
+        return new JdbcWebhookDeliveryReadRepository(jdbc);
+    }
+
+    @Bean
+    EndpointQueries endpointQueries(UnitOfWork unitOfWork, EndpointReadRepository endpoints) {
+        return new EndpointQueries(unitOfWork, endpoints);
+    }
+
+    @Bean
+    DeliveryQueries deliveryQueries(UnitOfWork unitOfWork, DeliveryReadRepository deliveries) {
+        return new DeliveryQueries(unitOfWork, deliveries);
+    }
+
+    @Bean
+    AesGcmSecretCipher secretCipher(
+            @Value("${billing.secrets.master-key}") String masterKey, @Value("${billing.secrets.master-key-id:k1}") String masterKeyId) {
+        return new AesGcmSecretCipher(masterKey, masterKeyId);
+    }
+
+    @Bean
+    SigningKeys signingKeys() {
+        return new RandomSigningKeys();
+    }
+
+    @Bean
+    PayloadSigner payloadSigner() {
+        return new HmacSha256Signer();
+    }
+
+    @Bean(destroyMethod = "close")
+    HttpComponentsWebhookSender webhookSender(
+            WebhookSettings settings,
+            @Value("${billing.webhooks.connect-timeout:PT3S}") Duration connectTimeout,
+            @Value("${billing.webhooks.read-timeout:PT10S}") Duration readTimeout,
+            @Value("${billing.webhooks.deadline:PT15S}") Duration deadline) {
+        return new HttpComponentsWebhookSender(settings.allowInsecureTargets(), connectTimeout, readTimeout, deadline);
+    }
+
+    @Bean
+    EventBodyWriter eventBodyWriter(JsonMapper json) {
+        return new JacksonEventBodyWriter(json);
+    }
+
+    @Bean
+    EventTypeCatalog eventTypeCatalog() {
+        return new SchemaEventTypeCatalog();
+    }
+
+    @Bean
+    CreateEndpointUseCase createEndpointUseCase(
+            UnitOfWork unitOfWork, WebhookEndpointRepository endpoints, SecretCipher cipher, SigningKeys keys, EventTypeCatalog catalog,
+            WebhookSettings settings, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new CreateEndpointUseCase(unitOfWork, endpoints, cipher, keys, catalog, settings, auditLog, tenantContext, ids, clock);
+    }
+
+    @Bean
+    EndpointAdministration endpointAdministration(
+            UnitOfWork unitOfWork, WebhookEndpointRepository endpoints, SecretCipher cipher, SigningKeys keys, EventTypeCatalog catalog,
+            WebhookSettings settings, AuditLog auditLog, TenantContext tenantContext, Clock clock) {
+        return new EndpointAdministration(unitOfWork, endpoints, cipher, keys, catalog, settings, auditLog, tenantContext, clock);
+    }
+
+    @Bean
+    DeliveryAdministration deliveryAdministration(
+            UnitOfWork unitOfWork, WebhookDeliveryRepository deliveries, WebhookEndpointRepository endpoints, AuditLog auditLog,
+            TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new DeliveryAdministration(unitOfWork, deliveries, endpoints, auditLog, tenantContext, ids, clock);
+    }
+
+    @Bean
+    RecordDeliveriesUseCase recordDeliveriesUseCase(
+            UnitOfWork unitOfWork, WebhookEndpointRepository endpoints, WebhookDeliveryRepository deliveries, EventInbox inbox, EventBodyWriter bodies,
+            IdGenerator ids, Clock clock) {
+        return new RecordDeliveriesUseCase(unitOfWork, endpoints, deliveries, inbox, bodies, ids, clock);
+    }
+
+    @Bean
+    DeliverWebhooksUseCase deliverWebhooksUseCase(
+            UnitOfWork unitOfWork, WebhookDeliveryRepository deliveries, SecretCipher cipher, PayloadSigner signer, WebhookSender sender,
+            WebhookSettings settings, Clock clock) {
+        return new DeliverWebhooksUseCase(unitOfWork, deliveries, cipher, signer, sender, settings, clock, () -> ThreadLocalRandom.current().nextDouble());
+    }
+
+    @Bean
+    WebhookEventListener webhookEventListener(RecordDeliveriesUseCase recordDeliveries) {
+        return new WebhookEventListener(recordDeliveries);
+    }
+}

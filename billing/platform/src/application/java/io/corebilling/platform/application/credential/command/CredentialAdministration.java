@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.credential.port.CredentialRepository;
 import io.corebilling.platform.application.tenantsystem.port.TenantSystemRepository;
 
@@ -116,13 +116,6 @@ public class CredentialAdministration {
             credentials.update(credential);
             audit(caller, credential.tenantId(), "credential.revoked", credential);
             return credential;
-        });
-    }
-
-    public List<ApiCredential> list(TenantSystemId systemId) {
-        return unitOfWork.transactional(() -> {
-            requireActiveSystemOrDisabled(systemId);
-            return credentials.findByTenantSystem(systemId);
         });
     }
 

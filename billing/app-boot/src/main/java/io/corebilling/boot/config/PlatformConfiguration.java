@@ -9,26 +9,40 @@ import io.corebilling.platform.adapter.persistence.JdbcTenantSystemRepository;
 import io.corebilling.platform.adapter.persistence.JdbcUserRepository;
 import io.corebilling.platform.adapter.security.InMemoryRateLimiter;
 import io.corebilling.platform.adapter.persistence.JdbcTenantRepository;
+import io.corebilling.platform.adapter.persistence.credential.JdbcCredentialReadRepository;
+import io.corebilling.platform.adapter.persistence.role.JdbcRoleReadRepository;
+import io.corebilling.platform.adapter.persistence.tenant.JdbcTenantReadRepository;
+import io.corebilling.platform.adapter.persistence.tenantsystem.JdbcTenantSystemReadRepository;
+import io.corebilling.platform.adapter.persistence.user.JdbcUserReadRepository;
 import io.corebilling.platform.api.audit.AuditLog;
 import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.platform.application.tenant.command.AddTenantDomainUseCase;
-import io.corebilling.platform.application.auth.query.Authentication;
+import io.corebilling.platform.application.auth.Authentication;
 import io.corebilling.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import io.corebilling.platform.application.credential.command.CredentialAdministration;
 import io.corebilling.platform.application.credential.port.CredentialRepository;
+import io.corebilling.platform.application.credential.query.CredentialQueries;
+import io.corebilling.platform.application.credential.query.CredentialReadRepository;
 import io.corebilling.platform.application.auth.port.IdentityProviderPort;
 import io.corebilling.platform.application.role.port.PermissionCatalogRepository;
 import io.corebilling.platform.application.tenant.command.ProvisionTenantUseCase;
 import io.corebilling.platform.application.auth.port.RateLimiter;
 import io.corebilling.platform.application.role.command.RoleAdministration;
 import io.corebilling.platform.application.role.port.RoleRepository;
+import io.corebilling.platform.application.role.query.RoleQueries;
+import io.corebilling.platform.application.role.query.RoleReadRepository;
 import io.corebilling.platform.application.role.command.SeedDefaultRolesUseCase;
 import io.corebilling.platform.application.role.command.SeedPermissionsUseCase;
 import io.corebilling.platform.application.tenant.query.TenantQueries;
+import io.corebilling.platform.application.tenant.query.TenantReadRepository;
 import io.corebilling.platform.application.tenantsystem.command.TenantSystemAdministration;
 import io.corebilling.platform.application.tenantsystem.port.TenantSystemRepository;
+import io.corebilling.platform.application.tenantsystem.query.TenantSystemQueries;
+import io.corebilling.platform.application.tenantsystem.query.TenantSystemReadRepository;
 import io.corebilling.platform.application.user.command.UserAdministration;
 import io.corebilling.platform.application.user.port.UserRepository;
+import io.corebilling.platform.application.user.query.UserQueries;
+import io.corebilling.platform.application.user.query.UserReadRepository;
 import io.corebilling.platform.application.tenant.command.CreateTenantUseCase;
 import io.corebilling.platform.application.tenant.command.DeactivateTenantUseCase;
 import io.corebilling.platform.application.tenant.command.EnsurePlatformDomainUseCase;
@@ -209,8 +223,54 @@ class PlatformConfiguration {
     }
 
     @Bean
-    TenantQueries tenantQueries(UnitOfWork unitOfWork, TenantRepository tenants, TenantDomainRepository domains) {
-        return new TenantQueries(unitOfWork, tenants, domains);
+    TenantReadRepository tenantReadRepository(JdbcClient jdbc) {
+        return new JdbcTenantReadRepository(jdbc);
+    }
+
+    @Bean
+    RoleReadRepository roleReadRepository(JdbcClient jdbc) {
+        return new JdbcRoleReadRepository(jdbc);
+    }
+
+    @Bean
+    UserReadRepository userReadRepository(JdbcClient jdbc) {
+        return new JdbcUserReadRepository(jdbc);
+    }
+
+    @Bean
+    TenantSystemReadRepository tenantSystemReadRepository(JdbcClient jdbc) {
+        return new JdbcTenantSystemReadRepository(jdbc);
+    }
+
+    @Bean
+    CredentialReadRepository credentialReadRepository(JdbcClient jdbc) {
+        return new JdbcCredentialReadRepository(jdbc);
+    }
+
+    @Bean
+    TenantQueries tenantQueries(UnitOfWork unitOfWork, TenantReadRepository tenants) {
+        return new TenantQueries(unitOfWork, tenants);
+    }
+
+    @Bean
+    RoleQueries roleQueries(UnitOfWork unitOfWork, RoleReadRepository roles) {
+        return new RoleQueries(unitOfWork, roles);
+    }
+
+    @Bean
+    UserQueries userQueries(UnitOfWork unitOfWork, UserReadRepository users) {
+        return new UserQueries(unitOfWork, users);
+    }
+
+    @Bean
+    TenantSystemQueries tenantSystemQueries(UnitOfWork unitOfWork, TenantSystemReadRepository systems) {
+        return new TenantSystemQueries(unitOfWork, systems);
+    }
+
+    @Bean
+    CredentialQueries credentialQueries(
+            UnitOfWork unitOfWork, CredentialReadRepository credentials, TenantSystemReadRepository systems) {
+        return new CredentialQueries(unitOfWork, credentials, systems);
     }
 
     @Bean

@@ -8,14 +8,11 @@ import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.platform.api.tenant.TenantSystemId;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.TenantId;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.data.relational.core.query.Query;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class JdbcCustomerRepository implements CustomerRepository {
@@ -57,13 +54,6 @@ public class JdbcCustomerRepository implements CustomerRepository {
                 .query(UUID.class)
                 .optional()
                 .flatMap(id -> findById(new CustomerId(id)));
-    }
-
-    @Override
-    public List<Customer> list() {
-        return jdbc.findAll(Query.empty().sort(Sort.by("createdAt")), CustomerRow.class).stream()
-                .map(JdbcCustomerRepository::toDomain)
-                .toList();
     }
 
     private static CustomerRow toRow(Customer customer) {

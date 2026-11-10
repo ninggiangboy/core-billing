@@ -13,9 +13,8 @@ import io.corebilling.platform.domain.role.RoleId;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.UnitOfWork;
-import java.util.List;
 import java.util.Set;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.role.port.RoleRepository;
 
 /** Roles of the current scope. Roles live in the database and can be changed through the UI. */
@@ -66,11 +65,4 @@ public class RoleAdministration {
         });
     }
 
-    public Role get(RoleId id) {
-        return unitOfWork.transactional(() -> roles.findById(id).orElseThrow(() -> new NotFoundException("role not found")));
-    }
-
-    public List<Role> list() {
-        return unitOfWork.transactional(roles::list);
-    }
 }

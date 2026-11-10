@@ -6,6 +6,8 @@ import io.corebilling.platform.api.actor.RequestScope;
 import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.platform.application.role.command.RoleAdministration;
+import io.corebilling.platform.application.role.query.RoleQueries;
+import io.corebilling.platform.application.role.query.RoleView;
 import io.corebilling.platform.domain.role.Role;
 import io.corebilling.platform.domain.role.RoleId;
 import java.time.Instant;
@@ -38,14 +40,22 @@ public class RoleController {
                     role.id().toString(), role.name(), role.isSystem(),
                     role.permissions().stream().map(Permission::code).collect(Collectors.toSet()), role.createdAt());
         }
+
+        static RoleResponse ofView(RoleView role) {
+            return new RoleResponse(
+                    role.id().toString(), role.name(), role.system(),
+                    role.permissions().stream().map(Permission::code).collect(Collectors.toSet()), role.createdAt());
+        }
     }
 
     private final RoleAdministration roles;
+    private final RoleQueries roleQueries;
     private final CallerResolver callers;
     private final TenantContext tenantContext;
 
-    public RoleController(RoleAdministration roles, CallerResolver callers, TenantContext tenantContext) {
+    public RoleController(RoleAdministration roles, RoleQueries roleQueries, CallerResolver callers, TenantContext tenantContext) {
         this.roles = roles;
+        this.roleQueries = roleQueries;
         this.callers = callers;
         this.tenantContext = tenantContext;
     }
@@ -60,13 +70,13 @@ public class RoleController {
     @GetMapping("/roles")
     @RequiresPermission(Permission.ROLE_READ)
     public List<RoleResponse> list() {
-        return roles.list().stream().map(RoleResponse::of).toList();
+        return roleQueries.list().stream().map(RoleResponse::ofView).toList();
     }
 
     @GetMapping("/roles/{id}")
     @RequiresPermission(Permission.ROLE_READ)
     public RoleResponse get(@PathVariable String id) {
-        return RoleResponse.of(roles.get(RoleId.of(id)));
+        return RoleResponse.ofView(roleQueries.get(RoleId.of(id).value()));
     }
 
     @PutMapping("/roles/{id}/permissions")

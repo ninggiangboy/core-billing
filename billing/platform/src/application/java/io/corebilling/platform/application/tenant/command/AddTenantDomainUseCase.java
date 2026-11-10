@@ -11,6 +11,7 @@ import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.platform.application.tenant.port.TenantDomainRepository;
 import io.corebilling.platform.application.tenant.port.TenantRepository;
+import io.corebilling.platform.application.tenant.TenantNotFoundException;
 
 /** Maps an additional hostname to a Tenant. Runs at Platform scope. */
 public class AddTenantDomainUseCase {

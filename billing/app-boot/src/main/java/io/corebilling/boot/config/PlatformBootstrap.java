@@ -55,8 +55,8 @@ class PlatformBootstrap implements ApplicationRunner {
             ensurePlatformDomain.execute("platform." + baseDomain);
             seedDefaultRoles.execute();
             // Tenants created before a permission existed get it on their default roles.
-            tenantQueries.list().stream().filter(io.corebilling.platform.domain.tenant.Tenant::isActive).forEach(tenant ->
-                    tenantContext.runAs(RequestScope.tenant(tenant.id()), seedDefaultRoles::execute));
+            tenantQueries.list().stream().filter(io.corebilling.platform.application.tenant.query.TenantView::isActive).forEach(tenant ->
+                    tenantContext.runAs(RequestScope.tenant(new io.corebilling.sharedkernel.TenantId(tenant.id())), seedDefaultRoles::execute));
             if (!adminEmail.isBlank()) {
                 bootstrapAdmin.execute(adminEmail, "Platform Administrator", adminTemporaryPassword.isBlank() ? null : adminTemporaryPassword);
             }

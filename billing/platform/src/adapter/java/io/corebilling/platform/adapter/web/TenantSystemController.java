@@ -5,7 +5,11 @@ import io.corebilling.platform.api.actor.Permission;
 import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.platform.api.tenant.TenantSystemId;
 import io.corebilling.platform.application.credential.command.CredentialAdministration;
+import io.corebilling.platform.application.credential.query.CredentialQueries;
+import io.corebilling.platform.application.credential.query.CredentialView;
 import io.corebilling.platform.application.tenantsystem.command.TenantSystemAdministration;
+import io.corebilling.platform.application.tenantsystem.query.TenantSystemQueries;
+import io.corebilling.platform.application.tenantsystem.query.TenantSystemView;
 import io.corebilling.platform.domain.credential.ApiCredential;
 import io.corebilling.platform.domain.credential.CredentialId;
 import io.corebilling.platform.domain.tenantsystem.TenantSystem;
@@ -39,12 +43,23 @@ public class TenantSystemController {
         static SystemResponse of(TenantSystem system) {
             return new SystemResponse(system.id().toString(), system.name(), system.status().name(), system.createdAt());
         }
+
+        static SystemResponse ofView(TenantSystemView system) {
+            return new SystemResponse(system.id().toString(), system.name(), system.status().name(), system.createdAt());
+        }
     }
 
     /** Credential metadata. It never contains the secret. */
     public record CredentialResponse(
             String id, String keyId, String label, Set<String> scopes, String status, Instant createdAt, Instant expiresAt, Instant revokedAt) {
         static CredentialResponse of(ApiCredential credential) {
+            return new CredentialResponse(
+                    credential.id().toString(), credential.keyId(), credential.label(),
+                    credential.scopes().stream().map(Permission::code).collect(Collectors.toSet()),
+                    credential.status().name(), credential.createdAt(), credential.expiresAt(), credential.revokedAt());
+        }
+
+        static CredentialResponse ofView(CredentialView credential) {
             return new CredentialResponse(
                     credential.id().toString(), credential.keyId(), credential.label(),
                     credential.scopes().stream().map(Permission::code).collect(Collectors.toSet()),
@@ -63,12 +78,16 @@ public class TenantSystemController {
     private static final long DEFAULT_OVERLAP_MINUTES = 24 * 60;
 
     private final TenantSystemAdministration systems;
+    private final TenantSystemQueries systemQueries;
     private final CredentialAdministration credentials;
+    private final CredentialQueries credentialQueries;
     private final CallerResolver callers;
 
-    public TenantSystemController(TenantSystemAdministration systems, CredentialAdministration credentials, CallerResolver callers) {
+    public TenantSystemController(TenantSystemAdministration systems, TenantSystemQueries systemQueries, CredentialAdministration credentials, CredentialQueries credentialQueries, CallerResolver callers) {
         this.systems = systems;
+        this.systemQueries = systemQueries;
         this.credentials = credentials;
+        this.credentialQueries = credentialQueries;
         this.callers = callers;
     }
 
@@ -82,13 +101,13 @@ public class TenantSystemController {
     @GetMapping("/tenant-systems")
     @RequiresPermission(Permission.TENANT_SYSTEM_READ)
     public List<SystemResponse> list() {
-        return systems.list().stream().map(SystemResponse::of).toList();
+        return systemQueries.list().stream().map(SystemResponse::ofView).toList();
     }
 
     @GetMapping("/tenant-systems/{id}")
     @RequiresPermission(Permission.TENANT_SYSTEM_READ)
     public SystemResponse get(@PathVariable String id) {
-        return SystemResponse.of(systems.get(TenantSystemId.of(id)));
+        return SystemResponse.ofView(systemQueries.get(TenantSystemId.of(id).value()));
     }
 
     @PostMapping("/tenant-systems/{id}/credentials")
@@ -106,7 +125,7 @@ public class TenantSystemController {
     @GetMapping("/tenant-systems/{id}/credentials")
     @RequiresPermission(Permission.CREDENTIAL_MANAGE)
     public List<CredentialResponse> listCredentials(@PathVariable String id) {
-        return credentials.list(TenantSystemId.of(id)).stream().map(CredentialResponse::of).toList();
+        return credentialQueries.list(TenantSystemId.of(id)).stream().map(CredentialResponse::ofView).toList();
     }
 
     @PostMapping("/tenant-systems/{id}/credentials/rotate")
@@ -120,7 +139,7 @@ public class TenantSystemController {
     @RequiresPermission(Permission.CREDENTIAL_MANAGE)
     public CredentialResponse revoke(@PathVariable String systemId, @PathVariable String credentialId) {
         TenantSystemId expected = TenantSystemId.of(systemId);
-        boolean belongs = credentials.list(expected).stream().anyMatch(c -> c.id().equals(CredentialId.of(credentialId)));
+        boolean belongs = credentialQueries.list(expected).stream().anyMatch(c -> c.id().equals(CredentialId.of(credentialId).value()));
         if (!belongs) {
             throw new NotFoundException("credential not found");
         }

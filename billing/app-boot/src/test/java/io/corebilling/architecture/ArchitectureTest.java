@@ -18,8 +18,8 @@ class ArchitectureTest {
 
     // A context joins one of these sets only once it has adopted that part of the target architecture.
     private static final Set<String> LAYOUT = Set.of("customer", "usage", "webhook", "pricing", "payment", "money", "platform");
-    private static final Set<String> PERSISTENCE = Set.of("usage", "webhook", "pricing", "money", "payment");
-    private static final Set<String> READ_WRITE = Set.of("usage", "webhook", "pricing", "money", "payment");
+    private static final Set<String> PERSISTENCE = Set.of("customer", "usage", "webhook", "pricing", "money", "payment", "platform");
+    private static final Set<String> READ_WRITE = Set.of("customer", "usage", "webhook", "pricing", "money", "payment", "platform");
 
     private static JavaClasses production;
 

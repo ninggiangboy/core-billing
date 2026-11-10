@@ -8,7 +8,7 @@ import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.money.api.wallet.InsufficientFundsException;
 import io.corebilling.platform.api.error.AccessDeniedException;
 import io.corebilling.platform.api.error.IdempotencyConflictException;
-import io.corebilling.platform.application.auth.query.RateLimitExceededException;
+import io.corebilling.platform.application.auth.RateLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;

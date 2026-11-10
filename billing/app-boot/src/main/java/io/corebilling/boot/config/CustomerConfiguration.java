@@ -1,10 +1,13 @@
 package io.corebilling.boot.config;
 
 import io.corebilling.customer.adapter.persistence.JdbcCustomerRepository;
+import io.corebilling.customer.adapter.persistence.customer.JdbcCustomerReadRepository;
 import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.customer.application.command.CreateCustomerUseCase;
 import io.corebilling.customer.application.command.CustomerAdministration;
 import io.corebilling.customer.application.query.CustomerLookupService;
+import io.corebilling.customer.application.query.CustomerQueries;
+import io.corebilling.customer.application.query.CustomerReadRepository;
 import io.corebilling.customer.application.port.CustomerRepository;
 import io.corebilling.platform.api.audit.AuditLog;
 import io.corebilling.platform.api.idempotency.IdempotencyStore;
@@ -47,7 +50,17 @@ class CustomerConfiguration {
     }
 
     @Bean
-    CustomerLookup customerLookup(UnitOfWork unitOfWork, CustomerRepository customers) {
+    CustomerReadRepository customerReadRepository(JdbcClient jdbc) {
+        return new JdbcCustomerReadRepository(jdbc);
+    }
+
+    @Bean
+    CustomerQueries customerQueries(UnitOfWork unitOfWork, CustomerReadRepository customers) {
+        return new CustomerQueries(unitOfWork, customers);
+    }
+
+    @Bean
+    CustomerLookup customerLookup(UnitOfWork unitOfWork, CustomerReadRepository customers) {
         return new CustomerLookupService(unitOfWork, customers);
     }
 }

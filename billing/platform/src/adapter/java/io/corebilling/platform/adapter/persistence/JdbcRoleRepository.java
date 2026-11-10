@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.data.relational.core.query.Query;
 
 public class JdbcRoleRepository implements RoleRepository {
 
@@ -64,13 +62,6 @@ public class JdbcRoleRepository implements RoleRepository {
         jdbc.findAllById(ids.stream().map(RoleId::value).toList(), RoleRow.class)
                 .forEach(row -> found.add(toDomain(row)));
         return found;
-    }
-
-    @Override
-    public List<Role> list() {
-        return jdbc.findAll(Query.empty().sort(Sort.by("createdAt")), RoleRow.class).stream()
-                .map(JdbcRoleRepository::toDomain)
-                .toList();
     }
 
     private static RoleRow toRow(Role role) {

@@ -6,7 +6,7 @@ import io.corebilling.platform.domain.role.Role;
 import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.util.Set;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.role.command.SeedDefaultRolesUseCase;
 import io.corebilling.platform.application.role.port.RoleRepository;
 import io.corebilling.platform.application.user.command.UserAdministration;

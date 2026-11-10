@@ -7,15 +7,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.corebilling.Application;
 import io.corebilling.platform.api.actor.Actor;
 import io.corebilling.platform.api.actor.Permission;
-import io.corebilling.platform.application.auth.query.Authentication;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Authentication;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.tenant.command.ProvisionTenantUseCase;
 import io.corebilling.platform.application.role.command.RoleAdministration;
+import io.corebilling.platform.application.role.query.RoleQueries;
+import io.corebilling.platform.application.role.query.RoleView;
 import io.corebilling.platform.application.role.command.SeedDefaultRolesUseCase;
 import io.corebilling.platform.application.tenant.command.TenantMismatchException;
 import io.corebilling.platform.application.user.command.UserAdministration;
+import io.corebilling.platform.application.user.query.UserQueries;
+import io.corebilling.platform.application.user.query.UserView;
 import io.corebilling.platform.domain.user.BillingUser;
 import io.corebilling.platform.domain.role.Role;
+import io.corebilling.platform.domain.role.RoleId;
 import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.support.FakeIdentityConfig;
 import io.corebilling.support.OwnerDatabase;
@@ -38,7 +43,9 @@ class UserAdministrationIntegrationTest {
     private static final Caller CALLER = new Caller("user/admin", "req-1");
 
     @Autowired UserAdministration userAdmin;
+    @Autowired UserQueries userQueries;
     @Autowired RoleAdministration roleAdmin;
+    @Autowired RoleQueries roleQueries;
     @Autowired Authentication authentication;
     @Autowired ProvisionTenantUseCase provision;
     @Autowired RecordingIdentityProvider identityProvider;
@@ -60,13 +67,13 @@ class UserAdministrationIntegrationTest {
         Tenant tenant = scopes.onPlatform(() -> provision.execute(new ProvisionTenantUseCase.Command(
                 code, "Acme", adminEmail, "Alice", "Temp-pass-1", "user/root", "req-1")));
 
-        assertThat(scopes.inTenant(tenant.id(), () -> roleAdmin.list())).extracting(Role::name)
+        assertThat(scopes.inTenant(tenant.id(), () -> roleQueries.list())).extracting(RoleView::name)
                 .containsExactlyInAnyOrder(SeedDefaultRolesUseCase.TENANT_ADMIN, SeedDefaultRolesUseCase.TENANT_VIEWER);
         var identity = identityProvider.created.stream().filter(i -> i.email().equals(adminEmail)).findFirst().orElseThrow();
         assertThat(identity.username()).isEqualTo(code + ":" + adminEmail);
         assertThat(identity.tenantCode()).isEqualTo(code);
 
-        BillingUser admin = scopes.inTenant(tenant.id(), () -> userAdmin.list()).getFirst();
+        UserView admin = scopes.inTenant(tenant.id(), () -> userQueries.list()).getFirst();
         Actor actor = scopes.inTenant(tenant.id(), () -> authentication.authenticateUser(admin.keycloakSubject(), code)).orElseThrow();
         assertThat(actor.permissions()).contains(Permission.USER_MANAGE, Permission.CREDENTIAL_MANAGE, Permission.CUSTOMER_WRITE);
         assertThat(actor.permissions()).noneMatch(p -> !p.validIn(io.corebilling.platform.api.actor.PermissionScope.TENANT));
@@ -77,8 +84,8 @@ class UserAdministrationIntegrationTest {
 
     @Test
     void thePlatformHasItsOwnDefaultAdminRole() {
-        assertThat(scopes.onPlatform(() -> roleAdmin.list())).extracting(Role::name).contains(SeedDefaultRolesUseCase.PLATFORM_ADMIN);
-        Role platformAdmin = scopes.onPlatform(() -> roleAdmin.list()).stream()
+        assertThat(scopes.onPlatform(() -> roleQueries.list())).extracting(RoleView::name).contains(SeedDefaultRolesUseCase.PLATFORM_ADMIN);
+        RoleView platformAdmin = scopes.onPlatform(() -> roleQueries.list()).stream()
                 .filter(r -> r.name().equals(SeedDefaultRolesUseCase.PLATFORM_ADMIN)).findFirst().orElseThrow();
         assertThat(platformAdmin.permissions()).contains(Permission.TENANT_CREATE, Permission.USER_MANAGE)
                 .doesNotContain(Permission.CREDENTIAL_MANAGE, Permission.CUSTOMER_READ);
@@ -122,7 +129,7 @@ class UserAdministrationIntegrationTest {
         identityProvider.returnSubjectOnce(subject);
         scopes.runInTenant(tenant.id(), () -> userAdmin.create(CALLER, new UserAdministration.CreateUser(email(), "First", null, Set.of())));
         // The first user took a fresh subject; make the second call collide on a stored subject.
-        BillingUser first = scopes.inTenant(tenant.id(), () -> userAdmin.list()).getFirst();
+        UserView first = scopes.inTenant(tenant.id(), () -> userQueries.list()).getFirst();
         identityProvider.returnSubjectOnce(first.keycloakSubject());
 
         assertThatThrownBy(() -> scopes.runInTenant(tenant.id(),
@@ -130,7 +137,7 @@ class UserAdministrationIntegrationTest {
                 .isInstanceOf(RuntimeException.class);
 
         assertThat(identityProvider.deleted).contains(first.keycloakSubject());
-        assertThat(scopes.inTenant(tenant.id(), () -> userAdmin.list())).hasSize(1);
+        assertThat(scopes.inTenant(tenant.id(), () -> userQueries.list())).hasSize(1);
     }
 
     @Test
@@ -149,10 +156,10 @@ class UserAdministrationIntegrationTest {
     @Test
     void rolesFromAnotherScopeAreRefused() {
         Tenant tenant = scopes.newTenant();
-        Role platformAdmin = scopes.onPlatform(() -> roleAdmin.list()).stream()
+        RoleView platformAdmin = scopes.onPlatform(() -> roleQueries.list()).stream()
                 .filter(r -> r.name().equals(SeedDefaultRolesUseCase.PLATFORM_ADMIN)).findFirst().orElseThrow();
         assertThatThrownBy(() -> scopes.runInTenant(tenant.id(),
-                        () -> userAdmin.create(CALLER, new UserAdministration.CreateUser(email(), "X", null, Set.of(platformAdmin.id())))))
+                        () -> userAdmin.create(CALLER, new UserAdministration.CreateUser(email(), "X", null, Set.of(new RoleId(platformAdmin.id()))))))
                 .as("a platform role is invisible inside a tenant")
                 .hasMessageContaining("role not found");
     }

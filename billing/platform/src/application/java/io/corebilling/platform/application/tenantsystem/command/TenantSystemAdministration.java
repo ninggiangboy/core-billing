@@ -10,8 +10,7 @@ import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.IdGenerator;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.sharedkernel.UnitOfWork;
-import java.util.List;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.tenantsystem.port.TenantSystemRepository;
 
 /** Tenant Systems (the Tenant's integrated applications) of the current Tenant. */
@@ -44,11 +43,4 @@ public class TenantSystemAdministration {
         });
     }
 
-    public TenantSystem get(TenantSystemId id) {
-        return unitOfWork.transactional(() -> systems.findById(id).orElseThrow(() -> new NotFoundException("tenant system not found")));
-    }
-
-    public List<TenantSystem> list() {
-        return unitOfWork.transactional(systems::list);
-    }
 }

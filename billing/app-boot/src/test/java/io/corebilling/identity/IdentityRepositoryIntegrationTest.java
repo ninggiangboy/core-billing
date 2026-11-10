@@ -12,6 +12,8 @@ import io.corebilling.platform.application.credential.port.CredentialRepository;
 import io.corebilling.platform.application.role.port.RoleRepository;
 import io.corebilling.platform.application.tenantsystem.port.TenantSystemRepository;
 import io.corebilling.platform.application.user.port.UserRepository;
+import io.corebilling.platform.application.user.query.UserQueries;
+import io.corebilling.platform.application.user.query.UserView;
 import io.corebilling.platform.domain.credential.ApiCredential;
 import io.corebilling.platform.domain.credential.ApiKey;
 import io.corebilling.platform.domain.user.BillingUser;
@@ -40,6 +42,7 @@ class IdentityRepositoryIntegrationTest {
 
     @Autowired UnitOfWork unitOfWork;
     @Autowired UserRepository users;
+    @Autowired UserQueries userQueries;
     @Autowired RoleRepository roles;
     @Autowired TenantSystemRepository systems;
     @Autowired CredentialRepository credentials;
@@ -117,7 +120,7 @@ class IdentityRepositoryIntegrationTest {
                 .isInstanceOf(ConflictException.class);
 
         assertThat(scopes.inTenant(b.id(), () -> unitOfWork.transactional(() -> users.findById(inA.id())))).isEmpty();
-        assertThat(scopes.inTenant(a.id(), () -> unitOfWork.transactional(users::list))).extracting(BillingUser::id).containsExactly(inA.id());
+        assertThat(scopes.inTenant(a.id(), () -> userQueries.list())).extracting(UserView::id).containsExactly(inA.id().value());
     }
 
     @Test

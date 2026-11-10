@@ -1,4 +1,4 @@
-package io.corebilling.platform.application.auth.query;
+package io.corebilling.platform.application.auth;
 
 import io.corebilling.platform.api.actor.Actor;
 import io.corebilling.platform.api.actor.ActorType;

@@ -19,6 +19,4 @@ public interface UserRepository {
     Optional<BillingUser> findByKeycloakSubject(String subject);
 
     Optional<BillingUser> findByEmail(String email);
-
-    List<BillingUser> list();
 }

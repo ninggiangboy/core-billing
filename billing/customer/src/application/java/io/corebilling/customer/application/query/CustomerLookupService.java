@@ -5,14 +5,14 @@ import io.corebilling.customer.api.lookup.CustomerSummary;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.util.Optional;
-import io.corebilling.customer.application.port.CustomerRepository;
+import io.corebilling.customer.application.query.CustomerReadRepository;
 
 public class CustomerLookupService implements CustomerLookup {
 
     private final UnitOfWork unitOfWork;
-    private final CustomerRepository customers;
+    private final CustomerReadRepository customers;
 
-    public CustomerLookupService(UnitOfWork unitOfWork, CustomerRepository customers) {
+    public CustomerLookupService(UnitOfWork unitOfWork, CustomerReadRepository customers) {
         this.unitOfWork = unitOfWork;
         this.customers = customers;
     }

@@ -3,10 +3,12 @@ package io.corebilling.platform.adapter.web;
 import io.corebilling.platform.api.actor.Permission;
 import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.platform.application.tenant.command.AddTenantDomainUseCase;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.tenant.command.DeactivateTenantUseCase;
 import io.corebilling.platform.application.tenant.command.ProvisionTenantUseCase;
+import io.corebilling.platform.application.tenant.query.TenantDomainView;
 import io.corebilling.platform.application.tenant.query.TenantQueries;
+import io.corebilling.platform.application.tenant.query.TenantView;
 import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.platform.domain.tenant.TenantDomain;
 import io.corebilling.sharedkernel.TenantId;
@@ -39,11 +41,19 @@ public class TenantController {
         static TenantResponse of(Tenant tenant) {
             return new TenantResponse(tenant.id().toString(), tenant.code().value(), tenant.name(), tenant.status().name(), tenant.createdAt());
         }
+
+        static TenantResponse ofView(TenantView tenant) {
+            return new TenantResponse(tenant.id().toString(), tenant.code(), tenant.name(), tenant.status().name(), tenant.createdAt());
+        }
     }
 
     public record DomainResponse(String id, String hostname, String kind, Instant createdAt) {
         static DomainResponse of(TenantDomain domain) {
             return new DomainResponse(domain.id().toString(), domain.hostname().value(), domain.kind().name(), domain.createdAt());
+        }
+
+        static DomainResponse ofView(TenantDomainView domain) {
+            return new DomainResponse(domain.id().toString(), domain.hostname(), domain.kind().name(), domain.createdAt());
         }
     }
 
@@ -79,27 +89,27 @@ public class TenantController {
     @GetMapping
     @RequiresPermission(Permission.TENANT_READ)
     public List<TenantResponse> list() {
-        return queries.list().stream().map(TenantResponse::of).toList();
+        return queries.list().stream().map(TenantResponse::ofView).toList();
     }
 
     @GetMapping("/{id}")
     @RequiresPermission(Permission.TENANT_READ)
     public TenantResponse get(@PathVariable String id) {
-        return TenantResponse.of(queries.get(TenantId.of(id)));
+        return TenantResponse.ofView(queries.get(TenantId.of(id).value()));
     }
 
     @PostMapping("/{id}/deactivate")
     @RequiresPermission(Permission.TENANT_DEACTIVATE)
     public TenantResponse deactivate(@PathVariable String id) {
         Caller caller = callers.current();
-        queries.get(TenantId.of(id));
+        queries.get(TenantId.of(id).value());
         return TenantResponse.of(deactivate.execute(new DeactivateTenantUseCase.Command(TenantId.of(id), caller.actor(), caller.requestId())));
     }
 
     @GetMapping("/{id}/domains")
     @RequiresPermission(Permission.TENANT_READ)
     public List<DomainResponse> domains(@PathVariable String id) {
-        return queries.domains(TenantId.of(id)).stream().map(DomainResponse::of).toList();
+        return queries.domains(TenantId.of(id).value()).stream().map(DomainResponse::ofView).toList();
     }
 
     @PostMapping("/{id}/domains")
@@ -107,7 +117,7 @@ public class TenantController {
     @RequiresPermission(Permission.TENANT_DOMAIN_MANAGE)
     public DomainResponse addDomain(@PathVariable String id, @RequestBody AddDomainRequest request) {
         Caller caller = callers.current();
-        queries.get(TenantId.of(id));
+        queries.get(TenantId.of(id).value());
         return DomainResponse.of(addDomain.execute(
                 new AddTenantDomainUseCase.Command(TenantId.of(id), request.hostname(), caller.actor(), caller.requestId())));
     }

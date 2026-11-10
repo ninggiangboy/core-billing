@@ -1,7 +1,7 @@
 package io.corebilling.platform.adapter.web;
 
 import io.corebilling.platform.api.actor.CurrentActor;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import org.springframework.web.context.request.RequestContextHolder;

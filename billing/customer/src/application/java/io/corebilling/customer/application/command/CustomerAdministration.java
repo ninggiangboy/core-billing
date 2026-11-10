@@ -1,7 +1,6 @@
 package io.corebilling.customer.application.command;
 
 import io.corebilling.customer.domain.customer.Customer;
-import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.audit.AuditEntry;
 import io.corebilling.platform.api.audit.AuditLog;
 import io.corebilling.platform.api.error.ConflictException;
@@ -10,7 +9,6 @@ import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.CustomerId;
 import io.corebilling.sharedkernel.UnitOfWork;
-import java.util.List;
 import io.corebilling.customer.application.port.CustomerRepository;
 
 /** Reading and maintaining the Customers of the current tenant. */
@@ -29,19 +27,6 @@ public class CustomerAdministration {
         this.auditLog = auditLog;
         this.tenantContext = tenantContext;
         this.clock = clock;
-    }
-
-    public Customer get(CustomerId id) {
-        return unitOfWork.transactional(() -> customers.findById(id).orElseThrow(() -> new NotFoundException("customer not found")));
-    }
-
-    public Customer getByExternalUser(ExternalIdentity identity) {
-        return unitOfWork.transactional(
-                () -> customers.findByExternalIdentity(identity).orElseThrow(() -> new NotFoundException("customer not found")));
-    }
-
-    public List<Customer> list() {
-        return unitOfWork.transactional(customers::list);
     }
 
     public Customer update(AuditContext audit, CustomerId id, String displayName, String email) {

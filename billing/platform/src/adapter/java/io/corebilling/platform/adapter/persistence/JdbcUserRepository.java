@@ -12,13 +12,10 @@ import io.corebilling.platform.domain.role.RoleId;
 import io.corebilling.platform.domain.user.UserId;
 import io.corebilling.platform.domain.user.UserStatus;
 import io.corebilling.sharedkernel.TenantId;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.data.relational.core.query.Query;
 
 public class JdbcUserRepository implements UserRepository {
 
@@ -58,13 +55,6 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public Optional<BillingUser> findByEmail(String email) {
         return jdbc.findOne(query(where("email").is(email)), UserRow.class).map(JdbcUserRepository::toDomain);
-    }
-
-    @Override
-    public List<BillingUser> list() {
-        return jdbc.findAll(Query.empty().sort(Sort.by("createdAt")), UserRow.class).stream()
-                .map(JdbcUserRepository::toDomain)
-                .toList();
     }
 
     private static UserRow toRow(BillingUser user) {

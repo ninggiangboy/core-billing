@@ -1,7 +1,7 @@
 package io.corebilling.boot.security;
 
 import io.corebilling.platform.api.actor.Actor;
-import io.corebilling.platform.application.auth.query.Authentication;
+import io.corebilling.platform.application.auth.Authentication;
 import io.corebilling.platform.application.tenant.command.TenantMismatchException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpStatus;

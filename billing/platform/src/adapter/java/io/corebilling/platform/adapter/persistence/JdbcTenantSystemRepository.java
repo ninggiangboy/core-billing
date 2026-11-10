@@ -6,12 +6,9 @@ import io.corebilling.platform.application.tenantsystem.port.TenantSystemReposit
 import io.corebilling.platform.domain.tenantsystem.TenantSystem;
 import io.corebilling.platform.domain.tenantsystem.TenantSystemStatus;
 import io.corebilling.sharedkernel.TenantId;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.data.relational.core.query.Query;
 
 public class JdbcTenantSystemRepository implements TenantSystemRepository {
 
@@ -41,13 +38,6 @@ public class JdbcTenantSystemRepository implements TenantSystemRepository {
     @Override
     public Optional<TenantSystem> findById(TenantSystemId id) {
         return Optional.ofNullable(jdbc.findById(id.value(), TenantSystemRow.class)).map(JdbcTenantSystemRepository::toDomain);
-    }
-
-    @Override
-    public List<TenantSystem> list() {
-        return jdbc.findAll(Query.empty().sort(Sort.by("createdAt")), TenantSystemRow.class).stream()
-                .map(JdbcTenantSystemRepository::toDomain)
-                .toList();
     }
 
     private static TenantSystemRow toRow(TenantSystem system) {

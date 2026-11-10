@@ -3,8 +3,9 @@ package io.corebilling.customer.adapter.web;
 import io.corebilling.customer.application.command.AuditContext;
 import io.corebilling.customer.application.command.CreateCustomerUseCase;
 import io.corebilling.customer.application.command.CustomerAdministration;
+import io.corebilling.customer.application.query.CustomerQueries;
+import io.corebilling.customer.application.query.CustomerView;
 import io.corebilling.customer.domain.customer.Customer;
-import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.platform.api.error.AccessDeniedException;
 import io.corebilling.platform.api.actor.Actor;
 import io.corebilling.platform.api.actor.CurrentActor;
@@ -50,15 +51,26 @@ public class CustomerController {
                             .sorted(java.util.Comparator.comparing(IdentityResponse::externalUserId))
                             .toList());
         }
+
+        static CustomerResponse ofView(CustomerView customer) {
+            return new CustomerResponse(
+                    customer.id().toString(), customer.displayName(), customer.email(), customer.status().name(), customer.createdAt(),
+                    customer.identities().stream()
+                            .map(i -> new IdentityResponse(i.tenantSystemId().toString(), i.externalUserId()))
+                            .sorted(java.util.Comparator.comparing(IdentityResponse::externalUserId))
+                            .toList());
+        }
     }
 
     private final CreateCustomerUseCase create;
     private final CustomerAdministration administration;
+    private final CustomerQueries queries;
     private final CurrentActor currentActor;
 
-    public CustomerController(CreateCustomerUseCase create, CustomerAdministration administration, CurrentActor currentActor) {
+    public CustomerController(CreateCustomerUseCase create, CustomerAdministration administration, CustomerQueries queries, CurrentActor currentActor) {
         this.create = create;
         this.administration = administration;
+        this.queries = queries;
         this.currentActor = currentActor;
     }
 
@@ -79,7 +91,7 @@ public class CustomerController {
     @GetMapping
     @RequiresPermission(Permission.CUSTOMER_READ)
     public List<CustomerResponse> list() {
-        return administration.list().stream().map(CustomerResponse::of).toList();
+        return queries.list().stream().map(CustomerResponse::ofView).toList();
     }
 
     @GetMapping("/by-external-user/{externalUserId}")
@@ -89,13 +101,13 @@ public class CustomerController {
         if (system == null) {
             throw new IllegalArgumentException("tenantSystemId is required");
         }
-        return CustomerResponse.of(administration.getByExternalUser(new ExternalIdentity(system, externalUserId)));
+        return CustomerResponse.ofView(queries.getByExternalUser(system, externalUserId));
     }
 
     @GetMapping("/{id}")
     @RequiresPermission(Permission.CUSTOMER_READ)
     public CustomerResponse get(@PathVariable String id) {
-        return CustomerResponse.of(administration.get(CustomerId.of(id)));
+        return CustomerResponse.ofView(queries.get(CustomerId.of(id)));
     }
 
     @PutMapping("/{id}")

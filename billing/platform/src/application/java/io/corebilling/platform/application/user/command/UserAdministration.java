@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import io.corebilling.platform.application.auth.port.IdentityProviderPort;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.role.port.RoleRepository;
-import io.corebilling.platform.application.tenant.command.TenantNotFoundException;
+import io.corebilling.platform.application.tenant.TenantNotFoundException;
 import io.corebilling.platform.application.tenant.port.TenantRepository;
 import io.corebilling.platform.application.user.port.UserRepository;
 
@@ -105,13 +105,6 @@ public class UserAdministration {
         }
     }
 
-    public BillingUser get(UserId id) {
-        return unitOfWork.transactional(() -> users.findById(id).orElseThrow(() -> new NotFoundException("user not found")));
-    }
-
-    public List<BillingUser> list() {
-        return unitOfWork.transactional(users::list);
-    }
 
     public BillingUser assignRole(Caller caller, UserId userId, RoleId roleId) {
         return unitOfWork.transactional(() -> {

@@ -4,7 +4,7 @@ import io.corebilling.platform.domain.role.Role;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.util.Locale;
 import java.util.Set;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.role.command.SeedDefaultRolesUseCase;
 import io.corebilling.platform.application.role.port.RoleRepository;
 import io.corebilling.platform.application.user.port.UserRepository;

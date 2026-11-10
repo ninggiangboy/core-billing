@@ -1,4 +1,4 @@
-package io.corebilling.platform.application.auth.query;
+package io.corebilling.platform.application.auth;
 
 public class RateLimitExceededException extends RuntimeException {
 

@@ -1,44 +1,37 @@
 package io.corebilling.platform.application.tenant.query;
 
-import io.corebilling.platform.domain.tenant.Tenant;
-import io.corebilling.platform.domain.tenant.TenantCode;
-import io.corebilling.platform.domain.tenant.TenantDomain;
-import io.corebilling.sharedkernel.TenantId;
+import io.corebilling.platform.application.tenant.TenantNotFoundException;
 import io.corebilling.sharedkernel.UnitOfWork;
 import java.util.List;
-import io.corebilling.platform.application.tenant.command.TenantNotFoundException;
-import io.corebilling.platform.application.tenant.port.TenantDomainRepository;
-import io.corebilling.platform.application.tenant.port.TenantRepository;
+import java.util.UUID;
 
 /** Read side of tenant administration (Platform scope). The reserved platform tenant is never listed. */
 public class TenantQueries {
 
-    private final UnitOfWork unitOfWork;
-    private final TenantRepository tenants;
-    private final TenantDomainRepository domains;
+    private static final String PLATFORM_CODE = "platform";
 
-    public TenantQueries(UnitOfWork unitOfWork, TenantRepository tenants, TenantDomainRepository domains) {
+    private final UnitOfWork unitOfWork;
+    private final TenantReadRepository tenants;
+
+    public TenantQueries(UnitOfWork unitOfWork, TenantReadRepository tenants) {
         this.unitOfWork = unitOfWork;
         this.tenants = tenants;
-        this.domains = domains;
     }
 
-    public Tenant get(TenantId id) {
+    public TenantView get(UUID id) {
         return unitOfWork.transactional(() -> tenants.findById(id)
-                .filter(tenant -> !TenantCode.PLATFORM.equals(tenant.code().value()))
+                .filter(tenant -> !PLATFORM_CODE.equals(tenant.code()))
                 .orElseThrow(() -> new TenantNotFoundException(id.toString())));
     }
 
-    public List<Tenant> list() {
-        return unitOfWork.transactional(() -> tenants.list().stream()
-                .filter(tenant -> !TenantCode.PLATFORM.equals(tenant.code().value()))
-                .toList());
+    public List<TenantView> list() {
+        return unitOfWork.transactional(tenants::list);
     }
 
-    public List<TenantDomain> domains(TenantId id) {
+    public List<TenantDomainView> domains(UUID id) {
         return unitOfWork.transactional(() -> {
             get(id);
-            return domains.findByTenant(id);
+            return tenants.domains(id);
         });
     }
 }

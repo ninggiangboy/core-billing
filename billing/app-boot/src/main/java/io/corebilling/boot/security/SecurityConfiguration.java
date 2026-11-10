@@ -4,7 +4,7 @@ import io.corebilling.platform.api.actor.Actor;
 import io.corebilling.platform.api.error.AccessDeniedException;
 import io.corebilling.platform.api.actor.Authorizer;
 import io.corebilling.platform.api.actor.CurrentActor;
-import io.corebilling.platform.application.auth.query.Authentication;
+import io.corebilling.platform.application.auth.Authentication;
 import io.corebilling.platform.domain.role.AuthorizationPolicy;
 import io.corebilling.platform.domain.credential.ApiKey;
 import org.springframework.context.annotation.Bean;

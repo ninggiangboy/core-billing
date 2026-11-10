@@ -3,7 +3,6 @@ package io.corebilling.customer.application.port;
 import io.corebilling.customer.domain.customer.Customer;
 import io.corebilling.customer.domain.customer.ExternalIdentity;
 import io.corebilling.sharedkernel.CustomerId;
-import java.util.List;
 import java.util.Optional;
 
 /** Reads see only the current tenant's customers, because the database enforces it. */
@@ -17,6 +16,4 @@ public interface CustomerRepository {
     Optional<Customer> findById(CustomerId id);
 
     Optional<Customer> findByExternalIdentity(ExternalIdentity identity);
-
-    List<Customer> list();
 }

@@ -3,7 +3,6 @@ package io.corebilling.platform.application.tenant.port;
 import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.platform.domain.tenant.TenantCode;
 import io.corebilling.sharedkernel.TenantId;
-import java.util.List;
 import java.util.Optional;
 
 public interface TenantRepository {
@@ -16,6 +15,4 @@ public interface TenantRepository {
     Optional<Tenant> findById(TenantId id);
 
     Optional<Tenant> findByCode(TenantCode code);
-
-    List<Tenant> list();
 }

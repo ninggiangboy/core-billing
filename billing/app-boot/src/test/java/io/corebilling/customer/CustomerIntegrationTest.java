@@ -8,6 +8,7 @@ import io.corebilling.customer.api.lookup.CustomerLookup;
 import io.corebilling.customer.application.command.AuditContext;
 import io.corebilling.customer.application.command.CreateCustomerUseCase;
 import io.corebilling.customer.application.command.CustomerAdministration;
+import io.corebilling.customer.application.query.CustomerQueries;
 import io.corebilling.customer.application.port.CustomerRepository;
 import io.corebilling.customer.domain.customer.Customer;
 import io.corebilling.customer.domain.customer.ExternalIdentity;
@@ -15,7 +16,7 @@ import io.corebilling.platform.api.error.ConflictException;
 import io.corebilling.platform.api.error.IdempotencyConflictException;
 import io.corebilling.platform.api.error.NotFoundException;
 import io.corebilling.platform.api.tenant.TenantSystemId;
-import io.corebilling.platform.application.auth.query.Caller;
+import io.corebilling.platform.application.auth.Caller;
 import io.corebilling.platform.application.tenantsystem.command.TenantSystemAdministration;
 import io.corebilling.platform.domain.tenant.Tenant;
 import io.corebilling.sharedkernel.Clock;
@@ -45,6 +46,7 @@ class CustomerIntegrationTest {
     @Autowired CustomerRepository customers;
     @Autowired CreateCustomerUseCase createCustomer;
     @Autowired CustomerAdministration administration;
+    @Autowired CustomerQueries customerQueries;
     @Autowired CustomerLookup lookup;
     @Autowired TenantSystemAdministration systems;
     @Autowired Clock clock;
@@ -72,12 +74,12 @@ class CustomerIntegrationTest {
         assertThat(reloaded.identities()).containsExactly(new ExternalIdentity(system, "user_001"));
 
         Customer updated = scopes.inTenant(tenant.id(), () -> administration.update(AUDIT, created.id(), "Acme Ltd", null));
-        Customer afterUpdate = scopes.inTenant(tenant.id(), () -> administration.get(created.id()));
+        Customer afterUpdate = scopes.inTenant(tenant.id(), () -> unitOfWork.transactional(() -> customers.findById(created.id()))).orElseThrow();
         assertThat(afterUpdate).usingRecursiveComparison().isEqualTo(updated);
         assertThat(afterUpdate.identities()).as("the mapping survives an update").hasSize(1);
 
         scopes.runInTenant(tenant.id(), () -> administration.deactivate(AUDIT, created.id()));
-        assertThat(scopes.inTenant(tenant.id(), () -> administration.get(created.id())).isActive()).isFalse();
+        assertThat(scopes.inTenant(tenant.id(), () -> customerQueries.get(created.id())).isActive()).isFalse();
         assertThatThrownBy(() -> scopes.runInTenant(tenant.id(), () -> administration.update(AUDIT, created.id(), "Again", null)))
                 .isInstanceOf(ConflictException.class);
     }
@@ -93,9 +95,9 @@ class CustomerIntegrationTest {
         Customer inB = scopes.inTenant(b.id(), () -> createCustomer.execute(command(systemB, "user_001", "B's customer", "k1"))).customer();
 
         assertThat(inA.id()).isNotEqualTo(inB.id());
-        assertThat(scopes.inTenant(a.id(), () -> administration.getByExternalUser(new ExternalIdentity(systemA, "user_001"))).id()).isEqualTo(inA.id());
-        assertThat(scopes.inTenant(b.id(), () -> administration.getByExternalUser(new ExternalIdentity(systemB, "user_001"))).id()).isEqualTo(inB.id());
-        assertThatThrownBy(() -> scopes.inTenant(b.id(), () -> administration.get(inA.id()))).isInstanceOf(NotFoundException.class);
+        assertThat(scopes.inTenant(a.id(), () -> customerQueries.getByExternalUser(systemA, "user_001")).id()).isEqualTo(inA.id());
+        assertThat(scopes.inTenant(b.id(), () -> customerQueries.getByExternalUser(systemB, "user_001")).id()).isEqualTo(inB.id());
+        assertThatThrownBy(() -> scopes.inTenant(b.id(), () -> customerQueries.get(inA.id()))).isInstanceOf(NotFoundException.class);
         assertThat(scopes.inTenant(b.id(), () -> lookup.find(inA.id()))).as("another tenant's customer is invisible to the lookup").isEmpty();
         assertThat(scopes.inTenant(a.id(), () -> lookup.find(inA.id())).orElseThrow().displayName()).isEqualTo("A's customer");
     }
@@ -164,7 +166,7 @@ class CustomerIntegrationTest {
     @Test
     void anUnknownCustomerIsNotFound() {
         Tenant tenant = scopes.newTenant();
-        assertThatThrownBy(() -> scopes.inTenant(tenant.id(), () -> administration.get(new CustomerId(ids.newId()))))
+        assertThatThrownBy(() -> scopes.inTenant(tenant.id(), () -> customerQueries.get(new CustomerId(ids.newId()))))
                 .isInstanceOf(NotFoundException.class);
         assertThat(clock.now()).isNotNull();
     }

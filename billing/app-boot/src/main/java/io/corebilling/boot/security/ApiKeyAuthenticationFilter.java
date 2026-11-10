@@ -1,8 +1,8 @@
 package io.corebilling.boot.security;
 
 import io.corebilling.platform.api.actor.Actor;
-import io.corebilling.platform.application.auth.query.Authentication;
-import io.corebilling.platform.application.auth.query.RateLimitExceededException;
+import io.corebilling.platform.application.auth.Authentication;
+import io.corebilling.platform.application.auth.RateLimitExceededException;
 import io.corebilling.platform.domain.credential.ApiKey;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

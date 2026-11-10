@@ -12,7 +12,7 @@ import io.corebilling.platform.application.tenant.command.HostnameAlreadyMappedE
 import io.corebilling.platform.application.tenant.command.ResolveHostUseCase;
 import io.corebilling.platform.application.tenant.command.TenantCodeAlreadyUsedException;
 import io.corebilling.platform.application.tenant.port.TenantDomainRepository;
-import io.corebilling.platform.application.tenant.command.TenantNotFoundException;
+import io.corebilling.platform.application.tenant.TenantNotFoundException;
 import io.corebilling.platform.application.tenant.port.TenantRepository;
 import io.corebilling.platform.domain.tenant.Hostname;
 import io.corebilling.platform.domain.tenant.Tenant;
@@ -66,11 +66,6 @@ class PlatformUseCaseTest {
         @Override
         public Optional<Tenant> findByCode(TenantCode code) {
             return tenantStore.values().stream().filter(t -> t.code().equals(code)).findFirst();
-        }
-
-        @Override
-        public List<Tenant> list() {
-            return List.copyOf(tenantStore.values());
         }
     };
     private final TenantDomainRepository domains = new TenantDomainRepository() {

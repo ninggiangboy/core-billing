@@ -1,4 +1,4 @@
-package io.corebilling.platform.application.tenant.command;
+package io.corebilling.platform.application.tenant;
 
 import io.corebilling.platform.api.error.NotFoundException;
 public class TenantNotFoundException extends NotFoundException {

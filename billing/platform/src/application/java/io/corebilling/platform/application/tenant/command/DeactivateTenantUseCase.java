@@ -8,6 +8,7 @@ import io.corebilling.sharedkernel.Clock;
 import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.sharedkernel.UnitOfWork;
 import io.corebilling.platform.application.tenant.port.TenantRepository;
+import io.corebilling.platform.application.tenant.TenantNotFoundException;
 
 /** Deactivates a Tenant; its hostnames stop resolving. Runs at Platform scope. */
 public class DeactivateTenantUseCase {

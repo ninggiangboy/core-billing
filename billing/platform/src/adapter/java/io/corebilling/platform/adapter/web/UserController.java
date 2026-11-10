@@ -3,6 +3,8 @@ package io.corebilling.platform.adapter.web;
 import io.corebilling.platform.api.actor.Permission;
 import io.corebilling.platform.api.actor.RequiresPermission;
 import io.corebilling.platform.application.user.command.UserAdministration;
+import io.corebilling.platform.application.user.query.UserQueries;
+import io.corebilling.platform.application.user.query.UserView;
 import io.corebilling.platform.domain.user.BillingUser;
 import io.corebilling.platform.domain.role.RoleId;
 import io.corebilling.platform.domain.user.UserId;
@@ -45,13 +47,26 @@ public class UserController {
                     user.directPermissions().stream().map(Permission::code).collect(Collectors.toSet()),
                     user.createdAt());
         }
+
+        static UserResponse ofView(UserView user) {
+            return new UserResponse(
+                    user.id().toString(),
+                    user.email(),
+                    user.displayName(),
+                    user.status().name(),
+                    user.roleIds().stream().map(Object::toString).collect(Collectors.toSet()),
+                    user.directPermissions().stream().map(Permission::code).collect(Collectors.toSet()),
+                    user.createdAt());
+        }
     }
 
     private final UserAdministration users;
+    private final UserQueries userQueries;
     private final CallerResolver callers;
 
-    public UserController(UserAdministration users, CallerResolver callers) {
+    public UserController(UserAdministration users, UserQueries userQueries, CallerResolver callers) {
         this.users = users;
+        this.userQueries = userQueries;
         this.callers = callers;
     }
 
@@ -69,13 +84,13 @@ public class UserController {
     @GetMapping
     @RequiresPermission(Permission.USER_READ)
     public List<UserResponse> list() {
-        return users.list().stream().map(UserResponse::of).toList();
+        return userQueries.list().stream().map(UserResponse::ofView).toList();
     }
 
     @GetMapping("/{id}")
     @RequiresPermission(Permission.USER_READ)
     public UserResponse get(@PathVariable String id) {
-        return UserResponse.of(users.get(UserId.of(id)));
+        return UserResponse.ofView(userQueries.get(UserId.of(id).value()));
     }
 
     @PutMapping("/{id}/roles/{roleId}")

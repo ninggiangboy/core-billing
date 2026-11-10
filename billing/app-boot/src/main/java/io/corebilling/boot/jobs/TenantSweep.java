@@ -3,7 +3,8 @@ package io.corebilling.boot.jobs;
 import io.corebilling.platform.api.actor.RequestScope;
 import io.corebilling.platform.api.tenant.TenantContext;
 import io.corebilling.platform.application.tenant.query.TenantQueries;
-import io.corebilling.platform.domain.tenant.Tenant;
+import io.corebilling.platform.application.tenant.query.TenantView;
+import io.corebilling.sharedkernel.TenantId;
 import io.corebilling.sharedkernel.TenantId;
 import java.util.List;
 import java.util.function.Consumer;
@@ -30,10 +31,10 @@ public class TenantSweep {
     }
 
     public void forEachActiveTenant(Consumer<TenantId> work) {
-        List<Tenant> active = tenantContext.callAs(RequestScope.platform(), tenants::list).stream().filter(Tenant::isActive).toList();
-        for (Tenant tenant : active) {
+        List<TenantView> active = tenantContext.callAs(RequestScope.platform(), tenants::list).stream().filter(TenantView::isActive).toList();
+        for (TenantView tenant : active) {
             try {
-                tenantContext.runAs(RequestScope.tenant(tenant.id()), () -> work.accept(tenant.id()));
+                tenantContext.runAs(RequestScope.tenant(new TenantId(tenant.id())), () -> work.accept(new TenantId(tenant.id())));
             } catch (RuntimeException failure) {
                 LOG.error("background job failed for tenant {}", tenant.code(), failure);
             }

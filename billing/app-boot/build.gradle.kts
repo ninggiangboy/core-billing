@@ -6,6 +6,7 @@ dependencies {
     implementation(platform(libs.spring.modulith.bom))
     implementation(project(":shared-kernel"))
     implementation(project(":platform"))
+    implementation(project(":customer"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

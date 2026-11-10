@@ -1,6 +1,6 @@
 package io.corebilling.boot.infrastructure;
 
-import io.corebilling.webhook.application.SecretCipher;
+import io.corebilling.webhook.application.shared.port.SecretCipher;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;

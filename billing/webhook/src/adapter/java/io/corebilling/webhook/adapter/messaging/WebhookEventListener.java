@@ -1,7 +1,7 @@
 package io.corebilling.webhook.adapter.messaging;
 
 import io.corebilling.sharedkernel.EventEnvelope;
-import io.corebilling.webhook.application.RecordDeliveriesUseCase;
+import io.corebilling.webhook.application.delivery.command.RecordDeliveriesUseCase;
 import org.springframework.context.event.EventListener;
 
 /**

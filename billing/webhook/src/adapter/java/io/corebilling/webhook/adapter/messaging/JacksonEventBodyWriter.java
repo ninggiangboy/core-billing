@@ -1,7 +1,7 @@
 package io.corebilling.webhook.adapter.messaging;
 
 import io.corebilling.sharedkernel.DomainEvent;
-import io.corebilling.webhook.application.EventBodyWriter;
+import io.corebilling.webhook.application.delivery.port.EventBodyWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import tools.jackson.databind.json.JsonMapper;

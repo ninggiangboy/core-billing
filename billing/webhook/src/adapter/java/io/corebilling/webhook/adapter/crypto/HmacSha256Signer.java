@@ -1,7 +1,7 @@
 package io.corebilling.webhook.adapter.crypto;
 
-import io.corebilling.webhook.application.PayloadSigner;
-import io.corebilling.webhook.domain.WebhookHeaders;
+import io.corebilling.webhook.application.delivery.port.PayloadSigner;
+import io.corebilling.webhook.domain.delivery.WebhookHeaders;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.HexFormat;

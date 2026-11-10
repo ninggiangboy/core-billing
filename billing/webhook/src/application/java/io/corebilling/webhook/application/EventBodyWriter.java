@@ -1,9 +1,0 @@
-package io.corebilling.webhook.application;
-
-import io.corebilling.sharedkernel.DomainEvent;
-
-/** Renders an event as the JSON text that is delivered: id, type, tenant, time and the event's own data. */
-public interface EventBodyWriter {
-
-    String write(DomainEvent event);
-}

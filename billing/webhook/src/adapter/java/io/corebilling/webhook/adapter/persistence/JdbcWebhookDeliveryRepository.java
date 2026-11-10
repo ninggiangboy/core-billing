@@ -1,13 +1,13 @@
 package io.corebilling.webhook.adapter.persistence;
 
 import io.corebilling.sharedkernel.TenantId;
-import io.corebilling.webhook.application.ClaimedDelivery;
-import io.corebilling.webhook.application.WebhookDeliveryRepository;
-import io.corebilling.webhook.domain.DeliveryAttempt;
-import io.corebilling.webhook.domain.DeliveryStatus;
-import io.corebilling.webhook.domain.WebhookDelivery;
-import io.corebilling.webhook.domain.WebhookDeliveryId;
-import io.corebilling.webhook.domain.WebhookEndpointId;
+import io.corebilling.webhook.application.delivery.command.ClaimedDelivery;
+import io.corebilling.webhook.application.delivery.port.WebhookDeliveryRepository;
+import io.corebilling.webhook.domain.delivery.DeliveryAttempt;
+import io.corebilling.webhook.domain.delivery.DeliveryStatus;
+import io.corebilling.webhook.domain.delivery.WebhookDelivery;
+import io.corebilling.webhook.domain.delivery.WebhookDeliveryId;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;

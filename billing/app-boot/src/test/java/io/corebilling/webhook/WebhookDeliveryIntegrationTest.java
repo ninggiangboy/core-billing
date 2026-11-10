@@ -15,18 +15,18 @@ import io.corebilling.support.ScopeTestSupport;
 import io.corebilling.support.TestEvent;
 import io.corebilling.support.TestReceiver;
 import io.corebilling.webhook.adapter.messaging.WebhookEventListener;
-import io.corebilling.webhook.application.Audit;
-import io.corebilling.webhook.application.CreateEndpointUseCase;
-import io.corebilling.webhook.application.DeliverWebhooksUseCase;
-import io.corebilling.webhook.application.DeliveryAdministration;
-import io.corebilling.webhook.application.EndpointAdministration;
-import io.corebilling.webhook.application.WebhookDeliveryRepository;
-import io.corebilling.webhook.domain.DeliveryStatus;
-import io.corebilling.webhook.domain.EndpointStatus;
-import io.corebilling.webhook.domain.WebhookDelivery;
-import io.corebilling.webhook.domain.WebhookDeliveryId;
-import io.corebilling.webhook.domain.WebhookEndpoint;
-import io.corebilling.webhook.domain.WebhookEndpointId;
+import io.corebilling.webhook.application.shared.command.Audit;
+import io.corebilling.webhook.application.endpoint.command.CreateEndpointUseCase;
+import io.corebilling.webhook.application.delivery.command.DeliverWebhooksUseCase;
+import io.corebilling.webhook.application.delivery.command.DeliveryAdministration;
+import io.corebilling.webhook.application.endpoint.command.EndpointAdministration;
+import io.corebilling.webhook.application.delivery.port.WebhookDeliveryRepository;
+import io.corebilling.webhook.domain.delivery.DeliveryStatus;
+import io.corebilling.webhook.domain.endpoint.EndpointStatus;
+import io.corebilling.webhook.domain.delivery.WebhookDelivery;
+import io.corebilling.webhook.domain.delivery.WebhookDeliveryId;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpoint;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -47,6 +47,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import io.corebilling.webhook.domain.delivery.DeliveryAttempt;
 
 /** The webhook path against real PostgreSQL: outbox, queued deliveries, signed sends, retries, the dead state and resends. */
 @SpringBootTest(classes = Application.class)
@@ -284,7 +285,7 @@ class WebhookDeliveryIntegrationTest {
             // The slow worker finally reports its stale attempt 1 as a failure.
             scopes.runInTenant(tenant, () -> unitOfWork.transactional(() -> deliveryRepository.recordAttempt(
                     slow.get(0).delivery().id(), 1,
-                    new io.corebilling.webhook.domain.DeliveryAttempt(1, 500, null, "late", 5, Instant.now()), DeliveryStatus.PENDING, Instant.now(), null)));
+                    new io.corebilling.webhook.domain.delivery.DeliveryAttempt(1, 500, null, "late", 5, Instant.now()), DeliveryStatus.PENDING, Instant.now(), null)));
 
             assertThat(deliveriesOf(tenant, hook.endpoint().id()).get(0).status()).as("the newer outcome stands").isEqualTo(DeliveryStatus.SUCCEEDED);
             assertThat(scopes.inTenant(tenant, () -> deliveryAdmin.get(queued.id())).attempts()).as("but the late attempt is still logged").hasSize(2);

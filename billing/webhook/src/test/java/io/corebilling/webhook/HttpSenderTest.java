@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.net.httpserver.HttpServer;
 import io.corebilling.webhook.adapter.http.HttpComponentsWebhookSender;
-import io.corebilling.webhook.application.WebhookSender;
+import io.corebilling.webhook.application.delivery.port.WebhookSender;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;

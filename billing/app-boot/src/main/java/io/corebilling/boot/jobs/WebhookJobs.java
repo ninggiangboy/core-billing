@@ -1,6 +1,6 @@
 package io.corebilling.boot.jobs;
 
-import io.corebilling.webhook.application.DeliverWebhooksUseCase;
+import io.corebilling.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;

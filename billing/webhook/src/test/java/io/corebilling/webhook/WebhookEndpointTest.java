@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.sharedkernel.TenantId;
-import io.corebilling.webhook.domain.EndpointStatus;
-import io.corebilling.webhook.domain.WebhookEndpoint;
-import io.corebilling.webhook.domain.WebhookEndpointId;
+import io.corebilling.webhook.domain.endpoint.EndpointStatus;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpoint;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

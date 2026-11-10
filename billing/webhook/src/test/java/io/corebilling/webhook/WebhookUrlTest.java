@@ -3,7 +3,7 @@ package io.corebilling.webhook;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.corebilling.webhook.domain.WebhookUrl;
+import io.corebilling.webhook.domain.endpoint.WebhookUrl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

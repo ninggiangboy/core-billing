@@ -1,6 +1,6 @@
 package io.corebilling.webhook.adapter.http;
 
-import io.corebilling.webhook.domain.AddressPolicy;
+import io.corebilling.webhook.domain.endpoint.AddressPolicy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.apache.hc.client5.http.DnsResolver;

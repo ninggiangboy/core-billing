@@ -2,7 +2,7 @@ package io.corebilling.webhook;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.corebilling.webhook.domain.AddressPolicy;
+import io.corebilling.webhook.domain.endpoint.AddressPolicy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.junit.jupiter.params.ParameterizedTest;

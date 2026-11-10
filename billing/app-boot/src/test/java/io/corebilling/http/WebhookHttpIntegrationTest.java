@@ -13,7 +13,7 @@ import io.corebilling.support.PostgresContainerConfig;
 import io.corebilling.support.RealKeycloakConfig;
 import io.corebilling.support.ScopeTestSupport;
 import io.corebilling.support.TestReceiver;
-import io.corebilling.webhook.application.DeliverWebhooksUseCase;
+import io.corebilling.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;

@@ -1,6 +1,6 @@
 package io.corebilling.webhook.adapter.crypto;
 
-import io.corebilling.webhook.application.SigningKeys;
+import io.corebilling.webhook.application.shared.port.SigningKeys;
 import java.security.SecureRandom;
 import java.util.Base64;
 

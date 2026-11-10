@@ -1,10 +1,10 @@
 package io.corebilling.webhook.adapter.persistence;
 
 import io.corebilling.sharedkernel.TenantId;
-import io.corebilling.webhook.application.WebhookEndpointRepository;
-import io.corebilling.webhook.domain.EndpointStatus;
-import io.corebilling.webhook.domain.WebhookEndpoint;
-import io.corebilling.webhook.domain.WebhookEndpointId;
+import io.corebilling.webhook.application.endpoint.port.WebhookEndpointRepository;
+import io.corebilling.webhook.domain.endpoint.EndpointStatus;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpoint;
+import io.corebilling.webhook.domain.endpoint.WebhookEndpointId;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.util.List;

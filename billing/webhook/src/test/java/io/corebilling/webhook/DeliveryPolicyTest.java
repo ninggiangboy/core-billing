@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.corebilling.sharedkernel.Backoff;
-import io.corebilling.webhook.domain.DeliveryPolicy;
+import io.corebilling.webhook.domain.delivery.DeliveryPolicy;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 

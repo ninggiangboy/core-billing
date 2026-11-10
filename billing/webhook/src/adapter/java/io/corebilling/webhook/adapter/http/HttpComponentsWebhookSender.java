@@ -1,6 +1,6 @@
 package io.corebilling.webhook.adapter.http;
 
-import io.corebilling.webhook.application.WebhookSender;
+import io.corebilling.webhook.application.delivery.port.WebhookSender;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

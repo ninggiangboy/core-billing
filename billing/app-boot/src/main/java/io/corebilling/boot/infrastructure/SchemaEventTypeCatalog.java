@@ -1,6 +1,6 @@
 package io.corebilling.boot.infrastructure;
 
-import io.corebilling.webhook.application.EventTypeCatalog;
+import io.corebilling.webhook.application.shared.port.EventTypeCatalog;
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;

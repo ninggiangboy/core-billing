@@ -25,12 +25,53 @@ Target shape (illustrated with `money` in [plan.md](./plan.md)): inside each sou
 
 ## Tasks & Steps
 
-- [ ] 1. For `usage`, `webhook` and `customer`, list the files per source set (`git ls-files <module>/src`) and write the file-to-package mapping in the phase notes before moving anything. Group by aggregate: one feature package per aggregate root, shared helpers in the feature that owns them.
-- [ ] 2. Spike on `customer.api` (two types): put the types in a sub-package, add a `package-info.java` with `@NamedInterface` in the `adapter` source set, and run `ModulithVerificationTest`. Record whether the root `api` package keeps its own `package-info` and how several named interfaces are declared. The rest of this plan reuses the recorded pattern.
-- [ ] 3. Move `customer`, then compile (`./gradlew :customer:compileAdapterJava`, then `build`), then fix imports in dependants.
-- [ ] 4. Repeat for `usage` and `webhook`.
-- [ ] 5. Add `customer`, `usage` and `webhook` to the layout set of the architecture rules.
-- [ ] 6. Commit each module separately as `refactor(<module>): group packages by feature and role`.
+- [x] 1. For `usage`, `webhook` and `customer`, list the files per source set (`git ls-files <module>/src`) and write the file-to-package mapping in the phase notes before moving anything. Group by aggregate: one feature package per aggregate root, shared helpers in the feature that owns them.
+- [x] 2. Spike on `customer.api` (two types): put the types in a sub-package, add a `package-info.java` with `@NamedInterface` in the `adapter` source set, and run `ModulithVerificationTest`. Record whether the root `api` package keeps its own `package-info` and how several named interfaces are declared. The rest of this plan reuses the recorded pattern.
+- [x] 3. Move `customer`, then compile (`./gradlew :customer:compileAdapterJava`, then `build`), then fix imports in dependants.
+- [x] 4. Repeat for `usage` and `webhook`.
+- [x] 5. Add `customer`, `usage` and `webhook` to the layout set of the architecture rules.
+- [x] 6. Commit each module separately as `refactor(<module>): group packages by feature and role`.
+
+## Phase notes
+
+### Modulith pattern for `api` sub-packages
+
+- The root `customer/api/package-info.java` stays and keeps `@NamedInterface("api")`; each sub-package that other modules use gets its own `package-info.java` in the `adapter` source set with a distinct name. `customer.api.lookup` uses `@NamedInterface("customer-lookup")`, `usage.api.usage` uses `@NamedInterface("usage")`.
+- `ModulithVerificationTest` passes with both the root and the sub-package named interfaces declared. Other modules keep importing the concrete sub-package.
+
+### Final mapping
+
+`customer` (small module: roles directly under `application`):
+- `customer.api.lookup`: CustomerLookup, CustomerSummary (root `customer.api` keeps its `package-info`).
+- `customer.domain.customer`: Customer, CustomerCreated, CustomerStatus, ExternalIdentity.
+- `customer.application.command`: AuditContext, CreateCustomerUseCase, CustomerAdministration.
+- `customer.application.query`: CustomerLookupService.
+- `customer.application.port`: CustomerRepository.
+- `adapter` unchanged (`adapter.persistence`, `adapter.web`); new `adapter/.../customer/api/lookup/package-info.java`.
+
+`usage` (small module):
+- `usage.api.usage`: UsageEventId, UsageLookup, UsageRecord, UsageTotal.
+- `usage.domain.usage`: UsageEvent, UsageTrace.
+- `usage.application.command`: RecordKey, RecordUsageUseCase.
+- `usage.application.query`: UsageQueries.
+- `usage.application.port`: MetricUnits, UsageEventRepository.
+- `adapter` unchanged; new `adapter/.../usage/api/usage/package-info.java`.
+
+`webhook` (features: endpoint, delivery, shared):
+- `webhook.domain.endpoint`: WebhookEndpoint, WebhookEndpointId, EndpointStatus, WebhookUrl, AddressPolicy.
+- `webhook.domain.delivery`: WebhookDelivery, WebhookDeliveryId, DeliveryStatus, DeliveryAttempt, DeliveryPolicy, WebhookHeaders.
+- `webhook.application.endpoint.command`: CreateEndpointUseCase, EndpointAdministration, EndpointRules.
+- `webhook.application.endpoint.port`: WebhookEndpointRepository.
+- `webhook.application.delivery.command`: DeliverWebhooksUseCase, DeliveryAdministration, RecordDeliveriesUseCase, ClaimedDelivery.
+- `webhook.application.delivery.port`: WebhookDeliveryRepository, WebhookSender, EventBodyWriter, PayloadSigner.
+- `webhook.application.shared.command`: Audit.
+- `webhook.application.shared.port`: SecretCipher, SigningKeys, EventTypeCatalog, WebhookSettings.
+- `adapter` unchanged (`adapter.crypto`, `adapter.http`, `adapter.messaging`, `adapter.persistence`, `adapter.web`); no `api` source set.
+
+### Notes
+
+- `payment` and `pricing` declare their own `Audit` and `SecretCipher` with the same simple names; the import fixer must not add a webhook import to those modules (it did once and was corrected). Name collisions are handled by hand from here.
+- The moves are renames: the only edited lines are `package` declarations, imports and the new `package-info.java` files. Helper `Rows` classes stayed in their role package because both feature repositories use them.
 
 ## Verification
 

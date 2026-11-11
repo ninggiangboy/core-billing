@@ -1,7 +1,7 @@
 ---
 title: "Replace JdbcClient and Spring Data JDBC with jOOQ"
 description: "One type-safe persistence stack: generated jOOQ tables, DSLContext in every adapter, no hand-written Rows."
-status: in-progress
+status: completed
 priority: P1
 branch: dev
 tags: [refactor, backend, persistence, jooq]
@@ -26,13 +26,13 @@ created: 2026-11-11
 
 | # | Phase | Status |
 |---|-------|--------|
-| 1 | Foundation: `jooq-schema` module, generation and drift test, starter, ArchUnit rules | pending |
-| 2 | Pilot: customer | pending |
-| 3 | usage, webhook | pending |
-| 4 | platform | pending |
-| 5 | pricing, payment | pending |
-| 6 | invoicing, money | pending |
-| 7 | app-boot infrastructure and test support, remove Spring Data JDBC | pending |
-| 8 | Read check, docs, journal | pending |
+| 1 | Foundation: `jooq-schema` module, generation and drift test, starter, ArchUnit rules | done |
+| 2 | Pilot: customer | done |
+| 3 | usage, webhook | done |
+| 4 | platform | done |
+| 5 | pricing, payment | done |
+| 6 | invoicing, money | done |
+| 7 | app-boot infrastructure and test support, remove Spring Data JDBC | done |
+| 8 | Read check, docs, journal | done |
 
 Each phase: migrate, `./gradlew test` for the touched module and `:app-boot:test`, commit.

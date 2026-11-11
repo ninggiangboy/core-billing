@@ -88,7 +88,13 @@ class StripeAdapterWireTest {
 
     @Test
     void aDirectCheckoutCarriesTheTenantsKeyAnIdempotencyKeyAndOurReference() {
-        responder = r -> new String[] {"200", "{\"id\":\"cs_test_1\",\"object\":\"checkout.session\",\"url\":\"https://checkout.stripe.com/c/pay/cs_test_1\"}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "cs_test_1",
+                  "object": "checkout.session",
+                  "url": "https://checkout.stripe.com/c/pay/cs_test_1"
+                }
+                """};
 
         PaymentProvider.CreatedCheckout created = provider.createCheckout(new PaymentProvider.Access("sk_test_tenant_key_123456", null), checkoutRequest(),
                 "topup-" + PAYMENT);
@@ -115,7 +121,13 @@ class StripeAdapterWireTest {
 
     @Test
     void aConnectedAccountChargeIsADirectChargeOnThatAccount() {
-        responder = r -> new String[] {"200", "{\"id\":\"cs_test_2\",\"object\":\"checkout.session\",\"url\":\"https://checkout.stripe.com/c/pay/cs_test_2\"}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "cs_test_2",
+                  "object": "checkout.session",
+                  "url": "https://checkout.stripe.com/c/pay/cs_test_2"
+                }
+                """};
 
         provider.createCheckout(new PaymentProvider.Access("sk_test_platform_key_123456", "acct_connected_1"), checkoutRequest(), "topup-x");
 
@@ -126,8 +138,17 @@ class StripeAdapterWireTest {
     @Test
     void aRefundNamesThePaymentIntentAndCarriesItsOwnReference() {
         RefundId refund = new RefundId(UUID.randomUUID());
-        responder = r -> new String[] {"200", "{\"id\":\"re_1\",\"object\":\"refund\",\"status\":\"pending\",\"amount\":1000,\"currency\":\"usd\",\"payment_intent\":\"pi_1\","
-                + "\"metadata\":{\"billing_refund_id\":\"" + refund + "\"}}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "re_1",
+                  "object": "refund",
+                  "status": "pending",
+                  "amount": 1000,
+                  "currency": "usd",
+                  "payment_intent": "pi_1",
+                  "metadata": {"billing_refund_id": "%s"}
+                }
+                """.formatted(refund)};
 
         PaymentProvider.RefundObject created = provider.createRefund(new PaymentProvider.Access("sk_test_k_1234567890", "acct_1"),
                 new PaymentProvider.RefundRequest(refund, PAYMENT, "pi_1", Money.of(1000, Currency.of("USD")), "duplicate"), "refund-" + refund);
@@ -144,7 +165,12 @@ class StripeAdapterWireTest {
 
     @Test
     void verifyingAKeyReadsTheAccountAndReportsTheEnvironment() {
-        responder = r -> new String[] {"200", "{\"id\":\"acct_123\",\"object\":\"account\"}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "acct_123",
+                  "object": "account"
+                }
+                """};
 
         PaymentProvider.VerifiedAccount account = provider.verifyKey("sk_test_abcdefghijklmnop");
 
@@ -157,7 +183,12 @@ class StripeAdapterWireTest {
 
     @Test
     void aConnectedAccountIsCreatedForTheSaasModel() {
-        responder = r -> new String[] {"200", "{\"id\":\"acct_new\",\"object\":\"v2.core.account\"}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "acct_new",
+                  "object": "v2.core.account"
+                }
+                """};
 
         String id = provider.createConnectedAccount("sk_test_platform_1234567890", "Acme Ltd", "owner@acme.test", "connect-1");
 
@@ -171,7 +202,12 @@ class StripeAdapterWireTest {
 
     @Test
     void anOnboardingLinkAsksForTheMerchantConfiguration() {
-        responder = r -> new String[] {"200", "{\"url\":\"https://connect.stripe.com/setup/e/acct_1/abc\",\"object\":\"v2.core.account_link\"}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "url": "https://connect.stripe.com/setup/e/acct_1/abc",
+                  "object": "v2.core.account_link"
+                }
+                """};
 
         String url = provider.createOnboardingLink("sk_test_platform_1234567890", "acct_1", "https://app.example/return", "https://app.example/refresh");
 
@@ -184,23 +220,81 @@ class StripeAdapterWireTest {
 
     @Test
     void cardPaymentsAreActiveOnlyWhenTheV2CapabilityStatusSaysSo() {
-        responder = r -> new String[] {"200", "{\"id\":\"acct_1\",\"object\":\"v2.core.account\",\"configuration\":{\"merchant\":{\"capabilities\":{\"card_payments\":{\"status\":\"active\"}}}}}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "acct_1",
+                  "object": "v2.core.account",
+                  "configuration": {
+                    "merchant": {
+                      "capabilities": {
+                        "card_payments": {"status": "active"}
+                      }
+                    }
+                  }
+                }
+                """};
         assertThat(provider.retrieveAccount("sk_test_platform_1234567890", "acct_1").cardPaymentsActive()).isTrue();
         assertThat(seen.get(0).query()).contains("configuration.merchant");
 
-        responder = r -> new String[] {"200", "{\"id\":\"acct_1\",\"object\":\"v2.core.account\",\"configuration\":{\"merchant\":{\"capabilities\":{\"card_payments\":{\"status\":\"restricted\"}}}}}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "acct_1",
+                  "object": "v2.core.account",
+                  "configuration": {
+                    "merchant": {
+                      "capabilities": {
+                        "card_payments": {"status": "restricted"}
+                      }
+                    }
+                  }
+                }
+                """};
         assertThat(provider.retrieveAccount("sk_test_platform_1234567890", "acct_1").cardPaymentsActive()).isFalse();
 
-        responder = r -> new String[] {"200", "{\"id\":\"acct_1\",\"object\":\"v2.core.account\"}"};
+        responder = r -> new String[] {"200", """
+                {
+                  "id": "acct_1",
+                  "object": "v2.core.account"
+                }
+                """};
         assertThat(provider.retrieveAccount("sk_test_platform_1234567890", "acct_1").cardPaymentsActive()).isFalse();
     }
 
     @Test
     void recentCheckoutsAndRefundsAreListedFromTheGivenTime() {
         responder = r -> r.path().endsWith("/refunds")
-                ? new String[] {"200", "{\"object\":\"list\",\"has_more\":false,\"data\":[{\"id\":\"re_9\",\"object\":\"refund\",\"status\":\"succeeded\",\"amount\":5,\"currency\":\"usd\"}]}"}
-                : new String[] {"200", "{\"object\":\"list\",\"has_more\":false,\"data\":[{\"id\":\"cs_9\",\"object\":\"checkout.session\",\"status\":\"complete\","
-                        + "\"payment_status\":\"paid\",\"amount_total\":7,\"currency\":\"usd\",\"metadata\":{\"billing_payment_id\":\"" + PAYMENT + "\"}}]}"};
+                ? new String[] {"200", """
+                        {
+                          "object": "list",
+                          "has_more": false,
+                          "data": [
+                            {
+                              "id": "re_9",
+                              "object": "refund",
+                              "status": "succeeded",
+                              "amount": 5,
+                              "currency": "usd"
+                            }
+                          ]
+                        }
+                        """}
+                : new String[] {"200", """
+                        {
+                          "object": "list",
+                          "has_more": false,
+                          "data": [
+                            {
+                              "id": "cs_9",
+                              "object": "checkout.session",
+                              "status": "complete",
+                              "payment_status": "paid",
+                              "amount_total": 7,
+                              "currency": "usd",
+                              "metadata": {"billing_payment_id": "%s"}
+                            }
+                          ]
+                        }
+                        """.formatted(PAYMENT)};
         Instant since = Instant.parse("2026-11-07T00:00:00Z");
         PaymentProvider.Access access = new PaymentProvider.Access("sk_test_k_1234567890", null);
 
@@ -215,7 +309,14 @@ class StripeAdapterWireTest {
 
     @Test
     void anAuthenticationFailureIsRejectedWithoutEchoingAnythingFromStripe() {
-        responder = r -> new String[] {"401", "{\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Invalid API Key provided: sk_test_****1234\"}}"};
+        responder = r -> new String[] {"401", """
+                {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "message": "Invalid API Key provided: sk_test_****1234"
+                  }
+                }
+                """};
 
         assertThatThrownBy(() -> provider.verifyKey("sk_test_abcdefghijklmnop"))
                 .isInstanceOf(ProviderRejectedException.class)
@@ -224,7 +325,15 @@ class StripeAdapterWireTest {
 
     @Test
     void aRejectedRequestKeepsOnlyStripesErrorCode() {
-        responder = r -> new String[] {"400", "{\"error\":{\"type\":\"invalid_request_error\",\"code\":\"amount_too_small\",\"message\":\"Amount must be at least 50 cents\"}}"};
+        responder = r -> new String[] {"400", """
+                {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "amount_too_small",
+                    "message": "Amount must be at least 50 cents"
+                  }
+                }
+                """};
 
         assertThatThrownBy(() -> provider.createCheckout(new PaymentProvider.Access("sk_test_k_1234567890", null), checkoutRequest(), "k"))
                 .isInstanceOf(ProviderRejectedException.class)
@@ -233,7 +342,14 @@ class StripeAdapterWireTest {
 
     @Test
     void aServerErrorMeansTheOutcomeIsUnknownAndTheCallMayBeRepeated() {
-        responder = r -> new String[] {"500", "{\"error\":{\"type\":\"api_error\",\"message\":\"boom\"}}"};
+        responder = r -> new String[] {"500", """
+                {
+                  "error": {
+                    "type": "api_error",
+                    "message": "boom"
+                  }
+                }
+                """};
 
         assertThatThrownBy(() -> provider.createCheckout(new PaymentProvider.Access("sk_test_k_1234567890", null), checkoutRequest(), "k"))
                 .isInstanceOf(ProviderUnavailableException.class);

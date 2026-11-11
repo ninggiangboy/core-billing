@@ -23,8 +23,24 @@ class StripeWebhookSignatureTest {
 
     private static final String DIRECT_SECRET = "whsec_direct_secret_value";
     private static final String CONNECT_SECRET = "whsec_connect_secret_value";
-    private static final String BODY = "{\"id\":\"evt_1\",\"object\":\"event\",\"type\":\"payment_intent.succeeded\",\"livemode\":false,\"created\":1789000000,"
-            + "\"data\":{\"object\":{\"object\":\"payment_intent\",\"id\":\"pi_1\",\"status\":\"succeeded\",\"amount\":100,\"currency\":\"usd\"}}}";
+    private static final String BODY = """
+            {
+              "id": "evt_1",
+              "object": "event",
+              "type": "payment_intent.succeeded",
+              "livemode": false,
+              "created": 1789000000,
+              "data": {
+                "object": {
+                  "object": "payment_intent",
+                  "id": "pi_1",
+                  "status": "succeeded",
+                  "amount": 100,
+                  "currency": "usd"
+                }
+              }
+            }
+            """;
 
     private final StripePaymentProvider provider = new StripePaymentProvider(null, Duration.ofSeconds(1), Duration.ofSeconds(1), 300);
 
@@ -63,7 +79,7 @@ class StripeWebhookSignatureTest {
     @Test
     void aTamperedBodyIsRejected() throws Exception {
         String header = sign(DIRECT_SECRET, now(), BODY);
-        String tampered = BODY.replace("\"amount\":100", "\"amount\":999999");
+        String tampered = BODY.replace("\"amount\": 100", "\"amount\": 999999");
         assertThatThrownBy(() -> provider.verifyWebhook(tampered, header, DIRECT_SECRET)).isInstanceOf(InvalidSignatureException.class);
     }
 

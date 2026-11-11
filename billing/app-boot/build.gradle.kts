@@ -17,6 +17,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    implementation(project(":jooq-schema"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
@@ -26,6 +28,9 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation(project(":arch-fixtures"))
+    // Generates the jOOQ schema from the migrations for the drift test.
+    testImplementation("org.jooq:jooq-codegen")
+    testImplementation("org.jooq:jooq-meta")
     testImplementation(libs.archunit.junit5)
     testImplementation(libs.spring.modulith.core)
     testImplementation(libs.spring.modulith.docs)
@@ -51,4 +56,6 @@ tasks.processResources {
 tasks.test {
     // `./gradlew :app-boot:test -Dopenapi.update=true` rewrites contracts/openapi/billing.yaml.
     systemProperty("openapi.update", System.getProperty("openapi.update", "false"))
+    // `./gradlew :app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true` regenerates the committed jOOQ schema.
+    systemProperty("jooq.update", System.getProperty("jooq.update", "false"))
 }

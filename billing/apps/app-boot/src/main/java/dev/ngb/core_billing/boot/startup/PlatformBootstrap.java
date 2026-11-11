@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.boot.config;
+package dev.ngb.core_billing.boot.startup;
 
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobLeases;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;

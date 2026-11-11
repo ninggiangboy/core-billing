@@ -46,15 +46,15 @@ dependencies {
 // The event schemas under contracts/events are the source of truth for which event types exist; the
 // application reads them from the classpath, so the catalog and the contract cannot drift apart.
 tasks.processResources {
-    from(layout.projectDirectory.dir("../../contracts/events")) {
+    from(layout.projectDirectory.dir("../../../contracts/events")) {
         include("*.schema.json")
         into("events")
     }
 }
 
 tasks.test {
-    // `./gradlew :app-boot:test -Dopenapi.update=true` rewrites contracts/openapi/billing.yaml.
+    // `./gradlew :apps:app-boot:test -Dopenapi.update=true` rewrites contracts/openapi/billing.yaml.
     systemProperty("openapi.update", System.getProperty("openapi.update", "false"))
-    // `./gradlew :app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true` regenerates the committed jOOQ schema.
+    // `./gradlew :apps:app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true` regenerates the committed jOOQ schema.
     systemProperty("jooq.update", System.getProperty("jooq.update", "false"))
 }

@@ -28,7 +28,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * The jOOQ tables and records in {@code jooq-schema} are generated from the Flyway migrations and committed, so a
  * normal build needs no database. This test migrates a throwaway PostgreSQL, generates again and fails when the
  * committed code is out of date. After adding or changing a migration, run
- * {@code ./gradlew :app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true} and commit the result.
+ * {@code ./gradlew :apps:app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true} and commit the result.
  */
 class JooqSchemaTest {
 

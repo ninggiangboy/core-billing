@@ -26,7 +26,7 @@ import tools.jackson.dataformat.yaml.YAMLMapper;
 
 /**
  * The committed contracts must equal what the code generates. After an intended API change run
- * {@code ./gradlew :app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true} and commit both files.
+ * {@code ./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true} and commit both files.
  */
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc

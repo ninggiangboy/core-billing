@@ -9,4 +9,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "core-billing"
 
-include("libs:shared-kernel", "libs:jooq-schema", "contexts:platform", "contexts:customer", "contexts:money", "contexts:webhook", "contexts:usage", "contexts:pricing", "contexts:payment", "contexts:invoicing", "app-boot", "arch-fixtures")
+include("libs:shared-kernel", "libs:jooq-schema", "contexts:platform", "contexts:customer", "contexts:money", "contexts:webhook", "contexts:usage", "contexts:pricing", "contexts:payment", "contexts:invoicing", "apps:app-boot", "arch-fixtures")

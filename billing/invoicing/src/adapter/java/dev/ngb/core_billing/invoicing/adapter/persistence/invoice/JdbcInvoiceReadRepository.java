@@ -90,7 +90,11 @@ public class JdbcInvoiceReadRepository implements InvoiceReadRepository {
             return List.of();
         }
         List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from invoices where true");
+        StringBuilder sql = new StringBuilder("""
+                        select %s
+                        from invoices
+                        where true
+                        """.formatted(COLUMNS));
         if (customerId != null) {
             sql.append(" and customer_id = ?");
             params.add(customerId);
@@ -118,20 +122,32 @@ public class JdbcInvoiceReadRepository implements InvoiceReadRepository {
 
     @Override
     public Optional<InvoiceView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from invoices where id = ?").param(id).query(InvoiceRowView.class).optional().map(InvoiceRowView::toView);
+        return jdbc.sql("""
+                        select %s
+                        from invoices
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id).query(InvoiceRowView.class).optional().map(InvoiceRowView::toView);
     }
 
     @Override
     public List<InvoiceItemView> items(UUID invoiceId) {
-        return jdbc.sql("select id, source, charge_id, subscription_id, period_start, period_end, description, currency, amount, incurred_at "
-                        + "from invoice_items where invoice_id = ? order by incurred_at, id")
+        return jdbc.sql("""
+                        select id, source, charge_id, subscription_id, period_start, period_end, description, currency, amount, incurred_at
+                        from invoice_items
+                        where invoice_id = ?
+                        order by incurred_at, id
+                        """)
                 .param(invoiceId).query(ItemRowView.class).list().stream().map(ItemRowView::toView).toList();
     }
 
     @Override
     public List<InvoicePaymentView> payments(UUID invoiceId) {
-        return jdbc.sql("select payment_id, currency, amount, status, failure_reason, ledger_entry_id, started_at, settled_at from invoice_payments "
-                        + "where invoice_id = ? order by started_at, payment_id")
+        return jdbc.sql("""
+                        select payment_id, currency, amount, status, failure_reason, ledger_entry_id, started_at, settled_at
+                        from invoice_payments
+                        where invoice_id = ?
+                        order by started_at, payment_id
+                        """)
                 .param(invoiceId).query(PaymentRowView.class).list().stream().map(PaymentRowView::toView).toList();
     }
 }

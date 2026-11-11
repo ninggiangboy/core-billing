@@ -50,20 +50,35 @@ public class JdbcSubscriptionRepository implements SubscriptionRepository {
 
     @Override
     public Optional<Subscription> lockById(SubscriptionId id) {
-        return jdbc.sql("select " + COLUMNS + " from subscriptions where id = ? for update").param(id.value()).query(SubscriptionRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from subscriptions
+                        where id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(id.value()).query(SubscriptionRow.class).optional()
                 .map(SubscriptionRow::toDomain);
     }
 
     @Override
     public Optional<Subscription> lockNextDue(Instant now) {
-        return jdbc.sql("select " + COLUMNS + " from subscriptions where status in ('ACTIVE', 'PAST_DUE') and next_renewal_at <= ? "
-                        + "order by next_renewal_at, id limit 1 for update skip locked")
+        return jdbc.sql("""
+                        select %s
+                        from subscriptions
+                        where status in ('ACTIVE', 'PAST_DUE') and next_renewal_at <= ?
+                        order by next_renewal_at, id
+                        limit 1
+                        for update skip locked
+                        """.formatted(COLUMNS))
                 .param(Timestamp.from(now)).query(SubscriptionRow.class).optional().map(SubscriptionRow::toDomain);
     }
 
     @Override
     public Optional<Subscription> findByIdempotencyKey(String idempotencyKey) {
-        return jdbc.sql("select " + COLUMNS + " from subscriptions where idempotency_key = ?").param(idempotencyKey).query(SubscriptionRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from subscriptions
+                        where idempotency_key = ?
+                        """.formatted(COLUMNS)).param(idempotencyKey).query(SubscriptionRow.class).optional()
                 .map(SubscriptionRow::toDomain);
     }
 

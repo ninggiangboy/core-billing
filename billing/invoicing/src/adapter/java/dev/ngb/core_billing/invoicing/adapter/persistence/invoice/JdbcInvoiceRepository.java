@@ -95,7 +95,12 @@ public class JdbcInvoiceRepository implements InvoiceRepository {
 
     @Override
     public Optional<Invoice> lockById(InvoiceId id) {
-        return jdbc.sql("select " + INVOICE_COLUMNS + " from invoices where id = ? for update").param(id.value()).query(InvoiceRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from invoices
+                        where id = ?
+                        for update
+                        """.formatted(INVOICE_COLUMNS)).param(id.value()).query(InvoiceRow.class).optional()
                 .map(this::load);
     }
 
@@ -112,9 +117,19 @@ public class JdbcInvoiceRepository implements InvoiceRepository {
     }
 
     private Invoice load(InvoiceRow row) {
-        List<InvoiceItem> items = jdbc.sql("select " + ITEM_COLUMNS + " from invoice_items where invoice_id = ? order by incurred_at, id")
+        List<InvoiceItem> items = jdbc.sql("""
+                        select %s
+                        from invoice_items
+                        where invoice_id = ?
+                        order by incurred_at, id
+                        """.formatted(ITEM_COLUMNS))
                 .param(row.id()).query(InvoiceItemRow.class).list().stream().map(InvoiceItemRow::toDomain).toList();
-        List<InvoicePayment> payments = jdbc.sql("select " + PAYMENT_COLUMNS + " from invoice_payments where invoice_id = ? order by started_at, payment_id")
+        List<InvoicePayment> payments = jdbc.sql("""
+                        select %s
+                        from invoice_payments
+                        where invoice_id = ?
+                        order by started_at, payment_id
+                        """.formatted(PAYMENT_COLUMNS))
                 .param(row.id()).query(InvoicePaymentRow.class).list().stream().map(InvoicePaymentRow::toDomain).toList();
         return row.toDomain(items, payments);
     }

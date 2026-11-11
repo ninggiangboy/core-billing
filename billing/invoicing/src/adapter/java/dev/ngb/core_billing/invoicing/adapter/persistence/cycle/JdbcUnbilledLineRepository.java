@@ -39,7 +39,12 @@ public class JdbcUnbilledLineRepository implements UnbilledLineRepository {
 
     @Override
     public Optional<UnbilledLine> lockByCharge(UUID chargeId) {
-        return jdbc.sql("select " + COLUMNS + " from invoice_items where charge_id = ? and invoice_id is null for update").param(chargeId)
+        return jdbc.sql("""
+                        select %s
+                        from invoice_items
+                        where charge_id = ? and invoice_id is null
+                        for update
+                        """.formatted(COLUMNS)).param(chargeId)
                 .query(UnbilledLineRow.class).optional().map(UnbilledLineRow::toDomain);
     }
 
@@ -64,7 +69,13 @@ public class JdbcUnbilledLineRepository implements UnbilledLineRepository {
 
     @Override
     public List<UnbilledLine> lockPeriod(WalletId walletId, Instant cycleStart) {
-        return jdbc.sql("select " + COLUMNS + " from invoice_items where wallet_id = ? and cycle_start = ? and invoice_id is null order by incurred_at, id for update")
+        return jdbc.sql("""
+                        select %s
+                        from invoice_items
+                        where wallet_id = ? and cycle_start = ? and invoice_id is null
+                        order by incurred_at, id
+                        for update
+                        """.formatted(COLUMNS))
                 .params(walletId.value(), Timestamp.from(cycleStart))
                 .query(UnbilledLineRow.class).list().stream().map(UnbilledLineRow::toDomain).toList();
     }

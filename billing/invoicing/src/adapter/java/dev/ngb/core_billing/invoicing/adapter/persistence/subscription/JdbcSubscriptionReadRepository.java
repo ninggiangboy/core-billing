@@ -71,7 +71,11 @@ public class JdbcSubscriptionReadRepository implements SubscriptionReadRepositor
             return List.of();
         }
         List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from subscriptions where true");
+        StringBuilder sql = new StringBuilder("""
+                        select %s
+                        from subscriptions
+                        where true
+                        """.formatted(COLUMNS));
         if (customerId != null) {
             sql.append(" and customer_id = ?");
             params.add(customerId);
@@ -99,15 +103,23 @@ public class JdbcSubscriptionReadRepository implements SubscriptionReadRepositor
 
     @Override
     public Optional<SubscriptionView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from subscriptions where id = ?").param(id).query(SubscriptionRowView.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from subscriptions
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id).query(SubscriptionRowView.class).optional()
                 .map(SubscriptionRowView::toView);
     }
 
     @Override
     public List<SubscriptionEventView> history(UUID subscriptionId) {
-        return jdbc.sql("select e.id, e.type, e.period_number, e.period_start, e.period_end, e.amount, s.currency, e.charge_id, e.detail, e.occurred_at "
-                        + "from subscription_events e join subscriptions s on s.id = e.subscription_id and s.tenant_id = e.tenant_id "
-                        + "where e.subscription_id = ? order by e.occurred_at, e.id")
+        return jdbc.sql("""
+                        select e.id, e.type, e.period_number, e.period_start, e.period_end, e.amount, s.currency, e.charge_id, e.detail, e.occurred_at
+                        from subscription_events e
+                        join subscriptions s on s.id = e.subscription_id and s.tenant_id = e.tenant_id
+                        where e.subscription_id = ?
+                        order by e.occurred_at, e.id
+                        """)
                 .param(subscriptionId).query(EventRowView.class).list().stream().map(EventRowView::toView).toList();
     }
 }

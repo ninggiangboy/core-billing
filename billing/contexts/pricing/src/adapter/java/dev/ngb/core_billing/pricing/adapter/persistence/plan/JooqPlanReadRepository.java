@@ -8,7 +8,7 @@ import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanReadRepository;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanVersionView;
 import dev.ngb.core_billing.pricing.application.plan.query.PricingPlanView;
-import dev.ngb.core_billing.pricing.domain.model.PricingModel;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
 import dev.ngb.core_billing_jooq.tables.records.PricingPlanVersionsRecord;

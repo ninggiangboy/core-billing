@@ -28,6 +28,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import dev.ngb.core_billing.invoicing.application.invoice.service.ChargeLineFactory;
+import dev.ngb.core_billing.invoicing.application.invoice.service.InvoiceIssuer;
 
 /**
  * Issues an invoice for one succeeded charge, on a Tenant's request, with the same aggregate and numbering as a

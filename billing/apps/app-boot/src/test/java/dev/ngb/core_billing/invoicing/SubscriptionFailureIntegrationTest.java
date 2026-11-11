@@ -11,7 +11,7 @@ import dev.ngb.core_billing.money.MoneyTestWorld.World;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.pricing.PricingTestWorld;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
@@ -41,7 +41,7 @@ class SubscriptionFailureIntegrationTest {
 
     @Autowired MoneyTestWorld worlds;
     @Autowired PricingTestWorld pricing;
-    @Autowired PlanAdministration planAdmin;
+    @Autowired ManagePlanUseCase planAdmin;
     @Autowired CreateSubscriptionUseCase create;
     @Autowired RenewSubscriptionUseCase renew;
     @Autowired ScopeTestSupport scopes;
@@ -161,7 +161,7 @@ class SubscriptionFailureIntegrationTest {
         World world = worlds.prepaid(100_000);
         Instant until = Instant.now().plus(Duration.ofDays(10));
         UUID plan = scopes.inTenant(world.tenant().id(), () -> planAdmin.create(PricingTestWorld.AUDIT, "ends-" + UUID.randomUUID().toString().substring(0, 8), "Ends soon",
-                PricingTestWorld.USD, new PlanAdministration.Terms(pricing.pro(), BillingCycle.MONTHLY, null, null, null, PricingTestWorld.VALID_FROM, until))).id().value();
+                PricingTestWorld.USD, new ManagePlanUseCase.Terms(pricing.pro(), BillingCycle.MONTHLY, null, null, null, PricingTestWorld.VALID_FROM, until))).id().value();
         Subscription subscription = scopes.inTenant(world.tenant().id(), () -> create.execute(new CreateSubscriptionUseCase.Command(world.wallet().id(), plan,
                 "sub-" + UUID.randomUUID(), AUDIT, null))).subscription();
         assertThat(row(subscription)).containsEntry("status", "ACTIVE").containsEntry("periods_charged", 1);

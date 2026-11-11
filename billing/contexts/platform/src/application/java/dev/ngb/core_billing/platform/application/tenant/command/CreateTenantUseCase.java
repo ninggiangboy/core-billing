@@ -14,6 +14,7 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.time.Instant;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
+import dev.ngb.core_billing.platform.application.tenant.exception.TenantCodeAlreadyUsedException;
 
 /** Creates a Tenant and its default subdomain in one transaction. Runs at Platform scope. */
 public class CreateTenantUseCase {

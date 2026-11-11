@@ -17,14 +17,14 @@ import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.EstimateCostUseCase;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanQueries;
 import dev.ngb.core_billing.pricing.application.plan.query.PricingPlanView;
 import dev.ngb.core_billing.pricing.application.rating.query.PriceLineView;
 import dev.ngb.core_billing.pricing.application.rating.query.RatingQueries;
 import dev.ngb.core_billing.pricing.application.rating.query.UsageRatingView;
 import dev.ngb.core_billing.pricing.application.rating.command.ReserveFromEstimateUseCase;
-import dev.ngb.core_billing.pricing.domain.model.EventBased;
+import dev.ngb.core_billing.pricing.domain.rule.EventBased;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
 import dev.ngb.core_billing.pricing.domain.plan.PlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
@@ -74,7 +74,7 @@ class PricingUsageIntegrationTest {
     @Autowired ScopeTestSupport scopes;
     @Autowired OwnerDatabase owner;
     @Autowired JdbcTemplate appJdbc;
-    @Autowired PlanAdministration planAdmin;
+    @Autowired ManagePlanUseCase planAdmin;
     @Autowired PlanQueries planQueries;
     @Autowired EstimateCostUseCase estimate;
     @Autowired ReserveFromEstimateUseCase reserve;
@@ -264,7 +264,7 @@ class PricingUsageIntegrationTest {
         String metric = worlds.metric();
         PricingPlan plan = worlds.plan(tenant, "calls", worlds.calls(metric));
 
-        PlanVersion v2 = scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
+        PlanVersion v2 = scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new ManagePlanUseCase.Terms(
                 new EventBased(metric, "call", d("0.10")), null, null, null, null, null, null)));
         assertThat(v2.number()).isEqualTo(2);
         PricingPlan loaded = scopes.inTenant(tenant, () -> planAdmin.get(plan.id()));
@@ -272,15 +272,15 @@ class PricingUsageIntegrationTest {
         assertThat(((EventBased) loaded.version(1).orElseThrow().rule()).unitPrice()).isEqualByComparingTo("0.05");
 
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.create(AUDIT, plan.code(), "dup", PricingTestWorld.USD,
-                new PlanAdministration.Terms(worlds.calls(worlds.metric()), null, null, null, null, null, null)))).isInstanceOf(ConflictException.class);
+                new ManagePlanUseCase.Terms(worlds.calls(worlds.metric()), null, null, null, null, null, null)))).isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.create(AUDIT, "other-" + UUID.randomUUID().toString().substring(0, 6), "other",
-                PricingTestWorld.USD, new PlanAdministration.Terms(new EventBased(metric, "request", d("1")), null, null, null, null, null, null))))
+                PricingTestWorld.USD, new ManagePlanUseCase.Terms(new EventBased(metric, "request", d("1")), null, null, null, null, null, null))))
                 .isInstanceOf(ConflictException.class).hasMessageContaining("already measured in 'call'");
 
         scopes.inTenant(tenant, () -> planAdmin.retire(AUDIT, plan.id()));
         assertThat(scopes.inTenant(tenant, () -> planQueries.list(dev.ngb.core_billing.pricing.domain.plan.PlanStatus.ACTIVE))).extracting(PricingPlanView::id).doesNotContain(plan.id().value());
         assertThat(scopes.inTenant(tenant, () -> planQueries.list(dev.ngb.core_billing.pricing.domain.plan.PlanStatus.RETIRED))).extracting(PricingPlanView::id).contains(plan.id().value());
-        assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
+        assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new ManagePlanUseCase.Terms(
                 worlds.calls(metric), null, null, null, null, null, null)))).isInstanceOf(ConflictException.class).hasMessageContaining("retired");
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> planAdmin.retire(AUDIT, plan.id()))).isInstanceOf(ConflictException.class);
 
@@ -341,7 +341,7 @@ class PricingUsageIntegrationTest {
         String metric = worlds.metric();
         PricingPlan plan = worlds.plan(tenant, "calls", new EventBased(metric, "call", d("1")));
         Instant later = Instant.now().plus(10, ChronoUnit.DAYS);
-        scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
+        scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new ManagePlanUseCase.Terms(
                 new EventBased(metric, "call", d("2")), null, null, null, null, later, null)));
 
         Map<String, Measure> usage = Map.of(metric, new Measure(d("10"), 10));
@@ -435,7 +435,7 @@ class PricingUsageIntegrationTest {
         worlds.record(tenant, w.customerId(), metric, "call", "10", DAY.plusSeconds(10));
         var first = charge(w, window(w, plan, null));
 
-        scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new PlanAdministration.Terms(
+        scopes.inTenant(tenant, () -> planAdmin.publishVersion(AUDIT, plan.id(), new ManagePlanUseCase.Terms(
                 new EventBased(metric, "call", d("100")), null, null, null, null, DAY.plusSeconds(30), null)));
         var replay = charge(w, window(w, plan, null));
         UsageRatingView stored = scopes.inTenant(tenant, () -> ratings.get(first.rating().id().value()));
@@ -444,7 +444,7 @@ class PricingUsageIntegrationTest {
         assertThat(replay.rating().amount().minorUnits()).isEqualTo(10);
         assertThat(stored.planVersion()).isEqualTo(1);
         assertThat(stored.breakdown().stream().map(PriceLineView::amount).toList())
-                .isEqualTo(first.rating().breakdown().stream().map(dev.ngb.core_billing.pricing.domain.plan.PriceLine::amount).toList());
+                .isEqualTo(first.rating().breakdown().stream().map(dev.ngb.core_billing.pricing.domain.rule.PriceLine::amount).toList());
         assertThat(balance(w)).isEqualTo(100_000 - 10);
 
         worlds.record(tenant, w.customerId(), metric, "call", "1", DAY.plusSeconds(50));

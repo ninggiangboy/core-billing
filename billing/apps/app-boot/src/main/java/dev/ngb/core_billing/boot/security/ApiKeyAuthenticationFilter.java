@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.boot.security;
 
 import dev.ngb.core_billing.platform.api.actor.Actor;
-import dev.ngb.core_billing.platform.application.auth.Authentication;
-import dev.ngb.core_billing.platform.application.auth.RateLimitExceededException;
+import dev.ngb.core_billing.platform.application.auth.service.Authentication;
+import dev.ngb.core_billing.platform.application.auth.exception.RateLimitExceededException;
 import dev.ngb.core_billing.platform.domain.credential.ApiKey;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

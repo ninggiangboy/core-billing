@@ -17,7 +17,7 @@ import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.PricingTestWorld;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import dev.ngb.core_billing.support.OwnerDatabase;
@@ -38,7 +38,7 @@ class SubscriptionIntegrationTest {
 
     @Autowired MoneyTestWorld worlds;
     @Autowired PricingTestWorld pricing;
-    @Autowired PlanAdministration planAdmin;
+    @Autowired ManagePlanUseCase planAdmin;
     @Autowired CreateSubscriptionUseCase create;
     @Autowired CancelSubscriptionUseCase cancel;
     @Autowired SubscriptionRepository subscriptions;

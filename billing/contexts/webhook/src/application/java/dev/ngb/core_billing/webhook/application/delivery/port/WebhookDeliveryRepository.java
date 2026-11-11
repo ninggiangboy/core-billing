@@ -1,6 +1,5 @@
 package dev.ngb.core_billing.webhook.application.delivery.port;
 
-import dev.ngb.core_billing.webhook.application.delivery.command.ClaimedDelivery;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryAttempt;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryStatus;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;

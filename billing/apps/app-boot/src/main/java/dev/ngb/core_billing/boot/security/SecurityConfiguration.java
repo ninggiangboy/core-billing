@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.error.AccessDeniedException;
 import dev.ngb.core_billing.platform.api.actor.Authorizer;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
-import dev.ngb.core_billing.platform.application.auth.Authentication;
+import dev.ngb.core_billing.platform.application.auth.service.Authentication;
 import dev.ngb.core_billing.platform.domain.role.AuthorizationPolicy;
 import dev.ngb.core_billing.platform.domain.credential.ApiKey;
 import org.springframework.context.annotation.Bean;

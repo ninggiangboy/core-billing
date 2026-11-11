@@ -8,5 +8,5 @@ package dev.ngb.core_billing.payment.api.invoice;
  */
 public interface StartInvoicePayment {
 
-    InvoicePaymentStarted start(StartInvoicePaymentCommand command);
+    StartInvoicePaymentResult start(StartInvoicePaymentCommand command);
 }

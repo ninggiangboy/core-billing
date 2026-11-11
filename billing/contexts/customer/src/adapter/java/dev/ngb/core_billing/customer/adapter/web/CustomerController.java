@@ -2,7 +2,7 @@ package dev.ngb.core_billing.customer.adapter.web;
 
 import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
-import dev.ngb.core_billing.customer.application.command.CustomerAdministration;
+import dev.ngb.core_billing.customer.application.command.ManageCustomerUseCase;
 import dev.ngb.core_billing.customer.application.query.CustomerQueries;
 import dev.ngb.core_billing.customer.application.query.CustomerView;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
@@ -64,13 +64,13 @@ public class CustomerController {
     }
 
     private final CreateCustomerUseCase create;
-    private final CustomerAdministration administration;
+    private final ManageCustomerUseCase manage;
     private final CustomerQueries queries;
     private final CurrentActor currentActor;
 
-    public CustomerController(CreateCustomerUseCase create, CustomerAdministration administration, CustomerQueries queries, CurrentActor currentActor) {
+    public CustomerController(CreateCustomerUseCase create, ManageCustomerUseCase manage, CustomerQueries queries, CurrentActor currentActor) {
         this.create = create;
-        this.administration = administration;
+        this.manage = manage;
         this.queries = queries;
         this.currentActor = currentActor;
     }
@@ -118,7 +118,7 @@ public class CustomerController {
             @RequestHeader(value = "X-Request-Id", required = false) String requestId,
             @RequestBody UpdateCustomerRequest request) {
         Actor actor = currentActor.get();
-        return CustomerResponse.of(administration.update(
+        return CustomerResponse.of(manage.update(
                 Audit.of(actor, requestId), CustomerId.of(id), request.displayName(), request.email(), actor.tenantSystemId()));
     }
 
@@ -126,7 +126,7 @@ public class CustomerController {
     @RequiresPermission(Permission.CUSTOMER_WRITE)
     public CustomerResponse deactivate(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
         Actor actor = currentActor.get();
-        return CustomerResponse.of(administration.deactivate(Audit.of(actor, requestId), CustomerId.of(id), actor.tenantSystemId()));
+        return CustomerResponse.of(manage.deactivate(Audit.of(actor, requestId), CustomerId.of(id), actor.tenantSystemId()));
     }
 
     /**

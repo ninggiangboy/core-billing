@@ -26,6 +26,7 @@ import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
+import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 
 /**
  * Starts a wallet top-up through the Tenant's Stripe configuration. The payment is stored first, in

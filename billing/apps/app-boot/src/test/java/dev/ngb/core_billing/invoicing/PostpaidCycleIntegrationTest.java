@@ -3,7 +3,7 @@ package dev.ngb.core_billing.invoicing;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core_billing.Application;
-import dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay;
+import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CollectChargeUseCase;
 import dev.ngb.core_billing.money.MoneyTestWorld;

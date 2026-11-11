@@ -23,14 +23,14 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.time.Instant;
 import java.util.Optional;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
-import dev.ngb.core_billing.payment.application.payment.command.PaymentSettings;
-import dev.ngb.core_billing.payment.application.shared.command.PaymentSettlement;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
+import dev.ngb.core_billing.payment.application.shared.service.PaymentSettlement;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.payment.application.refund.port.RefundRepository;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.payment.application.stripe.command.ProviderRejectedException;
-import dev.ngb.core_billing.payment.application.stripe.port.ProviderAccess;
+import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
+import dev.ngb.core_billing.payment.application.stripe.service.ProviderAccess;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 
 /**

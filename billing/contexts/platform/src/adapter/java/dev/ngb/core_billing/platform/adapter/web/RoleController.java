@@ -6,7 +6,7 @@ import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.platform.application.role.command.RoleAdministration;
+import dev.ngb.core_billing.platform.application.role.command.ManageRoleUseCase;
 import dev.ngb.core_billing.platform.application.role.query.RoleQueries;
 import dev.ngb.core_billing.platform.application.role.query.RoleView;
 import dev.ngb.core_billing.platform.domain.role.Role;
@@ -50,12 +50,12 @@ public class RoleController {
         }
     }
 
-    private final RoleAdministration roles;
+    private final ManageRoleUseCase roles;
     private final RoleQueries roleQueries;
     private final CallerResolver callers;
     private final TenantContext tenantContext;
 
-    public RoleController(RoleAdministration roles, RoleQueries roleQueries, CallerResolver callers, TenantContext tenantContext) {
+    public RoleController(ManageRoleUseCase roles, RoleQueries roleQueries, CallerResolver callers, TenantContext tenantContext) {
         this.roles = roles;
         this.roleQueries = roleQueries;
         this.callers = callers;

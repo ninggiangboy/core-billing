@@ -7,7 +7,7 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.usage.adapter.persistence.JooqUsageEventRepository;
-import dev.ngb.core_billing.usage.adapter.persistence.usage.JooqUsageEventReadRepository;
+import dev.ngb.core_billing.usage.adapter.persistence.JooqUsageEventReadRepository;
 import dev.ngb.core_billing.usage.application.port.MetricUnits;
 import dev.ngb.core_billing.usage.application.command.RecordUsageUseCase;
 import dev.ngb.core_billing.usage.application.port.UsageEventRepository;

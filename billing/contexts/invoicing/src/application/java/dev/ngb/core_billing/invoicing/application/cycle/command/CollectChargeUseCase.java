@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.invoicing.application.cycle.command;
 
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
-import dev.ngb.core_billing.invoicing.application.invoice.command.ChargeLineFactory;
+import dev.ngb.core_billing.invoicing.application.invoice.service.ChargeLineFactory;
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
 
 /**
  * Consumes {@code charge.succeeded}: a charge on a Postpaid wallet becomes an unbilled line of the calendar period

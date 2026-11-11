@@ -2,7 +2,7 @@ package dev.ngb.core_billing.payment.application.payment.command;
 
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
-import dev.ngb.core_billing.payment.api.invoice.InvoicePaymentStarted;
+import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentResult;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePayment;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentCommand;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
@@ -20,6 +20,7 @@ import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.Locale;
 import java.util.Optional;
+import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 
 /**
  * Starts the payment of an invoice: the payment is stored in REQUIRES_ACTION first, then Stripe's hosted Checkout
@@ -51,7 +52,7 @@ public class CreateInvoicePaymentUseCase implements StartInvoicePayment {
     }
 
     @Override
-    public InvoicePaymentStarted start(StartInvoicePaymentCommand command) {
+    public StartInvoicePaymentResult start(StartInvoicePaymentCommand command) {
         String key = Fingerprint.requireKey(command.idempotencyKey());
         if (!command.amount().isPositive()) {
             throw new IllegalArgumentException("an invoice payment must be positive");
@@ -94,9 +95,9 @@ public class CreateInvoicePaymentUseCase implements StartInvoicePayment {
         return new Prepared(payment, configuration, false);
     }
 
-    private static InvoicePaymentStarted started(Payment payment, boolean replayed) {
+    private static StartInvoicePaymentResult started(Payment payment, boolean replayed) {
         // The hosted page is only useful while the customer can still pay.
         String url = payment.status() == PaymentStatus.REQUIRES_ACTION ? payment.checkoutUrl() : null;
-        return new InvoicePaymentStarted(payment.id().value(), payment.status().name(), url, replayed);
+        return new StartInvoicePaymentResult(payment.id().value(), payment.status().name(), url, replayed);
     }
 }

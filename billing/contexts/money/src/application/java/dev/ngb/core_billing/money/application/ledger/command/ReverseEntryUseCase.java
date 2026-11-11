@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.Optional;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
+import dev.ngb.core_billing.money.application.ledger.service.LedgerPosting;
 
 /**
  * The only way to correct the ledger: post a reversal that negates an earlier entry on the same wallet, then

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import dev.ngb.core_billing.pricing.domain.plan.PlanId;
-import dev.ngb.core_billing.pricing.domain.plan.PriceLine;
+import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
 
 /**
  * The record that a set of usage events was priced under a specific plan version and charged (or came to nothing).

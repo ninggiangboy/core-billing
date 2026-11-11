@@ -6,8 +6,8 @@ import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.money.MoneyTestWorld;
 import dev.ngb.core_billing.pricing.PricingTestWorld;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
-import dev.ngb.core_billing.pricing.domain.model.EventBased;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
+import dev.ngb.core_billing.pricing.domain.rule.EventBased;
 import java.time.Instant;
 import dev.ngb.core_billing.money.MoneyTestWorld.World;
 import dev.ngb.core_billing.money.api.charge.ChargeCommand;
@@ -72,13 +72,13 @@ class EventContractIntegrationTest {
     @Autowired WalletQueries queries;
     @Autowired PricingTestWorld pricing;
     @Autowired ChargeFromUsageUseCase chargeUsage;
-    @Autowired PlanAdministration planAdmin;
+    @Autowired ManagePlanUseCase planAdmin;
     @Autowired dev.ngb.core_billing.payment.PaymentTestWorld payments;
     @Autowired dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebhookUseCase receive;
     @Autowired dev.ngb.core_billing.payment.application.payment.port.PaymentRepository paymentRepository;
     @Autowired dev.ngb.core_billing.payment.application.refund.port.RefundRepository refundRepository;
     @Autowired dev.ngb.core_billing.sharedkernel.UnitOfWork unitOfWork;
-    @Autowired dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay relay;
+    @Autowired dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay relay;
     @Autowired dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase closeCycle;
     @Autowired dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase subscribe;
 
@@ -126,7 +126,7 @@ class EventContractIntegrationTest {
         var cheapPlan = pricing.plan(tenant, "cheap", new EventBased(cheap, "call", new java.math.BigDecimal("0.001")));
         pricing.record(tenant, w.customerId(), cheap, "call", "2", day.plusSeconds(10));
         scopes.inTenant(tenant, () -> chargeUsage.execute(new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), cheapPlan.id(), null, day, day.plusSeconds(3600))));
-        scopes.inTenant(tenant, () -> planAdmin.publishVersion(PricingTestWorld.AUDIT, plan.id(), new PlanAdministration.Terms(
+        scopes.inTenant(tenant, () -> planAdmin.publishVersion(PricingTestWorld.AUDIT, plan.id(), new ManagePlanUseCase.Terms(
                 new EventBased(metric, "call", new java.math.BigDecimal("2")), null, null, null, null, day.plusSeconds(100), null)));
         scopes.inTenant(tenant, () -> planAdmin.retire(PricingTestWorld.AUDIT, plan.id()));
 

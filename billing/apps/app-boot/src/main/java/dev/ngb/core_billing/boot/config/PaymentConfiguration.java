@@ -18,7 +18,7 @@ import dev.ngb.core_billing.payment.adapter.persistence.refund.JooqRefundReadRep
 import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeConfigurationReadRepository;
 import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeEventReadRepository;
 import dev.ngb.core_billing.payment.adapter.stripe.StripePaymentProvider;
-import dev.ngb.core_billing.payment.application.payment.command.CheckoutOpener;
+import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 import dev.ngb.core_billing.payment.application.payment.command.CreateInvoicePaymentUseCase;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
@@ -34,9 +34,9 @@ import dev.ngb.core_billing.payment.application.stripe.query.StripeEventReadRepo
 import dev.ngb.core_billing.payment.application.incident.query.IncidentQueries;
 import dev.ngb.core_billing.payment.application.incident.query.IncidentReadRepository;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
-import dev.ngb.core_billing.payment.application.payment.command.PaymentSettings;
-import dev.ngb.core_billing.payment.application.shared.command.PaymentSettlement;
-import dev.ngb.core_billing.payment.application.stripe.port.ProviderAccess;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
+import dev.ngb.core_billing.payment.application.shared.service.PaymentSettlement;
+import dev.ngb.core_billing.payment.application.stripe.service.ProviderAccess;
 import dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
 import dev.ngb.core_billing.payment.application.stripe.command.ReconcileStripeUseCase;
 import dev.ngb.core_billing.payment.application.refund.port.RefundRepository;
@@ -44,9 +44,9 @@ import dev.ngb.core_billing.payment.application.refund.command.RequestRefundUseC
 import dev.ngb.core_billing.payment.application.stripe.command.RetryStripeEventsUseCase;
 import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
-import dev.ngb.core_billing.payment.application.stripe.command.StripeConfigurationService;
-import dev.ngb.core_billing.payment.application.stripe.command.StripeEventAdministration;
-import dev.ngb.core_billing.payment.application.stripe.command.StripeEventProcessor;
+import dev.ngb.core_billing.payment.application.stripe.service.StripeConfigurationService;
+import dev.ngb.core_billing.payment.application.stripe.command.ManageStripeEventUseCase;
+import dev.ngb.core_billing.payment.application.stripe.service.StripeEventProcessor;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
@@ -189,10 +189,10 @@ class PaymentConfiguration {
     }
 
     @Bean
-    StripeEventAdministration stripeEventAdministration(
+    ManageStripeEventUseCase manageStripeEvent(
             UnitOfWork unitOfWork, StripeEventRepository events, IncidentRepository incidents, StripeEventProcessor processor, AuditLog auditLog,
             TenantContext tenantContext, Clock clock) {
-        return new StripeEventAdministration(unitOfWork, events, incidents, processor, auditLog, tenantContext, clock);
+        return new ManageStripeEventUseCase(unitOfWork, events, incidents, processor, auditLog, tenantContext, clock);
     }
 
     @Bean

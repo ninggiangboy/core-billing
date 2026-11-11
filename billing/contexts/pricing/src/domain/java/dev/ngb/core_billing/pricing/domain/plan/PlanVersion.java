@@ -12,11 +12,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
 import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
-import dev.ngb.core_billing.pricing.domain.model.Hybrid;
-import dev.ngb.core_billing.pricing.domain.model.Subscription;
+import dev.ngb.core_billing.pricing.domain.rule.Hybrid;
+import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
 import dev.ngb.core_billing.pricing.domain.rating.Quote;
-import dev.ngb.core_billing.pricing.domain.model.PriceRule;
-import dev.ngb.core_billing.pricing.domain.model.PricingModel;
+import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
+import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
 
 /**
  * One immutable version of a plan: the rule, the cycle, the charge limits, the rounding and the period it is valid.
@@ -107,13 +108,13 @@ public final class PlanVersion {
     }
 
     /**
-     * What one billing cycle costs under this version before any usage: the whole price of a Subscription plan, the
-     * base amount of a Hybrid plan. Empty for models that are priced only by what is used. The Subscription amount
+     * What one billing cycle costs under this version before any usage: the whole price of a FixedPrice plan, the
+     * base amount of a Hybrid plan. Empty for models that are priced only by what is used. The FixedPrice amount
      * goes through the same single rounding and limits as any quote; a Hybrid base is rounded only, because the
      * limits bound the usage part it is billed next to.
      */
     public Optional<Money> recurringAmount(Currency currency) {
-        if (rule instanceof Subscription) {
+        if (rule instanceof FixedPrice) {
             return Optional.of(quote(currency, new UsageSummary(Map.of())).amount());
         }
         if (rule instanceof Hybrid hybrid) {

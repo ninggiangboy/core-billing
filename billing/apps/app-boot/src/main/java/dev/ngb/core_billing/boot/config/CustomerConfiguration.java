@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.boot.config;
 
 import dev.ngb.core_billing.customer.adapter.persistence.JooqCustomerRepository;
-import dev.ngb.core_billing.customer.adapter.persistence.customer.JooqCustomerReadRepository;
+import dev.ngb.core_billing.customer.adapter.persistence.JooqCustomerReadRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
-import dev.ngb.core_billing.customer.application.command.CustomerAdministration;
+import dev.ngb.core_billing.customer.application.command.ManageCustomerUseCase;
 import dev.ngb.core_billing.customer.application.query.CustomerLookupService;
 import dev.ngb.core_billing.customer.application.query.CustomerQueries;
 import dev.ngb.core_billing.customer.application.query.CustomerReadRepository;
@@ -43,9 +43,9 @@ class CustomerConfiguration {
     }
 
     @Bean
-    CustomerAdministration customerAdministration(
+    ManageCustomerUseCase manageCustomer(
             UnitOfWork unitOfWork, CustomerRepository customers, AuditLog auditLog, TenantContext tenantContext, Clock clock) {
-        return new CustomerAdministration(unitOfWork, customers, auditLog, tenantContext, clock);
+        return new ManageCustomerUseCase(unitOfWork, customers, auditLog, tenantContext, clock);
     }
 
     @Bean

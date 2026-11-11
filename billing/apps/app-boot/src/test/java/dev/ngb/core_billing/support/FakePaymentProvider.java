@@ -2,8 +2,8 @@ package dev.ngb.core_billing.support;
 
 import dev.ngb.core_billing.payment.adapter.stripe.StripePaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
-import dev.ngb.core_billing.payment.application.stripe.command.ProviderRejectedException;
-import dev.ngb.core_billing.payment.application.stripe.command.ProviderUnavailableException;
+import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
+import dev.ngb.core_billing.payment.application.stripe.exception.ProviderUnavailableException;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
 import java.time.Duration;
 import java.time.Instant;

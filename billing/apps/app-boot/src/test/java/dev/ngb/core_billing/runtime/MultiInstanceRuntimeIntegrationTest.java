@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.net.httpserver.HttpServer;
 import dev.ngb.core_billing.Application;
-import dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay;
+import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase;
 import dev.ngb.core_billing.money.MoneyTestWorld;
 import dev.ngb.core_billing.money.MoneyTestWorld.World;

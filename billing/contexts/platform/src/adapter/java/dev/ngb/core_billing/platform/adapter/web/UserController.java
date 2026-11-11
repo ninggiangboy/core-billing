@@ -3,7 +3,7 @@ package dev.ngb.core_billing.platform.adapter.web;
 import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
-import dev.ngb.core_billing.platform.application.user.command.UserAdministration;
+import dev.ngb.core_billing.platform.application.user.command.ManageUserUseCase;
 import dev.ngb.core_billing.platform.application.user.query.UserQueries;
 import dev.ngb.core_billing.platform.application.user.query.UserView;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
@@ -62,11 +62,11 @@ public class UserController {
         }
     }
 
-    private final UserAdministration users;
+    private final ManageUserUseCase users;
     private final UserQueries userQueries;
     private final CallerResolver callers;
 
-    public UserController(UserAdministration users, UserQueries userQueries, CallerResolver callers) {
+    public UserController(ManageUserUseCase users, UserQueries userQueries, CallerResolver callers) {
         this.users = users;
         this.userQueries = userQueries;
         this.callers = callers;
@@ -80,7 +80,7 @@ public class UserController {
                 ? Set.of()
                 : request.roleIds().stream().map(RoleId::of).collect(Collectors.toSet());
         return UserResponse.of(users.create(
-                callers.current(), new UserAdministration.CreateUser(request.email(), request.displayName(), request.temporaryPassword(), roleIds)));
+                callers.current(), new ManageUserUseCase.CreateUser(request.email(), request.displayName(), request.temporaryPassword(), roleIds)));
     }
 
     @GetMapping

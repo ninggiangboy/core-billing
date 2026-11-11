@@ -6,6 +6,7 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
+import dev.ngb.core_billing.platform.application.tenant.exception.HostnameAlreadyMappedException;
 
 /** Makes sure the Platform Administration hostname is mapped. Safe to run on every start. */
 public class EnsurePlatformDomainUseCase {

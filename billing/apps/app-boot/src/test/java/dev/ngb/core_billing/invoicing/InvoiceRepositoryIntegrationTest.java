@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core_billing.Application;
-import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceIssuer;
+import dev.ngb.core_billing.invoicing.application.invoice.service.InvoiceIssuer;
 import dev.ngb.core_billing.invoicing.application.invoice.port.InvoiceRepository;
 import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;

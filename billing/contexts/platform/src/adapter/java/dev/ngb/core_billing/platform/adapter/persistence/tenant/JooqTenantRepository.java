@@ -2,7 +2,7 @@ package dev.ngb.core_billing.platform.adapter.persistence.tenant;
 
 import static dev.ngb.core_billing_jooq.Tables.TENANTS;
 
-import dev.ngb.core_billing.platform.application.tenant.command.TenantCodeAlreadyUsedException;
+import dev.ngb.core_billing.platform.application.tenant.exception.TenantCodeAlreadyUsedException;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.platform.domain.tenant.TenantCode;

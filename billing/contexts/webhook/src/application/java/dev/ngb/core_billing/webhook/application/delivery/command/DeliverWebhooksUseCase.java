@@ -21,7 +21,8 @@ import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookSender;
 import dev.ngb.core_billing.webhook.application.shared.port.SecretCipher;
-import dev.ngb.core_billing.webhook.application.shared.port.WebhookSettings;
+import dev.ngb.core_billing.webhook.application.shared.service.WebhookSettings;
+import dev.ngb.core_billing.webhook.application.delivery.port.ClaimedDelivery;
 
 /**
  * One round of the sender worker for the current tenant: claim what is due, send it, record what came back.

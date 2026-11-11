@@ -5,10 +5,10 @@ import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.platform.application.credential.command.CredentialAdministration;
+import dev.ngb.core_billing.platform.application.credential.command.ManageCredentialUseCase;
 import dev.ngb.core_billing.platform.application.credential.query.CredentialQueries;
 import dev.ngb.core_billing.platform.application.credential.query.CredentialView;
-import dev.ngb.core_billing.platform.application.tenantsystem.command.TenantSystemAdministration;
+import dev.ngb.core_billing.platform.application.tenantsystem.command.CreateTenantSystemUseCase;
 import dev.ngb.core_billing.platform.application.tenantsystem.query.TenantSystemQueries;
 import dev.ngb.core_billing.platform.application.tenantsystem.query.TenantSystemView;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
@@ -79,13 +79,13 @@ public class TenantSystemController {
 
     private static final long DEFAULT_OVERLAP_MINUTES = 24 * 60;
 
-    private final TenantSystemAdministration systems;
+    private final CreateTenantSystemUseCase systems;
     private final TenantSystemQueries systemQueries;
-    private final CredentialAdministration credentials;
+    private final ManageCredentialUseCase credentials;
     private final CredentialQueries credentialQueries;
     private final CallerResolver callers;
 
-    public TenantSystemController(TenantSystemAdministration systems, TenantSystemQueries systemQueries, CredentialAdministration credentials, CredentialQueries credentialQueries, CallerResolver callers) {
+    public TenantSystemController(CreateTenantSystemUseCase systems, TenantSystemQueries systemQueries, ManageCredentialUseCase credentials, CredentialQueries credentialQueries, CallerResolver callers) {
         this.systems = systems;
         this.systemQueries = systemQueries;
         this.credentials = credentials;
@@ -148,7 +148,7 @@ public class TenantSystemController {
         return CredentialResponse.of(credentials.revoke(callers.current(), CredentialId.of(credentialId)));
     }
 
-    private static IssuedCredentialResponse issued(CredentialAdministration.Issued issued) {
+    private static IssuedCredentialResponse issued(ManageCredentialUseCase.Issued issued) {
         return new IssuedCredentialResponse(CredentialResponse.of(issued.credential()), issued.plaintextKey());
     }
 }

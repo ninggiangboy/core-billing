@@ -4,7 +4,7 @@ import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.invoice.port.InvoiceRepository;
 import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
-import dev.ngb.core_billing.payment.api.invoice.InvoicePaymentStarted;
+import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentResult;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePayment;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentCommand;
 import dev.ngb.core_billing.platform.api.audit.Audit;
@@ -28,7 +28,7 @@ public class PayInvoiceUseCase {
 
     public record Command(InvoiceId invoiceId, String idempotencyKey, Audit audit, UUID caller) {}
 
-    public record Result(Invoice invoice, InvoicePaymentStarted payment) {}
+    public record Result(Invoice invoice, StartInvoicePaymentResult payment) {}
 
     private final UnitOfWork unitOfWork;
     private final InvoiceRepository invoices;
@@ -53,7 +53,7 @@ public class PayInvoiceUseCase {
     public Result execute(Command command) {
         String key = Fingerprint.requireKey(command.idempotencyKey());
         Invoice invoice = unitOfWork.transactional(() -> payable(command));
-        InvoicePaymentStarted started = payments.start(new StartInvoicePaymentCommand(invoice.id().value(), invoice.walletId(), invoice.customerId(),
+        StartInvoicePaymentResult started = payments.start(new StartInvoicePaymentCommand(invoice.id().value(), invoice.walletId(), invoice.customerId(),
                 invoice.total(), "Invoice " + invoice.number(), key));
         return unitOfWork.transactional(() -> {
             Invoice locked = invoices.lockById(command.invoiceId()).orElseThrow(() -> new NotFoundException("invoice not found"));

@@ -7,7 +7,6 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import dev.ngb.core_billing.customer.application.query.CustomerReadRepository;
 
 public class CustomerLookupService implements CustomerLookup {
 

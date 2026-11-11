@@ -20,14 +20,14 @@ public class BootstrapPlatformAdminUseCase {
     private final UnitOfWork unitOfWork;
     private final UserRepository users;
     private final RoleRepository roles;
-    private final UserAdministration userAdministration;
+    private final ManageUserUseCase manageUser;
 
     public BootstrapPlatformAdminUseCase(
-            UnitOfWork unitOfWork, UserRepository users, RoleRepository roles, UserAdministration userAdministration) {
+            UnitOfWork unitOfWork, UserRepository users, RoleRepository roles, ManageUserUseCase manageUser) {
         this.unitOfWork = unitOfWork;
         this.users = users;
         this.roles = roles;
-        this.userAdministration = userAdministration;
+        this.manageUser = manageUser;
     }
 
     /** Runs at Platform scope. @return true when a user was created */
@@ -43,7 +43,7 @@ public class BootstrapPlatformAdminUseCase {
         if (admin == null) {
             return false;
         }
-        userAdministration.create(BOOTSTRAP, new UserAdministration.CreateUser(normalized, displayName, temporaryPassword, Set.of(admin.id())));
+        manageUser.create(BOOTSTRAP, new ManageUserUseCase.CreateUser(normalized, displayName, temporaryPassword, Set.of(admin.id())));
         return true;
     }
 }

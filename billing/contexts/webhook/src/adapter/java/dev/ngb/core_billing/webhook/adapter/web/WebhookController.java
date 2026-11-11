@@ -4,12 +4,12 @@ import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
-import dev.ngb.core_billing.webhook.application.delivery.command.DeliveryAdministration;
+import dev.ngb.core_billing.webhook.application.delivery.command.ManageDeliveryUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryAttemptView;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryQueries;
 import dev.ngb.core_billing.webhook.application.delivery.query.WebhookDeliveryView;
 import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
-import dev.ngb.core_billing.webhook.application.endpoint.command.EndpointAdministration;
+import dev.ngb.core_billing.webhook.application.endpoint.command.ManageEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
 import dev.ngb.core_billing.webhook.application.endpoint.query.WebhookEndpointView;
 import dev.ngb.core_billing.platform.api.audit.Audit;
@@ -89,14 +89,14 @@ public class WebhookController {
     public record DeliveryDetailResponse(DeliveryResponse delivery, String body, List<AttemptResponse> attempts) {}
 
     private final CreateEndpointUseCase create;
-    private final EndpointAdministration endpoints;
-    private final DeliveryAdministration deliveries;
+    private final ManageEndpointUseCase endpoints;
+    private final ManageDeliveryUseCase deliveries;
     private final EndpointQueries endpointQueries;
     private final DeliveryQueries deliveryQueries;
     private final CurrentActor currentActor;
 
     public WebhookController(
-            CreateEndpointUseCase create, EndpointAdministration endpoints, DeliveryAdministration deliveries, EndpointQueries endpointQueries,
+            CreateEndpointUseCase create, ManageEndpointUseCase endpoints, ManageDeliveryUseCase deliveries, EndpointQueries endpointQueries,
             DeliveryQueries deliveryQueries, CurrentActor currentActor) {
         this.create = create;
         this.endpoints = endpoints;
@@ -136,13 +136,13 @@ public class WebhookController {
             @RequestBody UpdateEndpointRequest request) {
         EndpointStatus status = request.status() == null ? null : EndpointStatus.valueOf(request.status());
         return EndpointResponse.of(endpoints.update(Audit.of(currentActor.get(), requestId), WebhookEndpointId.of(id),
-                new EndpointAdministration.Change(request.url(), request.description(), request.eventTypes(), status), currentActor.caller()));
+                new ManageEndpointUseCase.Change(request.url(), request.description(), request.eventTypes(), status), currentActor.caller()));
     }
 
     @PostMapping("/webhook-endpoints/{id}/rotate-secret")
     @RequiresPermission(Permission.WEBHOOK_MANAGE)
     public EndpointWithSecretResponse rotateSecret(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        EndpointAdministration.Rotated rotated = endpoints.rotateSecret(Audit.of(currentActor.get(), requestId), WebhookEndpointId.of(id), currentActor.caller());
+        ManageEndpointUseCase.Rotated rotated = endpoints.rotateSecret(Audit.of(currentActor.get(), requestId), WebhookEndpointId.of(id), currentActor.caller());
         return new EndpointWithSecretResponse(EndpointResponse.of(rotated.endpoint()), rotated.signingSecret());
     }
 

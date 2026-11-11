@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.boot.config;
 
-import dev.ngb.core_billing.boot.infrastructure.AesGcmSecretCipher;
-import dev.ngb.core_billing.boot.infrastructure.SchemaEventTypeCatalog;
-import dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay;
+import dev.ngb.core_billing.boot.infrastructure.security.AesGcmSecretCipher;
+import dev.ngb.core_billing.boot.infrastructure.messaging.SchemaEventTypeCatalog;
+import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.Backoff;
@@ -13,10 +13,10 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.webhook.adapter.crypto.HmacSha256Signer;
 import dev.ngb.core_billing.webhook.adapter.crypto.RandomSigningKeys;
 import dev.ngb.core_billing.webhook.adapter.http.HttpComponentsWebhookSender;
-import dev.ngb.core_billing.webhook.adapter.messaging.JacksonEventBodyWriter;
+import dev.ngb.core_billing.webhook.adapter.json.JacksonEventBodyWriter;
 import dev.ngb.core_billing.webhook.adapter.messaging.WebhookEventListener;
-import dev.ngb.core_billing.webhook.adapter.persistence.JooqWebhookDeliveryRepository;
-import dev.ngb.core_billing.webhook.adapter.persistence.JooqWebhookEndpointRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.delivery.JooqWebhookDeliveryRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.endpoint.JooqWebhookEndpointRepository;
 import dev.ngb.core_billing.webhook.adapter.persistence.delivery.JooqWebhookDeliveryReadRepository;
 import dev.ngb.core_billing.webhook.adapter.persistence.endpoint.JooqWebhookEndpointReadRepository;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryQueries;
@@ -25,8 +25,8 @@ import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
 import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointReadRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;
-import dev.ngb.core_billing.webhook.application.delivery.command.DeliveryAdministration;
-import dev.ngb.core_billing.webhook.application.endpoint.command.EndpointAdministration;
+import dev.ngb.core_billing.webhook.application.delivery.command.ManageDeliveryUseCase;
+import dev.ngb.core_billing.webhook.application.endpoint.command.ManageEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
 import dev.ngb.core_billing.webhook.application.shared.port.EventTypeCatalog;
 import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
@@ -36,7 +36,7 @@ import dev.ngb.core_billing.webhook.application.shared.port.SigningKeys;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookSender;
-import dev.ngb.core_billing.webhook.application.shared.port.WebhookSettings;
+import dev.ngb.core_billing.webhook.application.shared.service.WebhookSettings;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryPolicy;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Duration;
@@ -146,17 +146,17 @@ class WebhookConfiguration {
     }
 
     @Bean
-    EndpointAdministration endpointAdministration(
+    ManageEndpointUseCase manageEndpoint(
             UnitOfWork unitOfWork, WebhookEndpointRepository endpoints, SecretCipher cipher, SigningKeys keys, EventTypeCatalog catalog,
             WebhookSettings settings, AuditLog auditLog, TenantContext tenantContext, Clock clock) {
-        return new EndpointAdministration(unitOfWork, endpoints, cipher, keys, catalog, settings, auditLog, tenantContext, clock);
+        return new ManageEndpointUseCase(unitOfWork, endpoints, cipher, keys, catalog, settings, auditLog, tenantContext, clock);
     }
 
     @Bean
-    DeliveryAdministration deliveryAdministration(
+    ManageDeliveryUseCase manageDelivery(
             UnitOfWork unitOfWork, WebhookDeliveryRepository deliveries, WebhookEndpointRepository endpoints, AuditLog auditLog,
             TenantContext tenantContext, IdGenerator ids, Clock clock) {
-        return new DeliveryAdministration(unitOfWork, deliveries, endpoints, auditLog, tenantContext, ids, clock);
+        return new ManageDeliveryUseCase(unitOfWork, deliveries, endpoints, auditLog, tenantContext, ids, clock);
     }
 
     @Bean

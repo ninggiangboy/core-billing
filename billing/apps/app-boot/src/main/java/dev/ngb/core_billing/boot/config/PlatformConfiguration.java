@@ -16,9 +16,9 @@ import dev.ngb.core_billing.platform.adapter.persistence.user.JooqUserReadReposi
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.application.tenant.command.AddTenantDomainUseCase;
-import dev.ngb.core_billing.platform.application.auth.Authentication;
+import dev.ngb.core_billing.platform.application.auth.service.Authentication;
 import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformAdminUseCase;
-import dev.ngb.core_billing.platform.application.credential.command.CredentialAdministration;
+import dev.ngb.core_billing.platform.application.credential.command.ManageCredentialUseCase;
 import dev.ngb.core_billing.platform.application.credential.port.CredentialRepository;
 import dev.ngb.core_billing.platform.application.credential.query.CredentialQueries;
 import dev.ngb.core_billing.platform.application.credential.query.CredentialReadRepository;
@@ -26,7 +26,7 @@ import dev.ngb.core_billing.platform.application.auth.port.IdentityProviderPort;
 import dev.ngb.core_billing.platform.application.role.port.PermissionCatalogRepository;
 import dev.ngb.core_billing.platform.application.tenant.command.ProvisionTenantUseCase;
 import dev.ngb.core_billing.platform.application.auth.port.RateLimiter;
-import dev.ngb.core_billing.platform.application.role.command.RoleAdministration;
+import dev.ngb.core_billing.platform.application.role.command.ManageRoleUseCase;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 import dev.ngb.core_billing.platform.application.role.query.RoleQueries;
 import dev.ngb.core_billing.platform.application.role.query.RoleReadRepository;
@@ -34,11 +34,11 @@ import dev.ngb.core_billing.platform.application.role.command.SeedDefaultRolesUs
 import dev.ngb.core_billing.platform.application.role.command.SeedPermissionsUseCase;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantReadRepository;
-import dev.ngb.core_billing.platform.application.tenantsystem.command.TenantSystemAdministration;
+import dev.ngb.core_billing.platform.application.tenantsystem.command.CreateTenantSystemUseCase;
 import dev.ngb.core_billing.platform.application.tenantsystem.port.TenantSystemRepository;
 import dev.ngb.core_billing.platform.application.tenantsystem.query.TenantSystemQueries;
 import dev.ngb.core_billing.platform.application.tenantsystem.query.TenantSystemReadRepository;
-import dev.ngb.core_billing.platform.application.user.command.UserAdministration;
+import dev.ngb.core_billing.platform.application.user.command.ManageUserUseCase;
 import dev.ngb.core_billing.platform.application.user.port.UserRepository;
 import dev.ngb.core_billing.platform.application.user.query.UserQueries;
 import dev.ngb.core_billing.platform.application.user.query.UserReadRepository;
@@ -162,7 +162,7 @@ class PlatformConfiguration {
     }
 
     @Bean
-    UserAdministration userAdministration(
+    ManageUserUseCase manageUser(
             UnitOfWork unitOfWork,
             UserRepository users,
             RoleRepository roles,
@@ -172,23 +172,23 @@ class PlatformConfiguration {
             TenantContext tenantContext,
             IdGenerator ids,
             Clock clock) {
-        return new UserAdministration(unitOfWork, users, roles, tenants, identityProvider, auditLog, tenantContext, ids, clock);
+        return new ManageUserUseCase(unitOfWork, users, roles, tenants, identityProvider, auditLog, tenantContext, ids, clock);
     }
 
     @Bean
-    RoleAdministration roleAdministration(
+    ManageRoleUseCase manageRole(
             UnitOfWork unitOfWork, RoleRepository roles, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
-        return new RoleAdministration(unitOfWork, roles, auditLog, tenantContext, ids, clock);
+        return new ManageRoleUseCase(unitOfWork, roles, auditLog, tenantContext, ids, clock);
     }
 
     @Bean
-    TenantSystemAdministration tenantSystemAdministration(
+    CreateTenantSystemUseCase createTenantSystem(
             UnitOfWork unitOfWork, TenantSystemRepository systems, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
-        return new TenantSystemAdministration(unitOfWork, systems, auditLog, tenantContext, ids, clock);
+        return new CreateTenantSystemUseCase(unitOfWork, systems, auditLog, tenantContext, ids, clock);
     }
 
     @Bean
-    CredentialAdministration credentialAdministration(
+    ManageCredentialUseCase manageCredential(
             UnitOfWork unitOfWork,
             CredentialRepository credentials,
             TenantSystemRepository systems,
@@ -196,7 +196,7 @@ class PlatformConfiguration {
             TenantContext tenantContext,
             IdGenerator ids,
             Clock clock) {
-        return new CredentialAdministration(unitOfWork, credentials, systems, auditLog, tenantContext, ids, clock, new SecureRandom());
+        return new ManageCredentialUseCase(unitOfWork, credentials, systems, auditLog, tenantContext, ids, clock, new SecureRandom());
     }
 
     @Bean
@@ -268,7 +268,7 @@ class PlatformConfiguration {
     ProvisionTenantUseCase provisionTenantUseCase(
             CreateTenantUseCase createTenant,
             SeedDefaultRolesUseCase seedDefaultRoles,
-            UserAdministration users,
+            ManageUserUseCase users,
             UnitOfWork unitOfWork,
             RoleRepository roles,
             TenantContext tenantContext) {
@@ -277,7 +277,7 @@ class PlatformConfiguration {
 
     @Bean
     BootstrapPlatformAdminUseCase bootstrapPlatformAdminUseCase(
-            UnitOfWork unitOfWork, UserRepository users, RoleRepository roles, UserAdministration userAdministration) {
-        return new BootstrapPlatformAdminUseCase(unitOfWork, users, roles, userAdministration);
+            UnitOfWork unitOfWork, UserRepository users, RoleRepository roles, ManageUserUseCase manageUser) {
+        return new BootstrapPlatformAdminUseCase(unitOfWork, users, roles, manageUser);
     }
 }

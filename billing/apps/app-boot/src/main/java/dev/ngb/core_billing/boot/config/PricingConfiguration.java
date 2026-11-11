@@ -6,21 +6,21 @@ import dev.ngb.core_billing.money.api.reservation.ReserveBudget;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.pricing.adapter.persistence.JooqMetricRegistry;
-import dev.ngb.core_billing.pricing.adapter.persistence.JooqPlanRepository;
-import dev.ngb.core_billing.pricing.adapter.persistence.JooqRatingRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.metric.JooqMetricRegistry;
+import dev.ngb.core_billing.pricing.adapter.persistence.plan.JooqPlanRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.rating.JooqRatingRepository;
 import dev.ngb.core_billing.pricing.adapter.persistence.metric.JooqMetricReadRepository;
 import dev.ngb.core_billing.pricing.adapter.persistence.plan.JooqPlanReadRepository;
 import dev.ngb.core_billing.pricing.adapter.persistence.rating.JooqRatingReadRepository;
 import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
 import dev.ngb.core_billing.pricing.api.plan.PlanPricing;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanPricingService;
+import dev.ngb.core_billing.pricing.application.plan.service.PlanPricingService;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.EstimateCostUseCase;
 import dev.ngb.core_billing.pricing.application.metric.query.MetricCatalogService;
 import dev.ngb.core_billing.pricing.application.metric.query.MetricReadRepository;
 import dev.ngb.core_billing.pricing.application.metric.port.MetricRegistry;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanQueries;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanReadRepository;
@@ -78,10 +78,10 @@ class PricingConfiguration {
     }
 
     @Bean
-    PlanAdministration planAdministration(
+    ManagePlanUseCase managePlan(
             UnitOfWork unitOfWork, PlanRepository plans, MetricRegistry metrics, EventPublisher events, AuditLog auditLog, TenantContext tenantContext,
             IdGenerator ids, Clock clock) {
-        return new PlanAdministration(unitOfWork, plans, metrics, events, auditLog, tenantContext, ids, clock);
+        return new ManagePlanUseCase(unitOfWork, plans, metrics, events, auditLog, tenantContext, ids, clock);
     }
 
     @Bean

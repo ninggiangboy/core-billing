@@ -3,7 +3,7 @@ package dev.ngb.core_billing.boot.jobs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core_billing.Application;
-import dev.ngb.core_billing.boot.infrastructure.coordination.PostgresRateLimiter;
+import dev.ngb.core_billing.boot.infrastructure.security.PostgresRateLimiter;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

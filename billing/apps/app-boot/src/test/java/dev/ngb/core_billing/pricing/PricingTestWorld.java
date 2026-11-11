@@ -3,18 +3,18 @@ package dev.ngb.core_billing.pricing;
 import dev.ngb.core_billing.money.MoneyTestWorld;
 import dev.ngb.core_billing.money.MoneyTestWorld.World;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.pricing.domain.model.EventBased;
-import dev.ngb.core_billing.pricing.domain.model.Hybrid;
-import dev.ngb.core_billing.pricing.domain.model.PriceRule;
+import dev.ngb.core_billing.pricing.domain.rule.EventBased;
+import dev.ngb.core_billing.pricing.domain.rule.Hybrid;
+import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
-import dev.ngb.core_billing.pricing.domain.model.Subscription;
-import dev.ngb.core_billing.pricing.domain.model.Tier;
-import dev.ngb.core_billing.pricing.domain.model.TierMode;
-import dev.ngb.core_billing.pricing.domain.model.TimeBased;
-import dev.ngb.core_billing.pricing.domain.model.UsageBased;
-import dev.ngb.core_billing.pricing.domain.model.WorkloadBased;
+import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
+import dev.ngb.core_billing.pricing.domain.rule.Tier;
+import dev.ngb.core_billing.pricing.domain.rule.TierMode;
+import dev.ngb.core_billing.pricing.domain.rule.TimeBased;
+import dev.ngb.core_billing.pricing.domain.rule.UsageBased;
+import dev.ngb.core_billing.pricing.domain.rule.WorkloadBased;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
@@ -38,10 +38,10 @@ public class PricingTestWorld {
 
     private final MoneyTestWorld money;
     private final ScopeTestSupport scopes;
-    private final PlanAdministration plans;
+    private final ManagePlanUseCase plans;
     private final RecordUsageUseCase recordUsage;
 
-    PricingTestWorld(MoneyTestWorld money, ScopeTestSupport scopes, PlanAdministration plans, RecordUsageUseCase recordUsage) {
+    PricingTestWorld(MoneyTestWorld money, ScopeTestSupport scopes, ManagePlanUseCase plans, RecordUsageUseCase recordUsage) {
         this.money = money;
         this.scopes = scopes;
         this.plans = plans;
@@ -66,7 +66,7 @@ public class PricingTestWorld {
 
     public PricingPlan plan(TenantId tenant, String codePrefix, PriceRule rule, BillingCycle cycle, Long min, Long max) {
         return scopes.inTenant(tenant, () -> plans.create(AUDIT, codePrefix + "-" + UUID.randomUUID().toString().substring(0, 8), "Plan " + codePrefix, USD,
-                new PlanAdministration.Terms(rule, cycle, min, max, null, VALID_FROM, null)));
+                new ManagePlanUseCase.Terms(rule, cycle, min, max, null, VALID_FROM, null)));
     }
 
     /** Storage in GB: 100 free, then 2 per GB up to 1000, then 1.5 per GB. Each test gets its own metric. */
@@ -86,8 +86,8 @@ public class PricingTestWorld {
         return new WorkloadBased(metric, "cpu-second", d("5"), d("0.1"));
     }
 
-    public Subscription pro() {
-        return new Subscription(d("2900"));
+    public FixedPrice pro() {
+        return new FixedPrice(d("2900"));
     }
 
     public Hybrid cloudPackage(String storageMetric, String callMetric) {

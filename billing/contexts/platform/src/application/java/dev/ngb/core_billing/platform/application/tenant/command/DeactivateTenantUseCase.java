@@ -8,7 +8,7 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
-import dev.ngb.core_billing.platform.application.tenant.TenantNotFoundException;
+import dev.ngb.core_billing.platform.application.tenant.exception.TenantNotFoundException;
 
 /** Deactivates a Tenant; its hostnames stop resolving. Runs at Platform scope. */
 public class DeactivateTenantUseCase {

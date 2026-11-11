@@ -5,8 +5,9 @@ import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.List;
-import dev.ngb.core_billing.payment.application.payment.command.PaymentSettings;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
+import dev.ngb.core_billing.payment.application.stripe.service.StripeEventProcessor;
 
 /** The retry worker for the current tenant: processes failed events whose retry time has come. */
 public class RetryStripeEventsUseCase {

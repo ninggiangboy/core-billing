@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.jobs;
 
-import dev.ngb.core_billing.boot.infrastructure.coordination.PostgresRateLimiter;
+import dev.ngb.core_billing.boot.infrastructure.security.PostgresRateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

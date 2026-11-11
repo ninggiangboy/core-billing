@@ -1,14 +1,14 @@
 package dev.ngb.core_billing.boot.web;
 
-import dev.ngb.core_billing.payment.application.stripe.command.InvalidSignatureException;
-import dev.ngb.core_billing.payment.application.stripe.command.ProviderRejectedException;
-import dev.ngb.core_billing.payment.application.stripe.command.ProviderUnavailableException;
+import dev.ngb.core_billing.payment.application.stripe.exception.InvalidSignatureException;
+import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
+import dev.ngb.core_billing.payment.application.stripe.exception.ProviderUnavailableException;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.money.api.wallet.InsufficientFundsException;
 import dev.ngb.core_billing.platform.api.error.AccessDeniedException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
-import dev.ngb.core_billing.platform.application.auth.RateLimitExceededException;
+import dev.ngb.core_billing.platform.application.auth.exception.RateLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;

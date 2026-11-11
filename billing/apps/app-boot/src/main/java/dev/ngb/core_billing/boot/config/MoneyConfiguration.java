@@ -1,11 +1,11 @@
 package dev.ngb.core_billing.boot.config;
 
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
-import dev.ngb.core_billing.money.adapter.persistence.JooqChargeRepository;
-import dev.ngb.core_billing.money.adapter.persistence.JooqLedgerRepository;
-import dev.ngb.core_billing.money.adapter.persistence.JooqLedgerVerifier;
-import dev.ngb.core_billing.money.adapter.persistence.JooqReservationRepository;
-import dev.ngb.core_billing.money.adapter.persistence.JooqWalletRepository;
+import dev.ngb.core_billing.money.adapter.persistence.charge.JooqChargeRepository;
+import dev.ngb.core_billing.money.adapter.persistence.ledger.JooqLedgerRepository;
+import dev.ngb.core_billing.money.adapter.persistence.ledger.JooqLedgerVerifier;
+import dev.ngb.core_billing.money.adapter.persistence.reservation.JooqReservationRepository;
+import dev.ngb.core_billing.money.adapter.persistence.wallet.JooqWalletRepository;
 import dev.ngb.core_billing.money.adapter.persistence.charge.JooqChargeReadRepository;
 import dev.ngb.core_billing.money.adapter.persistence.ledger.JooqLedgerReadRepository;
 import dev.ngb.core_billing.money.adapter.persistence.reservation.JooqReservationReadRepository;
@@ -21,7 +21,7 @@ import dev.ngb.core_billing.money.application.wallet.command.DebitWalletUseCase;
 import dev.ngb.core_billing.money.application.reservation.command.ExpireReservationsUseCase;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.application.ledger.query.LedgerReadRepository;
-import dev.ngb.core_billing.money.application.ledger.command.LedgerVerifier;
+import dev.ngb.core_billing.money.application.ledger.port.LedgerVerifier;
 import dev.ngb.core_billing.money.application.wallet.command.OpenWalletUseCase;
 import dev.ngb.core_billing.money.application.reservation.command.ReleaseReservationUseCase;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;

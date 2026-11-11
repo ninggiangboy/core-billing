@@ -13,7 +13,7 @@ import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.time.Instant;
-import dev.ngb.core_billing.money.application.ledger.command.LedgerPosting;
+import dev.ngb.core_billing.money.application.ledger.service.LedgerPosting;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 

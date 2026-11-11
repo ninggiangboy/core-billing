@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.DoubleSupplier;
+import dev.ngb.core_billing.invoicing.application.subscription.service.RenewalSettings;
+import dev.ngb.core_billing.invoicing.application.subscription.service.SubscriptionCharges;
 
 /**
  * Charges the next period of every due subscription, one subscription and one period per transaction.

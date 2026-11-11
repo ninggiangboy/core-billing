@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
+import dev.ngb.core_billing.pricing.application.rating.service.PlanSelection;
 
 /**
  * Prices expected usage without recording anything. It is a pure calculation from a plan version and

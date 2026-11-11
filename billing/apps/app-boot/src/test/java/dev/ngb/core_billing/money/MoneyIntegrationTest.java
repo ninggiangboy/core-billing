@@ -22,7 +22,7 @@ import dev.ngb.core_billing.money.api.reservation.ReserveBudgetCommand;
 import dev.ngb.core_billing.money.application.charge.command.ChargeUseCase;
 import dev.ngb.core_billing.money.application.reservation.command.ExpireReservationsUseCase;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
-import dev.ngb.core_billing.money.application.ledger.command.LedgerVerifier;
+import dev.ngb.core_billing.money.application.ledger.port.LedgerVerifier;
 import dev.ngb.core_billing.money.application.reservation.command.ReleaseReservationUseCase;
 import dev.ngb.core_billing.money.application.ledger.command.ReverseEntryUseCase;
 import dev.ngb.core_billing.money.application.ledger.command.VerifyLedgerUseCase;

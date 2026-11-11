@@ -9,7 +9,7 @@ import java.util.Set;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.role.command.SeedDefaultRolesUseCase;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
-import dev.ngb.core_billing.platform.application.user.command.UserAdministration;
+import dev.ngb.core_billing.platform.application.user.command.ManageUserUseCase;
 
 /**
  * Creates a Tenant, then initialises it from inside its own scope: default roles and, when requested,
@@ -24,7 +24,7 @@ public class ProvisionTenantUseCase {
 
     private final CreateTenantUseCase createTenant;
     private final SeedDefaultRolesUseCase seedDefaultRoles;
-    private final UserAdministration users;
+    private final ManageUserUseCase users;
     private final UnitOfWork unitOfWork;
     private final RoleRepository roles;
     private final TenantContext tenantContext;
@@ -32,7 +32,7 @@ public class ProvisionTenantUseCase {
     public ProvisionTenantUseCase(
             CreateTenantUseCase createTenant,
             SeedDefaultRolesUseCase seedDefaultRoles,
-            UserAdministration users,
+            ManageUserUseCase users,
             UnitOfWork unitOfWork,
             RoleRepository roles,
             TenantContext tenantContext) {
@@ -54,7 +54,7 @@ public class ProvisionTenantUseCase {
                         .orElseThrow(() -> new IllegalStateException("default roles were not created")));
                 users.create(
                         new Audit(command.actor(), command.requestId()),
-                        new UserAdministration.CreateUser(
+                        new ManageUserUseCase.CreateUser(
                                 command.adminEmail(), command.adminDisplayName(), command.adminTemporaryPassword(),
                                 Set.of(admin.id())));
             }

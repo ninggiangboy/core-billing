@@ -2,7 +2,7 @@ package dev.ngb.core_billing.platform.adapter.persistence.tenant;
 
 import static dev.ngb.core_billing_jooq.Tables.TENANT_DOMAINS;
 
-import dev.ngb.core_billing.platform.application.tenant.command.HostnameAlreadyMappedException;
+import dev.ngb.core_billing.platform.application.tenant.exception.HostnameAlreadyMappedException;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
 import dev.ngb.core_billing.platform.domain.tenant.DomainKind;
 import dev.ngb.core_billing.platform.domain.tenant.Hostname;

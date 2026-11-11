@@ -7,7 +7,7 @@ import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
-import dev.ngb.core_billing.customer.application.command.CustomerAdministration;
+import dev.ngb.core_billing.customer.application.command.ManageCustomerUseCase;
 import dev.ngb.core_billing.customer.application.query.CustomerQueries;
 import dev.ngb.core_billing.customer.application.port.CustomerRepository;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
@@ -17,7 +17,7 @@ import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.platform.application.tenantsystem.command.TenantSystemAdministration;
+import dev.ngb.core_billing.platform.application.tenantsystem.command.CreateTenantSystemUseCase;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
@@ -45,10 +45,10 @@ class CustomerIntegrationTest {
     @Autowired UnitOfWork unitOfWork;
     @Autowired CustomerRepository customers;
     @Autowired CreateCustomerUseCase createCustomer;
-    @Autowired CustomerAdministration administration;
+    @Autowired ManageCustomerUseCase manage;
     @Autowired CustomerQueries customerQueries;
     @Autowired CustomerLookup lookup;
-    @Autowired TenantSystemAdministration systems;
+    @Autowired CreateTenantSystemUseCase systems;
     @Autowired Clock clock;
     @Autowired IdGenerator ids;
     @Autowired OwnerDatabase owner;
@@ -73,14 +73,14 @@ class CustomerIntegrationTest {
         assertThat(reloaded).usingRecursiveComparison().isEqualTo(created);
         assertThat(reloaded.identities()).containsExactly(new ExternalIdentity(system, "user_001"));
 
-        Customer updated = scopes.inTenant(tenant.id(), () -> administration.update(AUDIT, created.id(), "Acme Ltd", null));
+        Customer updated = scopes.inTenant(tenant.id(), () -> manage.update(AUDIT, created.id(), "Acme Ltd", null));
         Customer afterUpdate = scopes.inTenant(tenant.id(), () -> unitOfWork.transactional(() -> customers.findById(created.id()))).orElseThrow();
         assertThat(afterUpdate).usingRecursiveComparison().isEqualTo(updated);
         assertThat(afterUpdate.identities()).as("the mapping survives an update").hasSize(1);
 
-        scopes.runInTenant(tenant.id(), () -> administration.deactivate(AUDIT, created.id()));
+        scopes.runInTenant(tenant.id(), () -> manage.deactivate(AUDIT, created.id()));
         assertThat(scopes.inTenant(tenant.id(), () -> customerQueries.get(created.id())).isActive()).isFalse();
-        assertThatThrownBy(() -> scopes.runInTenant(tenant.id(), () -> administration.update(AUDIT, created.id(), "Again", null)))
+        assertThatThrownBy(() -> scopes.runInTenant(tenant.id(), () -> manage.update(AUDIT, created.id(), "Again", null)))
                 .isInstanceOf(ConflictException.class);
     }
 

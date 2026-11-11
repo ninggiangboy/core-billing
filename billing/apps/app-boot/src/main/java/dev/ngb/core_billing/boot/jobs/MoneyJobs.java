@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobLeases;
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobRuns;
 import dev.ngb.core_billing.money.application.reservation.command.ExpireReservationsUseCase;
-import dev.ngb.core_billing.money.application.ledger.command.LedgerVerifier;
+import dev.ngb.core_billing.money.application.ledger.port.LedgerVerifier;
 import dev.ngb.core_billing.money.application.ledger.command.VerifyLedgerUseCase;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.TenantId;

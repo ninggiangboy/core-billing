@@ -5,11 +5,11 @@ import dev.ngb.core_billing.money.api.reservation.ReservationResult;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
-import dev.ngb.core_billing.pricing.adapter.persistence.RuleDto;
+import dev.ngb.core_billing.pricing.adapter.persistence.plan.RuleDto;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.EstimateCostUseCase;
-import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
+import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanQueries;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanVersionView;
 import dev.ngb.core_billing.pricing.application.plan.query.PricingPlanView;
@@ -22,8 +22,8 @@ import dev.ngb.core_billing.pricing.domain.metric.Measure;
 import dev.ngb.core_billing.pricing.domain.plan.PlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
-import dev.ngb.core_billing.pricing.domain.plan.PriceLine;
-import dev.ngb.core_billing.pricing.domain.model.PricingModel;
+import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
 import dev.ngb.core_billing.pricing.domain.rating.RatingStatus;
 import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
@@ -161,7 +161,7 @@ public class PricingController {
         }
     }
 
-    private final PlanAdministration plans;
+    private final ManagePlanUseCase plans;
     private final PlanQueries planQueries;
     private final EstimateCostUseCase estimates;
     private final ReserveFromEstimateUseCase reserve;
@@ -171,7 +171,7 @@ public class PricingController {
     private final JsonMapper json;
 
     public PricingController(
-            PlanAdministration plans, PlanQueries planQueries, EstimateCostUseCase estimates, ReserveFromEstimateUseCase reserve,
+            ManagePlanUseCase plans, PlanQueries planQueries, EstimateCostUseCase estimates, ReserveFromEstimateUseCase reserve,
             ChargeFromUsageUseCase chargeUsage, RatingQueries ratings, CurrentActor currentActor, JsonMapper json) {
         this.plans = plans;
         this.planQueries = planQueries;
@@ -274,8 +274,8 @@ public class PricingController {
         return RatingResponse.ofView(ratings.get(UUID.fromString(id), currentActor.caller()));
     }
 
-    private static PlanAdministration.Terms terms(VersionRequest v, PricingModel model) {
-        return new PlanAdministration.Terms(v.rule().toRule(model), v.billingCycle() == null ? null : BillingCycle.valueOf(v.billingCycle()), v.minCharge(),
+    private static ManagePlanUseCase.Terms terms(VersionRequest v, PricingModel model) {
+        return new ManagePlanUseCase.Terms(v.rule().toRule(model), v.billingCycle() == null ? null : BillingCycle.valueOf(v.billingCycle()), v.minCharge(),
                 v.maxCharge(), v.rounding() == null ? null : RoundingPolicy.valueOf(v.rounding()), v.validFrom(), v.validUntil());
     }
 

@@ -11,7 +11,7 @@ import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
-import dev.ngb.core_billing.platform.application.tenant.TenantNotFoundException;
+import dev.ngb.core_billing.platform.application.tenant.exception.TenantNotFoundException;
 
 /** Maps an additional hostname to a Tenant. Runs at Platform scope. */
 public class AddTenantDomainUseCase {

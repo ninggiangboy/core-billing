@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import dev.ngb.core_billing.pricing.domain.model.PriceRule;
-import dev.ngb.core_billing.pricing.domain.model.PricingModel;
+import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 
 /**
  * A named price list for one pricing model and one currency. Its terms live in immutable {@link PlanVersion}s;

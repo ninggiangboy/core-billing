@@ -4,11 +4,11 @@ import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentQueries;
-import dev.ngb.core_billing.payment.application.payment.command.PaymentSettings;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.stripe.command.ReconcileStripeUseCase;
 import dev.ngb.core_billing.payment.application.refund.command.RequestRefundUseCase;
-import dev.ngb.core_billing.payment.application.stripe.command.StripeConfigurationService;
-import dev.ngb.core_billing.payment.application.stripe.command.StripeEventAdministration;
+import dev.ngb.core_billing.payment.application.stripe.service.StripeConfigurationService;
+import dev.ngb.core_billing.payment.application.stripe.command.ManageStripeEventUseCase;
 import dev.ngb.core_billing.payment.application.stripe.query.EventAttemptView;
 import dev.ngb.core_billing.payment.application.stripe.query.StripeConfigurationQueries;
 import dev.ngb.core_billing.payment.application.stripe.query.StripeConfigurationView;
@@ -165,7 +165,7 @@ public class PaymentController {
     private final RequestRefundUseCase refund;
     private final RefundQueries refundQueries;
     private final PaymentQueries queries;
-    private final StripeEventAdministration eventAdmin;
+    private final ManageStripeEventUseCase eventAdmin;
     private final StripeEventQueries eventQueries;
     private final IncidentQueries incidentQueries;
     private final ReconcileStripeUseCase reconcile;
@@ -174,7 +174,7 @@ public class PaymentController {
 
     public PaymentController(
             StripeConfigurationService configuration, StripeConfigurationQueries configurationQueries, CreateTopUpUseCase topUp,
-            RequestRefundUseCase refund, RefundQueries refundQueries, PaymentQueries queries, StripeEventAdministration eventAdmin,
+            RequestRefundUseCase refund, RefundQueries refundQueries, PaymentQueries queries, ManageStripeEventUseCase eventAdmin,
             StripeEventQueries eventQueries, IncidentQueries incidentQueries, ReconcileStripeUseCase reconcile, PaymentSettings settings,
             CurrentActor currentActor) {
         this.configuration = configuration;

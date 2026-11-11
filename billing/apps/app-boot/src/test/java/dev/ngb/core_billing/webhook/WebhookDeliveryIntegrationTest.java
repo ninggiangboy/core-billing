@@ -3,7 +3,7 @@ package dev.ngb.core_billing.webhook;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core_billing.Application;
-import dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay;
+import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.sharedkernel.DomainEvent;
 import dev.ngb.core_billing.sharedkernel.EventEnvelope;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
@@ -18,10 +18,10 @@ import dev.ngb.core_billing.webhook.adapter.messaging.WebhookEventListener;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;
-import dev.ngb.core_billing.webhook.application.delivery.command.DeliveryAdministration;
+import dev.ngb.core_billing.webhook.application.delivery.command.ManageDeliveryUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryQueries;
 import dev.ngb.core_billing.webhook.application.delivery.query.WebhookDeliveryView;
-import dev.ngb.core_billing.webhook.application.endpoint.command.EndpointAdministration;
+import dev.ngb.core_billing.webhook.application.endpoint.command.ManageEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryStatus;
@@ -68,8 +68,8 @@ class WebhookDeliveryIntegrationTest {
     @Autowired OutboxRelay relay;
     @Autowired DeliverWebhooksUseCase deliver;
     @Autowired CreateEndpointUseCase createEndpoint;
-    @Autowired EndpointAdministration endpointAdmin;
-    @Autowired DeliveryAdministration deliveryAdmin;
+    @Autowired ManageEndpointUseCase endpointAdmin;
+    @Autowired ManageDeliveryUseCase deliveryAdmin;
     @Autowired EndpointQueries endpointQueries;
     @Autowired DeliveryQueries deliveryQueries;
     @Autowired WebhookDeliveryRepository deliveryRepository;
@@ -364,17 +364,17 @@ class WebhookDeliveryIntegrationTest {
         TenantId tenant = scopes.newTenant().id();
         try (TestReceiver receiver = new TestReceiver()) {
             Registered hook = register(tenant, receiver.url(), "*");
-            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new EndpointAdministration.Change(null, null, null, EndpointStatus.DISABLED)));
+            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new ManageEndpointUseCase.Change(null, null, null, EndpointStatus.DISABLED)));
             publish(tenant, "charge.succeeded");
             relay(tenant);
             assertThat(deliveriesOf(tenant, hook.endpoint().id())).as("a disabled endpoint is not subscribed to anything").isEmpty();
 
-            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new EndpointAdministration.Change(null, null, null, EndpointStatus.ACTIVE)));
+            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new ManageEndpointUseCase.Change(null, null, null, EndpointStatus.ACTIVE)));
             publish(tenant, "charge.succeeded");
             relay(tenant);
-            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new EndpointAdministration.Change(null, null, null, EndpointStatus.DISABLED)));
+            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new ManageEndpointUseCase.Change(null, null, null, EndpointStatus.DISABLED)));
             assertThat(send(tenant)).as("queued but the endpoint is paused").isEqualTo(DeliverWebhooksUseCase.Round.NONE);
-            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new EndpointAdministration.Change(null, null, null, EndpointStatus.ACTIVE)));
+            scopes.runInTenant(tenant, () -> endpointAdmin.update(AUDIT, hook.endpoint().id(), new ManageEndpointUseCase.Change(null, null, null, EndpointStatus.ACTIVE)));
             assertThat(send(tenant).succeeded()).isEqualTo(1);
         }
     }
@@ -384,7 +384,7 @@ class WebhookDeliveryIntegrationTest {
         TenantId tenant = scopes.newTenant().id();
         try (TestReceiver receiver = new TestReceiver()) {
             Registered hook = register(tenant, receiver.url(), "*");
-            EndpointAdministration.Rotated rotated = scopes.inTenant(tenant, () -> endpointAdmin.rotateSecret(AUDIT, hook.endpoint().id()));
+            ManageEndpointUseCase.Rotated rotated = scopes.inTenant(tenant, () -> endpointAdmin.rotateSecret(AUDIT, hook.endpoint().id()));
             assertThat(rotated.signingSecret()).isNotEqualTo(hook.secret());
             assertThat(rotated.endpoint().keyId()).isNotEqualTo(hook.endpoint().keyId());
 

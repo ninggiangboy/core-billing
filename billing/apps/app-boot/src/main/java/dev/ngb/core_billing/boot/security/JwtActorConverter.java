@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.boot.security;
 
 import dev.ngb.core_billing.platform.api.actor.Actor;
-import dev.ngb.core_billing.platform.application.auth.Authentication;
-import dev.ngb.core_billing.platform.application.tenant.command.TenantMismatchException;
+import dev.ngb.core_billing.platform.application.auth.service.Authentication;
+import dev.ngb.core_billing.platform.application.tenant.exception.TenantMismatchException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

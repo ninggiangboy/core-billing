@@ -4,7 +4,7 @@ import dev.ngb.core_billing.sharedkernel.Money;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
-import dev.ngb.core_billing.pricing.domain.plan.PriceLine;
+import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
 
 /**
  * A priced result. {@code amount} is what would be charged, in whole minor units; {@code exactAmount} is the

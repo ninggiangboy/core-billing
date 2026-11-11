@@ -7,13 +7,16 @@ import dev.ngb.sampletenant.identity.domain.UserStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class JdbcUserRepository implements UserRepository {
 
     private final UserJdbcRepository rows;
+    private final JdbcTemplate jdbc;
 
-    public JdbcUserRepository(UserJdbcRepository rows) {
+    public JdbcUserRepository(UserJdbcRepository rows, JdbcTemplate jdbc) {
         this.rows = rows;
+        this.jdbc = jdbc;
     }
 
     @Override
@@ -38,14 +41,24 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public void save(User user) {
-        rows.save(new UserRow(
+        jdbc.update(
+                """
+                insert into users (id, email, display_name, password_hash, role, status, created_at)
+                values (?, ?, ?, ?, ?, ?, ?)
+                on conflict (id) do update
+                    set email = excluded.email,
+                        display_name = excluded.display_name,
+                        password_hash = excluded.password_hash,
+                        role = excluded.role,
+                        status = excluded.status
+                """,
                 user.id(),
                 user.email(),
                 user.displayName(),
                 user.passwordHash(),
                 user.role().name(),
                 user.status().name(),
-                user.createdAt()));
+                java.sql.Timestamp.from(user.createdAt()));
     }
 
     private static User toDomain(UserRow row) {

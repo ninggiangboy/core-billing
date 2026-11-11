@@ -16,9 +16,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** One HTTP client for every call to Billing; each interface is a view of the same connection pool. */
+/**
+ * One HTTP client for every call to Billing. The holder keeps that client out of the bean type graph,
+ * so injecting one interface does not see the other interfaces the same object implements.
+ */
 @Configuration(proxyBeanMethods = false)
 class BillingConfiguration {
+
+    record BillingClientHolder(HttpBillingClient client) {}
 
     @Bean
     HttpBillingSettings httpBillingSettings(
@@ -27,57 +32,57 @@ class BillingConfiguration {
             @Value("${sampletenant.billing.connect-timeout:PT3S}") Duration connectTimeout,
             @Value("${sampletenant.billing.read-timeout:PT10S}") Duration readTimeout,
             @Value("${sampletenant.billing.max-attempts:3}") int maxAttempts,
-            @Value("${sampletenant.billing.retry-backoff:PT200MS}") Duration retryBackoff) {
+            @Value("${sampletenant.billing.retry-backoff:PT0.2S}") Duration retryBackoff) {
         return new HttpBillingSettings(baseUrl, apiKey, connectTimeout, readTimeout, maxAttempts, retryBackoff);
     }
 
     @Bean
-    HttpBillingClient httpBillingClient(HttpBillingSettings settings) {
-        return new HttpBillingClient(settings);
+    BillingClientHolder billingClientHolder(HttpBillingSettings settings) {
+        return new BillingClientHolder(new HttpBillingClient(settings));
     }
 
     @Bean
-    BillingCustomers billingCustomers(HttpBillingClient client) {
-        return client;
+    BillingCustomers billingCustomers(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingPricing billingPricing(HttpBillingClient client) {
-        return client;
+    BillingPricing billingPricing(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingWallets billingWallets(HttpBillingClient client) {
-        return client;
+    BillingWallets billingWallets(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingCharges billingCharges(HttpBillingClient client) {
-        return client;
+    BillingCharges billingCharges(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingUsage billingUsage(HttpBillingClient client) {
-        return client;
+    BillingUsage billingUsage(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingSessions billingSessions(HttpBillingClient client) {
-        return client;
+    BillingSessions billingSessions(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingPayments billingPayments(HttpBillingClient client) {
-        return client;
+    BillingPayments billingPayments(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingInvoices billingInvoices(HttpBillingClient client) {
-        return client;
+    BillingInvoices billingInvoices(BillingClientHolder holder) {
+        return holder.client();
     }
 
     @Bean
-    BillingSubscriptions billingSubscriptions(HttpBillingClient client) {
-        return client;
+    BillingSubscriptions billingSubscriptions(BillingClientHolder holder) {
+        return holder.client();
     }
 }

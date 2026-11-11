@@ -3,20 +3,34 @@ package dev.ngb.sampletenant.identity.adapter.persistence;
 import dev.ngb.sampletenant.identity.application.port.SessionRepository;
 import dev.ngb.sampletenant.identity.domain.UserSession;
 import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.Optional;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class JdbcSessionRepository implements SessionRepository {
 
     private final SessionJdbcRepository rows;
+    private final JdbcTemplate jdbc;
 
-    public JdbcSessionRepository(SessionJdbcRepository rows) {
+    public JdbcSessionRepository(SessionJdbcRepository rows, JdbcTemplate jdbc) {
         this.rows = rows;
+        this.jdbc = jdbc;
     }
 
     @Override
     public void save(UserSession session) {
-        rows.save(new SessionRow(
-                session.id(), session.userId(), session.tokenHash(), session.createdAt(), session.expiresAt()));
+        jdbc.update(
+                """
+                insert into user_sessions (id, user_id, token_hash, created_at, expires_at)
+                values (?, ?, ?, ?, ?)
+                on conflict (id) do update
+                    set expires_at = excluded.expires_at
+                """,
+                session.id(),
+                session.userId(),
+                session.tokenHash(),
+                Timestamp.from(session.createdAt()),
+                Timestamp.from(session.expiresAt()));
     }
 
     @Override

@@ -17,6 +17,7 @@ import dev.ngb.sampletenant.resource.application.port.OrderRepository;
 import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
 import java.time.Clock;
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,8 +28,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class ResourceConfiguration {
 
     @Bean
-    OrderRepository orderRepository(OrderJdbcRepository rows) {
-        return new JdbcOrderRepository(rows);
+    OrderRepository orderRepository(OrderJdbcRepository rows, JdbcTemplate jdbc) {
+        return new JdbcOrderRepository(rows, jdbc);
     }
 
     @Bean
@@ -40,9 +41,9 @@ class ResourceConfiguration {
     CreateOrderUseCase createOrderUseCase(
             CatalogLookup catalog,
             CustomerDirectory customers,
-            BillingPricing pricing,
-            BillingSubscriptions subscriptions,
-            BillingWallets wallets,
+            @Qualifier("billingPricing") BillingPricing pricing,
+            @Qualifier("billingSubscriptions") BillingSubscriptions subscriptions,
+            @Qualifier("billingWallets") BillingWallets wallets,
             OrderSubmission submission,
             Clock clock,
             @Value("${sampletenant.resource.reservation-ttl:PT15M}") Duration reservationTtl) {
@@ -52,7 +53,10 @@ class ResourceConfiguration {
 
     @Bean
     ManageOrderUseCase manageOrderUseCase(
-            OrderQueries queries, OrderRepository orders, BillingSubscriptions subscriptions, Clock clock) {
+            OrderQueries queries,
+            OrderRepository orders,
+            @Qualifier("billingSubscriptions") BillingSubscriptions subscriptions,
+            Clock clock) {
         return new ManageOrderUseCase(queries, orders, subscriptions, clock);
     }
 

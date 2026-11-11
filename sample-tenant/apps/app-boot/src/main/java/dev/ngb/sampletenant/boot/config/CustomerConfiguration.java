@@ -18,6 +18,7 @@ import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
 import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
 import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,14 +29,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class CustomerConfiguration {
 
     @Bean
-    CustomerRepository customerRepository(CustomerJdbcRepository rows) {
-        return new JdbcCustomerRepository(rows);
+    CustomerRepository customerRepository(CustomerJdbcRepository rows, JdbcTemplate jdbc) {
+        return new JdbcCustomerRepository(rows, jdbc);
     }
 
     @Bean
     CustomerMapping customerMapping(
             CustomerRepository customers,
-            BillingCustomers billing,
+            @Qualifier("billingCustomers") BillingCustomers billing,
             @Value("${sampletenant.billing.tenant-system-id:}") String tenantSystemId) {
         return new CustomerMapping(customers, billing, tenantSystemId);
     }
@@ -54,10 +55,10 @@ class CustomerConfiguration {
     @Bean
     CustomerBillingViews customerBillingViews(
             CustomerQueries customers,
-            BillingSessions sessions,
-            BillingInvoices invoices,
-            BillingPayments payments,
-            BillingWallets wallets,
+            @Qualifier("billingSessions") BillingSessions sessions,
+            @Qualifier("billingInvoices") BillingInvoices invoices,
+            @Qualifier("billingPayments") BillingPayments payments,
+            @Qualifier("billingWallets") BillingWallets wallets,
             @Value("${sampletenant.portal.return-url:}") String defaultReturnUrl) {
         return new CustomerBillingViews(customers, sessions, invoices, payments, wallets, defaultReturnUrl);
     }
@@ -69,7 +70,10 @@ class CustomerConfiguration {
 
     @Bean
     ManageWalletSettingUseCase manageWalletSettingUseCase(
-            CustomerQueries customers, WalletSettingRepository settings, BillingWallets wallets, Clock clock) {
+            CustomerQueries customers,
+            WalletSettingRepository settings,
+            @Qualifier("billingWallets") BillingWallets wallets,
+            Clock clock) {
         return new ManageWalletSettingUseCase(customers, settings, wallets, clock);
     }
 

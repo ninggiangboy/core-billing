@@ -7,20 +7,23 @@ import dev.ngb.sampletenant.usage.application.RecordUsageUseCase;
 import dev.ngb.sampletenant.usage.application.UsageQueries;
 import dev.ngb.sampletenant.usage.application.port.UsageRepository;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Wires local usage records and their forwarding to Billing. */
 @Configuration(proxyBeanMethods = false)
 class UsageConfiguration {
 
     @Bean
-    UsageRepository usageRepository(UsageJdbcRepository rows) {
-        return new JdbcUsageRepository(rows);
+    UsageRepository usageRepository(UsageJdbcRepository rows, JdbcTemplate jdbc) {
+        return new JdbcUsageRepository(rows, jdbc);
     }
 
     @Bean
-    RecordUsageUseCase recordUsageUseCase(UsageRepository usage, BillingUsage billing, Clock clock) {
+    RecordUsageUseCase recordUsageUseCase(
+            UsageRepository usage, @Qualifier("billingUsage") BillingUsage billing, Clock clock) {
         return new RecordUsageUseCase(usage, billing, clock);
     }
 

@@ -6,18 +6,29 @@ import dev.ngb.sampletenant.catalog.domain.ResourceType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class JdbcCatalogPlanRepository implements CatalogPlanRepository {
 
     private final CatalogPlanJdbcRepository rows;
+    private final JdbcTemplate jdbc;
 
-    public JdbcCatalogPlanRepository(CatalogPlanJdbcRepository rows) {
+    public JdbcCatalogPlanRepository(CatalogPlanJdbcRepository rows, JdbcTemplate jdbc) {
         this.rows = rows;
+        this.jdbc = jdbc;
     }
 
     @Override
     public void save(CatalogPlan plan) {
-        rows.save(new CatalogPlanRow(
+        jdbc.update(
+                """
+                insert into catalog_plans
+                    (id, code, name, resource_type, pricing_model, description, billing_plan_id, active, created_at)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                on conflict (id) do update
+                    set billing_plan_id = excluded.billing_plan_id,
+                        active = excluded.active
+                """,
                 plan.id(),
                 plan.code(),
                 plan.name(),
@@ -26,7 +37,7 @@ public class JdbcCatalogPlanRepository implements CatalogPlanRepository {
                 plan.description(),
                 plan.billingPlanId(),
                 plan.active(),
-                plan.createdAt()));
+                java.sql.Timestamp.from(plan.createdAt()));
     }
 
     @Override

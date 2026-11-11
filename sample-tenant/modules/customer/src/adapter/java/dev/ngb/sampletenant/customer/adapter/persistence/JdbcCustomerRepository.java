@@ -6,25 +6,38 @@ import dev.ngb.sampletenant.customer.domain.CustomerStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class JdbcCustomerRepository implements CustomerRepository {
 
     private final CustomerJdbcRepository rows;
+    private final JdbcTemplate jdbc;
 
-    public JdbcCustomerRepository(CustomerJdbcRepository rows) {
+    public JdbcCustomerRepository(CustomerJdbcRepository rows, JdbcTemplate jdbc) {
         this.rows = rows;
+        this.jdbc = jdbc;
     }
 
     @Override
     public void save(Customer customer) {
-        rows.save(new CustomerRow(
+        jdbc.update(
+                """
+                insert into customers
+                    (id, user_id, billing_customer_id, display_name, email, status, created_at)
+                values (?, ?, ?, ?, ?, ?, ?)
+                on conflict (id) do update
+                    set billing_customer_id = excluded.billing_customer_id,
+                        display_name = excluded.display_name,
+                        email = excluded.email,
+                        status = excluded.status
+                """,
                 customer.id(),
                 customer.userId(),
                 customer.billingCustomerId(),
                 customer.displayName(),
                 customer.email(),
                 customer.status().name(),
-                customer.createdAt()));
+                java.sql.Timestamp.from(customer.createdAt()));
     }
 
     @Override

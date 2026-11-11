@@ -18,19 +18,20 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Wires the plain-Java identity use cases and their adapters. */
 @Configuration(proxyBeanMethods = false)
 class IdentityConfiguration {
 
     @Bean
-    UserRepository userRepository(UserJdbcRepository rows) {
-        return new JdbcUserRepository(rows);
+    UserRepository userRepository(UserJdbcRepository rows, JdbcTemplate jdbc) {
+        return new JdbcUserRepository(rows, jdbc);
     }
 
     @Bean
-    SessionRepository sessionRepository(SessionJdbcRepository rows) {
-        return new JdbcSessionRepository(rows);
+    SessionRepository sessionRepository(SessionJdbcRepository rows, JdbcTemplate jdbc) {
+        return new JdbcSessionRepository(rows, jdbc);
     }
 
     @Bean

@@ -26,7 +26,7 @@ sampletenant:
     connect-timeout: PT3S
     read-timeout: PT10S
     max-attempts: 3
-    retry-backoff: PT200MS
+    retry-backoff: PT0.2S
   webhooks:
     # The signing secret Billing returned once for this tenant's webhook endpoint.
     signing-secret: ${SAMPLE_TENANT_WEBHOOK_SECRET:}
@@ -41,5 +41,11 @@ sampletenant:
   portal:
     # Where Billing sends the customer back to when a session names no return URL.
     return-url: ${SAMPLE_TENANT_PORTAL_RETURN_URL:http://localhost:5174/portal/return}
+  bootstrap:
+    # One-shot, safe to repeat. Off by default because it needs an administrator token.
+    enabled: ${SAMPLE_TENANT_BOOTSTRAP_ENABLED:false}
+    admin-token: ${SAMPLE_TENANT_BOOTSTRAP_ADMIN_TOKEN:}
+    webhook-url: ${SAMPLE_TENANT_WEBHOOK_URL:http://localhost:8082/webhooks/billing}
+    webhook-event-types: "reservation.created,reservation.expired,reservation.released,charge.succeeded,charge.failed,payment.succeeded,payment.failed,refund.succeeded,invoice.created,invoice.paid,subscription.renewed,subscription.payment_failed"
   identity:
     session-ttl: PT12H

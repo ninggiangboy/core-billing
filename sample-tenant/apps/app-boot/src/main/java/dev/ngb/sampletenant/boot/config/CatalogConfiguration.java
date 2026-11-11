@@ -7,14 +7,15 @@ import dev.ngb.sampletenant.catalog.application.CatalogQueries;
 import dev.ngb.sampletenant.catalog.application.port.CatalogPlanRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Wires the offer catalog and the bootstrap's plan binding. */
 @Configuration(proxyBeanMethods = false)
 class CatalogConfiguration {
 
     @Bean
-    CatalogPlanRepository catalogPlanRepository(CatalogPlanJdbcRepository rows) {
-        return new JdbcCatalogPlanRepository(rows);
+    CatalogPlanRepository catalogPlanRepository(CatalogPlanJdbcRepository rows, JdbcTemplate jdbc) {
+        return new JdbcCatalogPlanRepository(rows, jdbc);
     }
 
     @Bean

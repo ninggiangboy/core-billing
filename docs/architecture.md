@@ -127,6 +127,36 @@ Decisions:
 - Inside a module the dependency direction is `adapter → application → domain`. `app-boot` only wires and never holds business rules.
 - Persistence row types live in the adapter, not in the domain. A domain type never carries Spring Data annotations. Each aggregate has a package-private `@Table` Row next to its write repository, with `from` and `toDomain`; the write repository persists plain inserts, whole-row updates and by-id reads through `JdbcAggregateOperations`. SQL that is itself the rule stays explicit: `for update` and `skip locked` locks, guarded or partial updates, append-only ledger inserts, conflict-ignoring inserts and the incident upsert. A read repository selects directly into an immutable view with `JdbcClient` and never builds an aggregate or a Row.
 
+## Text conventions
+
+A string is built with the tool that matches its shape. There is no blanket ban on `+`: the JDK has no string
+templates, and forcing every value through `formatted()` makes a short message harder to read, not easier.
+
+| Shape | Tool |
+|---|---|
+| A literal that spans more than one line: SQL, a JSON payload, a fixture | Text block |
+| SQL that needs a shared column list or a trailing clause | Text block with `%s` and `formatted()`. The column-list constant itself stays one logical line joined with `+`, because a text block would put newlines inside the list |
+| A message that inserts two or more values | `formatted()` on one literal, so the sentence stays in one piece |
+| A message that inserts one value | `+` |
+| An identifier, key or subject such as `wallet/<id>` or `event/<id>` | `+` |
+| A number that needs padding or a fixed width | `String.format`, for example `String.format("INV-%06d", sequence)` |
+
+Three traps the table does not remove:
+
+- **`%` inside a template.** `formatted()` reads every `%` as a conversion start, so a SQL `like '%Insufficient%'`
+  or a pattern such as `"%" + secret + "%"` keeps `+` or escapes each `%` as `%%`. A mistake here fails at runtime,
+  not at compile time.
+- **A text block ends with a newline.** Harmless in SQL and JSON; in a stored message it changes the text. A
+  one-line diagnostic message therefore stays a plain literal with `formatted()`, never a text block.
+- **A text block strips common indentation.** The closing delimiter takes part in that calculation, so it is aligned
+  with the content; otherwise the SQL or JSON keeps leading spaces it did not mean to have.
+
+Single-line JSON fragments inside assertions keep their `\"` escapes, because a text block would append a newline
+that `contains(...)` would then have to match. Multi-line JSON payloads are text blocks with one field per line.
+
+This convention is recorded for review only: it is not enforced by the build, unlike the layer rules above. A change
+that breaks it fails no task.
+
 ## Technical principles
 
 | Group | Requirement |

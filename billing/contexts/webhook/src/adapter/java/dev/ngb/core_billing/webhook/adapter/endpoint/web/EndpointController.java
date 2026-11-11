@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Webhook endpoints. The signing secret appears in exactly two responses, creating an endpoint and rotating its secret, and never again. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class EndpointController {

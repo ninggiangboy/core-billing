@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.ngb.core_billing.platform.adapter.auth.web.CallerResolver;
 
 /** Roles of the current scope, and the permission catalog they are built from. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class RoleController {

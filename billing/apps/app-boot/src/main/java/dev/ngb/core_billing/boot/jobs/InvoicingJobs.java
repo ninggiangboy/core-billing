@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * Switching it off with {@code billing.invoicing.jobs-enabled=false} stops both; charges stay collected and subscriptions
  * stay due, and both catch up when it is back on.
  */
-@Profile("!api & !migrate")
+@Profile("worker")
 @Component
 @ConditionalOnProperty(name = {"billing.jobs.enabled", "billing.invoicing.jobs-enabled"}, havingValue = "true", matchIfMissing = true)
 public class InvoicingJobs {

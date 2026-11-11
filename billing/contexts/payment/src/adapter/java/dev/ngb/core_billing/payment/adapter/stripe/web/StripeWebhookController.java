@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * it is checked before anything in the body is read. The body is read as bytes, up to a fixed limit, so it reaches
  * the verifier exactly as Stripe sent it.
  */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 public class StripeWebhookController {
 

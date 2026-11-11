@@ -23,7 +23,7 @@ import dev.ngb.core_billing.platform.domain.tenant.Tenant;
  * default roles. A time-bounded lease makes one instance do it when several start together; the lease commits on its
  * own and is not held while Keycloak is called.
  */
-@Profile("!migrate")
+@Profile({"api", "worker"})
 @Component
 class PlatformBootstrap implements ApplicationRunner {
 

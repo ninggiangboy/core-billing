@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Invoices. An invoice becomes paid only from a verified payment (or because the wallet already paid the charge it documents); no request here marks one paid. A Tenant System sees and acts on the customers mapped to it only. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class InvoiceController {

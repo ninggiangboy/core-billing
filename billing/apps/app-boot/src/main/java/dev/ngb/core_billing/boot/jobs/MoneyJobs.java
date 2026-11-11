@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  * tenant whose verification failed releases its claim and is tried again on a later tick. A claim left unfinished
  * by a dead process is taken over once it is older than the lease TTL, so that tenant does not lose its day.
  */
-@Profile("!api & !migrate")
+@Profile("worker")
 @Component
 @ConditionalOnProperty(name = "billing.jobs.enabled", havingValue = "true", matchIfMissing = true)
 public class MoneyJobs {

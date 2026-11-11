@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** Relays outbox events to the in-process consumers for every active tenant. */
-@Profile("!api & !migrate")
+@Profile("worker")
 @Component
 @ConditionalOnProperty(name = "billing.jobs.enabled", havingValue = "true", matchIfMissing = true)
 public class OutboxJobs {

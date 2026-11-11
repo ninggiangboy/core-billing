@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Refunds of payments. Money-moving POSTs need an {@code Idempotency-Key}. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class RefundController {

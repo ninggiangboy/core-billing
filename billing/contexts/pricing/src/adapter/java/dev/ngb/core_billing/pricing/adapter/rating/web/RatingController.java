@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /** What is done with a plan: cost estimation, reserving the estimate, and charging usage. Amounts that are charged are integers in minor units. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class RatingController {

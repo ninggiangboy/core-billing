@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * {@code skip locked} batches, so cleanup never waits on a bucket an api instance is spending from. A full batch is
  * followed by another, so a burst of rows is drained in one tick instead of falling behind.
  */
-@Profile("!api & !migrate")
+@Profile("worker")
 @Component
 @ConditionalOnProperty(name = "billing.jobs.enabled", havingValue = "true", matchIfMissing = true)
 public class HousekeepingJobs {

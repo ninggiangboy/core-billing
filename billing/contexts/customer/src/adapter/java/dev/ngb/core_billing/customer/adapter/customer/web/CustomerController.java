@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Customers of the current tenant, for both kinds of caller: a Tenant System (API key) maps its own users, a
  * Tenant User (OIDC) administers customers and names the tenant system explicitly.
  */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1/customers")
 public class CustomerController {

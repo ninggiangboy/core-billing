@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * event or of a whole batch never records anything twice. Quantities are decimal strings (or numbers) with up
  * to six decimal places, in the unit the metric's pricing plan defines.
  */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class UsageController {

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  * <p>Reconciliation is a singleton: a lease makes one worker own the round. Reading Stripe happens outside every
  * row lock, and the lease commits on its own, so the round adds no lock edge to a payment or a wallet.
  */
-@Profile("!api & !migrate")
+@Profile("worker")
 @Component
 @ConditionalOnProperty(name = {"billing.jobs.enabled", "billing.payments.jobs-enabled"}, havingValue = "true", matchIfMissing = true)
 public class PaymentJobs {

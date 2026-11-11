@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * {@link dev.ngb.core_billing.platform.api.actor.RequestScope} lives in a {@code ScopedValue}, which does not
  * cross a thread boundary.
  */
-@Profile("!api & !migrate")
+@Profile("worker")
 @Component
 public class TenantSweep {
 

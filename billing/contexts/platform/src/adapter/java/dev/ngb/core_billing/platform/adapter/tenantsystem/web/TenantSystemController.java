@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.ngb.core_billing.platform.adapter.auth.web.CallerResolver;
 
 /** Tenant Systems of the current Tenant and the API credentials they authenticate with. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class TenantSystemController {

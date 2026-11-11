@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.ngb.core_billing.platform.adapter.auth.web.CallerResolver;
 
 /** Billing Users of the current scope: Platform Users on the Platform, Tenant Users inside a Tenant. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {

@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Wallet top-ups and the payment history. Money-moving POSTs need an {@code Idempotency-Key}. Creating a payment never changes a balance; only a verified Stripe event does. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class PaymentController {

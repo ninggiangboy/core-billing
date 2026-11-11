@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** The Tenant's Stripe connection and the history of Stripe webhook processing. Nothing here returns a secret: the read side only says whether a webhook secret is set. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class StripeController {

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Subscriptions. Money-moving POSTs that are not repeatable by data take an {@code Idempotency-Key}. A Tenant System sees and acts on the customers mapped to it only. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class SubscriptionController {

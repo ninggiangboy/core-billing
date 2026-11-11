@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.json.JsonMapper;
 
 /** Pricing plans and their versions. Prices are decimals in minor units of the plan's currency. */
-@Profile("!worker & !migrate")
+@Profile("api")
 @RestController
 @RequestMapping("/api/v1")
 public class PlanController {

@@ -5,6 +5,7 @@ import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import dev.ngb.core_billing.usage.api.lookup.UsageEventId;
 import dev.ngb.core_billing.usage.api.lookup.UsageTotal;
@@ -85,6 +86,7 @@ public class UsageController {
 
     /** 201 for a newly recorded event, 200 when the same event was already recorded. */
     @PostMapping("/usage-events")
+    @RepeatableCreate(repeated = "The same event was already recorded; the recorded event is returned")
     @RequiresPermission(Permission.USAGE_RECORD)
     public ResponseEntity<RecordedResponse> recordOne(@RequestBody UsageEventRequest request) {
         RecordUsageUseCase.Recorded recorded = record.record(toItem(request, currentActor.get()), currentActor.caller());

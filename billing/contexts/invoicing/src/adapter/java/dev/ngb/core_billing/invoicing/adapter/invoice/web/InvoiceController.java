@@ -15,6 +15,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
 import java.time.Instant;
 import java.util.List;
@@ -117,6 +118,7 @@ public class InvoiceController {
      * returned: a charge is billed on one line at most, so no key is needed.
      */
     @PostMapping("/invoices")
+    @RepeatableCreate(repeated = "The charge already had an invoice; that invoice is returned")
     @RequiresPermission(Permission.INVOICE_CREATE)
     public ResponseEntity<InvoiceDetailResponse> invoiceCharge(
             @RequestHeader(value = "X-Request-Id", required = false) String requestId, @RequestBody InvoiceChargeRequest request) {
@@ -134,6 +136,7 @@ public class InvoiceController {
      * only when Stripe's verified result arrives. 201 for a new payment, 200 when the {@code Idempotency-Key} was used before.
      */
     @PostMapping("/invoices/{id}/payments")
+    @RepeatableCreate
     @RequiresPermission(Permission.PAYMENT_CREATE)
     public ResponseEntity<PayInvoiceResponse> pay(
             @PathVariable String id, @RequestHeader("Idempotency-Key") String key, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {

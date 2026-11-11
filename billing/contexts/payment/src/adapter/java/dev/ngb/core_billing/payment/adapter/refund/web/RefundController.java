@@ -9,6 +9,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
@@ -63,6 +64,7 @@ public class RefundController {
      * or the wallet has already spent it.
      */
     @PostMapping("/payments/{id}/refunds")
+    @RepeatableCreate
     @RequiresPermission(Permission.REFUND_CREATE)
     public ResponseEntity<RefundResponse> requestRefund(
             @PathVariable String id, @RequestHeader("Idempotency-Key") String key,

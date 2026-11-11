@@ -11,6 +11,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
@@ -80,6 +81,7 @@ public class PaymentController {
      * 200 when the {@code Idempotency-Key} was used before. The wallet is credited only after Stripe confirms.
      */
     @PostMapping("/payments/top-ups")
+    @RepeatableCreate
     @RequiresPermission(Permission.PAYMENT_CREATE)
     public ResponseEntity<PaymentResponse> createTopUp(
             @RequestHeader("Idempotency-Key") String key, @RequestHeader(value = "X-Request-Id", required = false) String requestId,

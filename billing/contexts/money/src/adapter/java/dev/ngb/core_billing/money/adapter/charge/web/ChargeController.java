@@ -11,6 +11,7 @@ import dev.ngb.core_billing.money.application.wallet.query.WalletQueries;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.UUID;
@@ -57,6 +58,7 @@ public class ChargeController {
 
     /** Charges the actual cost against the reservation and releases whatever was not used. */
     @PostMapping("/reservations/{id}/capture")
+    @RepeatableCreate
     @RequiresPermission(Permission.CHARGE_CREATE)
     public ResponseEntity<ChargeResponse> capture(
             @PathVariable String id, @RequestHeader("Idempotency-Key") String key, @RequestBody CaptureRequest request) {
@@ -66,6 +68,7 @@ public class ChargeController {
     }
 
     @PostMapping("/charges")
+    @RepeatableCreate
     @RequiresPermission(Permission.CHARGE_CREATE)
     public ResponseEntity<ChargeResponse> charge(@RequestHeader("Idempotency-Key") String key, @RequestBody ChargeRequest request) {
         ChargeResult result = charge.charge(new ChargeCommand(

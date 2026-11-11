@@ -7,9 +7,13 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.actor.PublicEndpoint;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
@@ -60,6 +64,32 @@ class WebConfiguration implements WebMvcConfigurer {
             if (required != null) {
                 operation.addExtension("x-required-permission", required.value().code());
             }
+            return operation;
+        };
+    }
+
+    /**
+     * Documents both outcomes of a repeatable create. A handler that returns {@code ResponseEntity} is generated with a
+     * single 200, so the body schema found there is listed under 201 for a new resource and under 200 for a repeat.
+     */
+    @Bean
+    OperationCustomizer repeatableCreates() {
+        return (operation, handlerMethod) -> {
+            RepeatableCreate create = handlerMethod.getMethodAnnotation(RepeatableCreate.class);
+            if (create == null || operation.getResponses() == null) {
+                return operation;
+            }
+            ApiResponse generated = operation.getResponses().get("200");
+            Content body = generated == null ? null : generated.getContent();
+            ApiResponses responses = new ApiResponses()
+                    .addApiResponse("201", new ApiResponse().description("Created").content(body))
+                    .addApiResponse("200", new ApiResponse().description(create.repeated()).content(body));
+            operation.getResponses().forEach((code, response) -> {
+                if (!responses.containsKey(code)) {
+                    responses.addApiResponse(code, response);
+                }
+            });
+            operation.setResponses(responses);
             return operation;
         };
     }

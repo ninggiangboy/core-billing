@@ -4,6 +4,7 @@ import dev.ngb.core_billing.money.api.reservation.ReservationResult;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.EstimateCostUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.ReserveFromEstimateUseCase;
@@ -133,6 +134,7 @@ public class RatingController {
 
     /** Holds the estimated cost on the wallet. 201 for a new reservation, 200 when the key replays one, 402 when the wallet cannot cover it. */
     @PostMapping("/pricing/reservations")
+    @RepeatableCreate
     @RequiresPermission(Permission.RESERVATION_MANAGE)
     public ResponseEntity<ReserveResponse> reserveEstimate(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
         ReserveFromEstimateUseCase.Result result = reserve.reserve(new ReserveFromEstimateUseCase.Command(
@@ -149,6 +151,7 @@ public class RatingController {
      * nothing to charge, 402 when the wallet could not pay (the same request succeeds after a top-up).
      */
     @PostMapping("/pricing/usage-charges")
+    @RepeatableCreate(repeated = "The usage was already charged and that rating is returned, or there was nothing to charge")
     @RequiresPermission(Permission.CHARGE_CREATE)
     public ResponseEntity<RatingResponse> chargeUsage(@RequestBody ChargeUsageRequest request) {
         if (request.from() == null || request.to() == null) {

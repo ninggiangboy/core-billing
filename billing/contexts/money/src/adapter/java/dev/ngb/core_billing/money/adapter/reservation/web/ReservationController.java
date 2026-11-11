@@ -10,6 +10,7 @@ import dev.ngb.core_billing.money.application.wallet.query.WalletQueries;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Duration;
@@ -56,6 +57,7 @@ public class ReservationController {
     }
 
     @PostMapping("/reservations")
+    @RepeatableCreate
     @RequiresPermission(Permission.RESERVATION_MANAGE)
     public ResponseEntity<ReservationResponse> reserve(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
         ReservationResult result = reserve.reserve(new ReserveBudgetCommand(

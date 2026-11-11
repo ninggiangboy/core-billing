@@ -12,6 +12,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
@@ -77,6 +78,7 @@ public class SubscriptionController {
      * {@code Idempotency-Key} was used before. A first period the wallet cannot pay leaves it {@code PAST_DUE}, not rejected.
      */
     @PostMapping("/subscriptions")
+    @RepeatableCreate
     @RequiresPermission(Permission.SUBSCRIPTION_MANAGE)
     public ResponseEntity<SubscriptionDetailResponse> subscribe(
             @RequestHeader("Idempotency-Key") String key, @RequestHeader(value = "X-Request-Id", required = false) String requestId,

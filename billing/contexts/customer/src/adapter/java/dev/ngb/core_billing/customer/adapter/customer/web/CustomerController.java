@@ -13,6 +13,7 @@ import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.error.AccessDeniedException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
+import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.time.Instant;
 import java.util.List;
@@ -77,6 +78,7 @@ public class CustomerController {
 
     /** Safe to retry: the same Idempotency-Key returns the same customer (201 for new, 200 for replay); the same key with a different body is a 409. */
     @PostMapping
+    @RepeatableCreate
     @RequiresPermission(Permission.CUSTOMER_WRITE)
     public ResponseEntity<CustomerResponse> create(
             @RequestHeader("Idempotency-Key") String idempotencyKey,

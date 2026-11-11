@@ -306,8 +306,15 @@ paths:
               $ref: "#/components/schemas/UsageEventRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecordedResponse"
         "200":
-          description: "OK"
+          description: "The same event was already recorded; the recorded event is\
+            \ returned"
           content:
             '*/*':
               schema:
@@ -412,8 +419,15 @@ paths:
               $ref: "#/components/schemas/SubscribeRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubscriptionDetailResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -471,8 +485,15 @@ paths:
               $ref: "#/components/schemas/ReserveRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -530,8 +551,15 @@ paths:
               $ref: "#/components/schemas/CaptureRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChargeResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -554,8 +582,15 @@ paths:
               $ref: "#/components/schemas/ChargeUsageRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RatingResponse"
         "200":
-          description: "OK"
+          description: "The usage was already charged and that rating is returned,\
+            \ or there was nothing to charge"
           content:
             '*/*':
               schema:
@@ -584,8 +619,15 @@ paths:
               $ref: "#/components/schemas/ReserveRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReserveResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -669,8 +711,15 @@ paths:
               $ref: "#/components/schemas/TopUpRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -746,8 +795,14 @@ paths:
               $ref: "#/components/schemas/InvoiceChargeRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvoiceDetailResponse"
         "200":
-          description: "OK"
+          description: "The charge already had an invoice; that invoice is returned"
           content:
             '*/*':
               schema:
@@ -780,8 +835,15 @@ paths:
         schema:
           type: "string"
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PayInvoiceResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -834,8 +896,15 @@ paths:
               $ref: "#/components/schemas/CreateCustomerRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:
@@ -893,8 +962,15 @@ paths:
               $ref: "#/components/schemas/ChargeRequest"
         required: true
       responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChargeResponse"
         "200":
-          description: "OK"
+          description: "An earlier identical request already created it; that resource\
+            \ is returned"
           content:
             '*/*':
               schema:

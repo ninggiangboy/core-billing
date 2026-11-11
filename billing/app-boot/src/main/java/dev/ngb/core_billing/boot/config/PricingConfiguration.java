@@ -6,12 +6,12 @@ import dev.ngb.core_billing.money.api.reservation.ReserveBudget;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.pricing.adapter.persistence.JdbcMetricRegistry;
-import dev.ngb.core_billing.pricing.adapter.persistence.JdbcPlanRepository;
-import dev.ngb.core_billing.pricing.adapter.persistence.JdbcRatingRepository;
-import dev.ngb.core_billing.pricing.adapter.persistence.metric.JdbcMetricReadRepository;
-import dev.ngb.core_billing.pricing.adapter.persistence.plan.JdbcPlanReadRepository;
-import dev.ngb.core_billing.pricing.adapter.persistence.rating.JdbcRatingReadRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.JooqMetricRegistry;
+import dev.ngb.core_billing.pricing.adapter.persistence.JooqPlanRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.JooqRatingRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.metric.JooqMetricReadRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.plan.JooqPlanReadRepository;
+import dev.ngb.core_billing.pricing.adapter.persistence.rating.JooqRatingReadRepository;
 import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
 import dev.ngb.core_billing.pricing.api.plan.PlanPricing;
 import dev.ngb.core_billing.pricing.application.plan.command.PlanPricingService;
@@ -34,9 +34,8 @@ import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.usage.api.usage.UsageLookup;
 import org.springframework.context.annotation.Bean;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.json.JsonMapper;
 
 /** Wires the pricing module. Holds no business rules. Pricing reaches money and usage only through their api interfaces. */
@@ -44,33 +43,33 @@ import tools.jackson.databind.json.JsonMapper;
 class PricingConfiguration {
 
     @Bean
-    PlanRepository planRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc, JsonMapper json) {
-        return new JdbcPlanRepository(aggregates, jdbc, json);
+    PlanRepository planRepository(DSLContext dsl, JsonMapper json) {
+        return new JooqPlanRepository(dsl, json);
     }
 
     @Bean
-    MetricRegistry metricRegistry(JdbcClient jdbc) {
-        return new JdbcMetricRegistry(jdbc);
+    MetricRegistry metricRegistry(DSLContext dsl) {
+        return new JooqMetricRegistry(dsl);
     }
 
     @Bean
-    RatingRepository ratingRepository(JdbcClient jdbc, JsonMapper json) {
-        return new JdbcRatingRepository(jdbc, json);
+    RatingRepository ratingRepository(DSLContext dsl, JsonMapper json) {
+        return new JooqRatingRepository(dsl, json);
     }
 
     @Bean
-    PlanReadRepository planReadRepository(JdbcClient jdbc) {
-        return new JdbcPlanReadRepository(jdbc);
+    PlanReadRepository planReadRepository(DSLContext dsl) {
+        return new JooqPlanReadRepository(dsl);
     }
 
     @Bean
-    RatingReadRepository ratingReadRepository(JdbcClient jdbc, JsonMapper json) {
-        return new JdbcRatingReadRepository(jdbc, json);
+    RatingReadRepository ratingReadRepository(DSLContext dsl, JsonMapper json) {
+        return new JooqRatingReadRepository(dsl, json);
     }
 
     @Bean
-    MetricReadRepository metricReadRepository(JdbcClient jdbc) {
-        return new JdbcMetricReadRepository(jdbc);
+    MetricReadRepository metricReadRepository(DSLContext dsl) {
+        return new JooqMetricReadRepository(dsl);
     }
 
     @Bean

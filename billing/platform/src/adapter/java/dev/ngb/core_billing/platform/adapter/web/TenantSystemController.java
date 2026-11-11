@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.platform.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Tenant Systems of the current Tenant and the API credentials they authenticate with. */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class TenantSystemController {

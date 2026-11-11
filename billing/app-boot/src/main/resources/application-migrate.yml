@@ -1,0 +1,29 @@
+# The migration step. It runs Flyway as the table owner, with a short lock timeout so a queued ALTER TABLE gives up
+# instead of blocking every query behind it, and exits when the schema is current.
+spring:
+  main:
+    web-application-type: none
+  flyway:
+    enabled: true
+    init-sql: "SET lock_timeout = '3s'"
+  datasource:
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 0
+  task:
+    scheduling:
+      pool:
+        size: 1
+billing:
+  jobs:
+    enabled: false
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

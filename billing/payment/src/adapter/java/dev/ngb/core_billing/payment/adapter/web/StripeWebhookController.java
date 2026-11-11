@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.payment.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * it is checked before anything in the body is read. The body is read as bytes, up to a fixed limit, so it reaches
  * the verifier exactly as Stripe sent it.
  */
+@Profile("!worker & !migrate")
 @RestController
 public class StripeWebhookController {
 

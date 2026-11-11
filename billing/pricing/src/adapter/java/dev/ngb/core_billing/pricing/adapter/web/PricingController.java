@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.pricing.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.money.api.reservation.ReservationResult;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
@@ -56,6 +57,7 @@ import tools.jackson.databind.json.JsonMapper;
  * Pricing plans and what is done with them: cost estimation, reserving the estimate, and charging usage.
  * Prices are decimals in minor units of the plan's currency; amounts that are charged are integers in minor units.
  */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class PricingController {

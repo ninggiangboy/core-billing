@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.money.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.money.api.charge.ChargeCommand;
 import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.charge.ChargeResult;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Wallets, reservations, charges and ledger corrections. Amounts are integers in minor units (cents, dong)
  * with an ISO 4217 currency code. Every money-moving POST needs an {@code Idempotency-Key}.
  */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class MoneyController {

@@ -26,6 +26,11 @@ public class PostgresContainerConfig {
         POSTGRES.start();
     }
 
+    /** Shared with tests that build their own property source instead of importing this configuration. */
+    public static PostgreSQLContainer postgres() {
+        return POSTGRES;
+    }
+
     @Bean
     DynamicPropertyRegistrar databaseProperties() {
         return registry -> {

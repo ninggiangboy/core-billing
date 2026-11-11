@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.usage.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * event or of a whole batch never records anything twice. Quantities are decimal strings (or numbers) with up
  * to six decimal places, in the unit the metric's pricing plan defines.
  */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class UsageController {

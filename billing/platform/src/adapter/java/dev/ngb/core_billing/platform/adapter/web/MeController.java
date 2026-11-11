@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.platform.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.Authenticated;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Tells a signed-in actor who Billing thinks it is. */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class MeController {

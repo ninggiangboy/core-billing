@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.platform.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Roles of the current scope, and the permission catalog they are built from. */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class RoleController {

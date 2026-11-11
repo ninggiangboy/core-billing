@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.payment.adapter.web;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentQueries;
@@ -57,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Nothing here returns a secret: the read side only says whether a webhook secret is set. Money-moving POSTs
  * need an {@code Idempotency-Key}. Creating a payment never changes a balance; only a verified Stripe event does.
  */
+@Profile("!worker & !migrate")
 @RestController
 @RequestMapping("/api/v1")
 public class PaymentController {

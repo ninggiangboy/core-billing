@@ -1,0 +1,31 @@
+# The background edge. It has no business controllers and owns every scheduled job. A short lock_timeout turns a
+# contended coordination row into a skipped tick instead of a worker stuck behind someone else's transaction.
+spring:
+  flyway:
+    enabled: false
+  datasource:
+    hikari:
+      maximum-pool-size: ${BILLING_WORKER_DB_POOL_SIZE:10}
+      minimum-idle: ${BILLING_WORKER_DB_MIN_IDLE:2}
+      connection-init-sql: "SET lock_timeout = '5s'; SET idle_in_transaction_session_timeout = '60s'"
+  task:
+    scheduling:
+      pool:
+        size: ${BILLING_WORKER_SCHEDULER_POOL_SIZE:4}
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+server:
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db

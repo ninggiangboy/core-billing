@@ -9,6 +9,7 @@ import dev.ngb.core_billing.platform.domain.role.AuthorizationPolicy;
 import dev.ngb.core_billing.platform.domain.credential.ApiKey;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,6 +27,7 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class SecurityConfiguration {
 
     @Bean

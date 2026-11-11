@@ -1,0 +1,7 @@
+package dev.ngb.sampletenant.customer.domain;
+
+/** How the customer pays: from a topped-up balance, or later against a credit limit. */
+public enum WalletMode {
+    PREPAID,
+    POSTPAID
+}

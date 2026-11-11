@@ -2,6 +2,7 @@ package dev.ngb.core_billing.invoicing.application.cycle.command;
 
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
 import dev.ngb.core_billing.invoicing.application.invoice.service.ChargeLineFactory;
+import dev.ngb.core_billing.invoicing.application.messaging.service.InvoicingConsumers;
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
 import dev.ngb.core_billing.money.api.event.MoneyEventTypes;
@@ -27,8 +28,6 @@ import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
  * unique line per charge make a repeated event a no-op.
  */
 public class CollectChargeUseCase {
-
-    public static final String CONSUMER = "invoicing.cycle";
 
     private final UnitOfWork unitOfWork;
     private final EventInbox inbox;
@@ -63,7 +62,7 @@ public class CollectChargeUseCase {
             return false;
         }
         return unitOfWork.transactional(() -> {
-            if (!inbox.firstTime(CONSUMER, event)) {
+            if (!inbox.firstTime(InvoicingConsumers.CYCLE, event)) {
                 return false;
             }
             Charged charged = read(event.payload()).orElse(null);

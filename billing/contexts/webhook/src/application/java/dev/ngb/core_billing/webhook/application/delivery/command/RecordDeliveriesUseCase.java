@@ -12,14 +12,13 @@ import java.util.List;
 import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
+import dev.ngb.core_billing.webhook.application.messaging.service.WebhookConsumers;
 
 /**
  * The webhook module's consumer of outbox events: for each subscribed endpoint of the event's tenant it queues
  * one delivery holding the body that will be sent. Handling the same event twice queues nothing new.
  */
 public class RecordDeliveriesUseCase {
-
-    public static final String CONSUMER = "webhook";
 
     private final UnitOfWork unitOfWork;
     private final WebhookEndpointRepository endpoints;
@@ -44,7 +43,7 @@ public class RecordDeliveriesUseCase {
     /** @return how many deliveries were queued */
     public int handle(DomainEvent event) {
         return unitOfWork.transactional(() -> {
-            if (!inbox.firstTime(CONSUMER, event)) {
+            if (!inbox.firstTime(WebhookConsumers.DELIVERY, event)) {
                 return 0;
             }
             List<WebhookEndpoint> targets = endpoints.findSubscribed(event.type());

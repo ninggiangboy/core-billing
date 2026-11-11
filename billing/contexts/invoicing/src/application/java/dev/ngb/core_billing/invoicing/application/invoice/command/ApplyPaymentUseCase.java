@@ -1,6 +1,8 @@
 package dev.ngb.core_billing.invoicing.application.invoice.command;
 
 import dev.ngb.core_billing.invoicing.application.invoice.port.InvoiceRepository;
+import dev.ngb.core_billing.invoicing.application.messaging.service.InvoicingActors;
+import dev.ngb.core_billing.invoicing.application.messaging.service.InvoicingConsumers;
 import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceEvents;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
@@ -33,10 +35,6 @@ import java.util.UUID;
  */
 public class ApplyPaymentUseCase {
 
-    public static final String CONSUMER = "invoicing.payment";
-
-    private static final String ACTOR = "system/invoice-payment";
-
     private final UnitOfWork unitOfWork;
     private final EventInbox inbox;
     private final InvoiceRepository invoices;
@@ -66,7 +64,7 @@ public class ApplyPaymentUseCase {
             return false;
         }
         return unitOfWork.transactional(() -> {
-            if (!inbox.firstTime(CONSUMER, event)) {
+            if (!inbox.firstTime(InvoicingConsumers.PAYMENT, event)) {
                 return false;
             }
             Invoice invoice = invoices.lockById(InvoiceId.of((String) data.get("invoiceId")))
@@ -86,7 +84,7 @@ public class ApplyPaymentUseCase {
                         "a payment of invoice %s is in %s but the invoice is in %s".formatted(invoice.id(), amount.currency(), invoice.currency()));
             }
             LedgerPostingResult posted = credit.credit(new CreditCommand(invoice.walletId(), amount, "invoice/" + invoice.id(),
-                    "Payment of invoice " + invoice.number(), "invoice-payoff:" + paymentId, ACTOR));
+                    "Payment of invoice " + invoice.number(), "invoice-payoff:" + paymentId, InvoicingActors.INVOICE_PAYMENT));
             Invoice.Change change = invoice.recordPaymentSucceeded(paymentId, posted.entryId().value(), now);
             if (change == Invoice.Change.UNCHANGED) {
                 return false;

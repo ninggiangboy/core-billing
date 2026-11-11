@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.UUID;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
+import dev.ngb.core_billing.money.application.messaging.service.MoneyActors;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
 
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
@@ -36,9 +37,6 @@ import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
  * read above the lock.
  */
 public class ChargeUseCase implements ChargeWallet {
-
-    /** The actor recorded on the ledger entry: a charge is raised by the system on a caller's behalf. */
-    private static final String ACTOR = "system/charge";
 
     private final UnitOfWork unitOfWork;
     private final WalletRepository wallets;
@@ -96,7 +94,7 @@ public class ChargeUseCase implements ChargeWallet {
             try {
                 outcome = chargeService.charge(new ChargeService.Request(
                         wallet, reservation, command.amount(), command.source(), command.usageRef(), command.reference(),
-                        command.idempotencyKey(), hash, ACTOR, now));
+                        command.idempotencyKey(), hash, MoneyActors.CHARGE, now));
             } catch (IllegalStateException reservationNotUsable) {
                 throw new ConflictException(reservationNotUsable.getMessage());
             }

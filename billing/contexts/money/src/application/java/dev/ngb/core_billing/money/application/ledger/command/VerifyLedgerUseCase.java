@@ -7,6 +7,7 @@ import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerVerifier;
+import dev.ngb.core_billing.money.application.messaging.service.MoneyActors;
 
 /**
  * Recomputes each wallet's balance and sequence from its ledger entries and compares them with the stored
@@ -14,8 +15,6 @@ import dev.ngb.core_billing.money.application.ledger.port.LedgerVerifier;
  * deciding which side is right is a human's job.
  */
 public class VerifyLedgerUseCase {
-
-    private static final String ACTOR = "system/ledger-verify";
 
     private final UnitOfWork unitOfWork;
     private final LedgerVerifier verifier;
@@ -35,7 +34,7 @@ public class VerifyLedgerUseCase {
         return unitOfWork.transactional(() -> {
             List<LedgerVerifier.Mismatch> mismatches = verifier.findMismatches();
             for (LedgerVerifier.Mismatch mismatch : mismatches) {
-                auditLog.record(AuditEntry.tenant(tenantContext.requireTenant(), ACTOR, "ledger.mismatch", "wallet/" + mismatch.walletId(), null, clock.now()));
+                auditLog.record(AuditEntry.tenant(tenantContext.requireTenant(), MoneyActors.LEDGER_VERIFY, "ledger.mismatch", "wallet/" + mismatch.walletId(), null, clock.now()));
             }
             return mismatches;
         });

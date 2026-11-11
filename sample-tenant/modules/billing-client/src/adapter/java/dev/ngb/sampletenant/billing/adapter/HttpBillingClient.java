@@ -2,6 +2,8 @@ package dev.ngb.sampletenant.billing.adapter;
 
 import dev.ngb.sampletenant.billing.api.BillingCharges;
 import dev.ngb.sampletenant.billing.api.BillingCustomers;
+import dev.ngb.sampletenant.billing.api.BillingInvoices;
+import dev.ngb.sampletenant.billing.api.BillingPayments;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSessions;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
@@ -11,6 +13,10 @@ import dev.ngb.sampletenant.billing.api.model.Charge;
 import dev.ngb.sampletenant.billing.api.model.ChargeUsageRequest;
 import dev.ngb.sampletenant.billing.api.model.Customer;
 import dev.ngb.sampletenant.billing.api.model.Estimate;
+import dev.ngb.sampletenant.billing.api.model.Invoice;
+import dev.ngb.sampletenant.billing.api.model.InvoiceDetail;
+import dev.ngb.sampletenant.billing.api.model.Payment;
+import dev.ngb.sampletenant.billing.api.model.PaymentDetail;
 import dev.ngb.sampletenant.billing.api.model.PricingPlan;
 import dev.ngb.sampletenant.billing.api.model.Rating;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
@@ -51,7 +57,14 @@ import tools.jackson.databind.json.JsonMapper;
  * with that same key, so Billing records the operation once.
  */
 public class HttpBillingClient
-        implements BillingCustomers, BillingPricing, BillingWallets, BillingCharges, BillingUsage, BillingSessions {
+        implements BillingCustomers,
+                BillingPricing,
+                BillingWallets,
+                BillingCharges,
+                BillingUsage,
+                BillingSessions,
+                BillingPayments,
+                BillingInvoices {
 
     private final HttpClient http;
     private final ObjectMapper json = JsonMapper.builder()
@@ -224,6 +237,57 @@ public class HttpBillingClient
     @Override
     public void revoke(String id) {
         send("POST", "/api/v1/billing-sessions/" + path(id) + "/revoke", null, Map.of(), null);
+    }
+
+    @Override
+    public List<Payment> payments(String walletId, String status, int limit) {
+        List<String> params = new ArrayList<>();
+        if (walletId != null) {
+            params.add("walletId=" + query(walletId));
+        }
+        if (status != null) {
+            params.add("status=" + query(status));
+        }
+        params.add("limit=" + limit);
+        return send(
+                "GET", "/api/v1/payments?" + String.join("&", params), null, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public PaymentDetail payment(String id) {
+        return send("GET", "/api/v1/payments/" + path(id), null, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public Payment createTopUp(String idempotencyKey, TopUpRequest request) {
+        return send(
+                "POST",
+                "/api/v1/payments/top-ups",
+                request,
+                Map.of("Idempotency-Key", idempotencyKey),
+                new TypeReference<>() {});
+    }
+
+    @Override
+    public List<Invoice> invoices(String customerId, String walletId, String status, int limit) {
+        List<String> params = new ArrayList<>();
+        if (customerId != null) {
+            params.add("customerId=" + query(customerId));
+        }
+        if (walletId != null) {
+            params.add("walletId=" + query(walletId));
+        }
+        if (status != null) {
+            params.add("status=" + query(status));
+        }
+        params.add("limit=" + limit);
+        return send(
+                "GET", "/api/v1/invoices?" + String.join("&", params), null, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public InvoiceDetail invoice(String id) {
+        return send("GET", "/api/v1/invoices/" + path(id), null, Map.of(), new TypeReference<>() {});
     }
 
     private record SessionRequest(

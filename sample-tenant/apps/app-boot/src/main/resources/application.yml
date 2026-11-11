@@ -38,5 +38,8 @@ sampletenant:
     max-attempts: 3
   resource:
     reservation-ttl: PT15M
+  portal:
+    # Where Billing sends the customer back to when a session names no return URL.
+    return-url: ${SAMPLE_TENANT_PORTAL_RETURN_URL:http://localhost:5174/portal/return}
   identity:
     session-ttl: PT12H

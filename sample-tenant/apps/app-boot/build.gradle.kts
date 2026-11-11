@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":modules:resource"))
     implementation(project(":modules:usage"))
     implementation(project(":modules:execution"))
+    implementation(project(":modules:webhook-receiver"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

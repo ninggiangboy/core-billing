@@ -24,6 +24,7 @@ public record Order(
         long estimatedMinorUnits,
         String currency,
         String reservationId,
+        String subscriptionId,
         OrderStatus status,
         String reference,
         String failureReason,
@@ -44,6 +45,7 @@ public record Order(
             long estimatedMinorUnits,
             String currency,
             String reservationId,
+            String subscriptionId,
             Instant now) {
         UUID id = Ids.newId();
         return new Order(
@@ -61,6 +63,7 @@ public record Order(
                 estimatedMinorUnits,
                 currency,
                 reservationId,
+                subscriptionId,
                 OrderStatus.QUEUED,
                 "ORD-" + id,
                 null,
@@ -115,6 +118,7 @@ public record Order(
                 estimatedMinorUnits,
                 currency,
                 reservationId,
+                subscriptionId,
                 next,
                 reference,
                 reason,

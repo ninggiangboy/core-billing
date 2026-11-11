@@ -21,6 +21,7 @@ record OrderRow(
         long estimatedMinorUnits,
         String currency,
         String reservationId,
+        String subscriptionId,
         String status,
         String reference,
         String failureReason,

@@ -4,12 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.sampletenant.billing.api.BillingPricing;
+import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.Estimate;
 import dev.ngb.sampletenant.billing.api.model.PricingPlan;
 import dev.ngb.sampletenant.billing.api.model.Reservation;
 import dev.ngb.sampletenant.billing.api.model.ReserveResult;
+import dev.ngb.sampletenant.billing.api.model.Subscription;
+import dev.ngb.sampletenant.billing.api.model.SubscriptionDetail;
 import dev.ngb.sampletenant.billing.api.model.UsageInput;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.catalog.api.CatalogLookup;
@@ -38,10 +41,12 @@ class CreateOrderUseCaseTest {
     private final FakeCatalog catalog = new FakeCatalog();
     private final FakeCustomers customers = new FakeCustomers();
     private final FakePricing pricing = new FakePricing();
+    private final FakeSubscriptions subscriptions = new FakeSubscriptions();
     private final FakeWallets wallets = new FakeWallets();
     private final CapturingSubmission submission = new CapturingSubmission();
     private final CreateOrderUseCase create = new CreateOrderUseCase(
-            catalog, customers, pricing, wallets, submission, Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofMinutes(15));
+            catalog, customers, pricing, subscriptions, wallets, submission,
+            Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofMinutes(15));
 
     @Test
     void estimatesReservesAndOnlyThenQueuesTheOrder() {
@@ -111,6 +116,30 @@ class CreateOrderUseCaseTest {
         });
     }
 
+    @Test
+    void aSubscriptionPlanStartsASubscriptionAndSkipsTheReservation() {
+        catalog.model = "SUBSCRIPTION";
+
+        Order order = create.execute(new CreateOrderUseCase.Command(USER, PLAN, "1", null));
+
+        assertThat(order.subscriptionId()).isEqualTo("sub_1");
+        assertThat(order.reservationId()).isNull();
+        assertThat(order.estimatedMinorUnits()).isZero();
+        assertThat(subscriptions.subscribed).isTrue();
+        assertThat(pricing.estimated).isFalse();
+        assertThat(pricing.reserved).isFalse();
+    }
+
+    @Test
+    void aHybridPlanAlsoStartsASubscription() {
+        catalog.model = "HYBRID";
+
+        Order order = create.execute(new CreateOrderUseCase.Command(USER, PLAN, "3", null));
+
+        assertThat(order.subscriptionId()).isEqualTo("sub_1");
+        assertThat(subscriptions.subscribed).isTrue();
+    }
+
     private static final class FakeCatalog implements CatalogLookup {
         private boolean billable = true;
         private String model = "TIME_BASED";
@@ -166,6 +195,38 @@ class CreateOrderUseCaseTest {
                     new Reservation(
                             "res_1", request.walletId(), "HELD", new Amount(request.amount(), request.currency()), null,
                             NOW.plusSeconds(900), request.reference(), NOW, null, false));
+        }
+    }
+
+    private static final class FakeSubscriptions implements BillingSubscriptions {
+        private boolean subscribed;
+
+        @Override
+        public SubscriptionDetail subscribe(String idempotencyKey, String walletId, String planId) {
+            subscribed = true;
+            return detail();
+        }
+
+        @Override
+        public SubscriptionDetail subscription(String id) {
+            return detail();
+        }
+
+        @Override
+        public SubscriptionDetail cancel(String id) {
+            return detail();
+        }
+
+        @Override
+        public List<Subscription> subscriptions(String customerId, String walletId, String status, int limit) {
+            return List.of(detail().subscription());
+        }
+
+        private static SubscriptionDetail detail() {
+            return new SubscriptionDetail(
+                    new Subscription("sub_1", "cus_1", "wal_1", "bplan_1", "managed-service-standard", "MONTHLY",
+                            "ACTIVE", NOW, 1, NOW, NOW.plusSeconds(2_592_000), false, null, NOW.plusSeconds(2_592_000), 0, NOW),
+                    List.of());
         }
     }
 

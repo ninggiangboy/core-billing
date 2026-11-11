@@ -92,6 +92,7 @@ public class OrderExecutionService implements ExecutionOrders {
                 order.estimatedMinorUnits(),
                 order.currency(),
                 order.reservationId(),
+                order.subscriptionId(),
                 order.reference(),
                 order.status().name());
     }

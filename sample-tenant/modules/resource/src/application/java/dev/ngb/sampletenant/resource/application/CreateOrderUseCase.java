@@ -1,10 +1,12 @@
 package dev.ngb.sampletenant.resource.application;
 
 import dev.ngb.sampletenant.billing.api.BillingPricing;
+import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Estimate;
 import dev.ngb.sampletenant.billing.api.model.PricingPlan;
 import dev.ngb.sampletenant.billing.api.model.ReserveResult;
+import dev.ngb.sampletenant.billing.api.model.SubscriptionDetail;
 import dev.ngb.sampletenant.billing.api.model.UsageInput;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.catalog.api.CatalogLookup;
@@ -30,6 +32,7 @@ public class CreateOrderUseCase {
     private final CatalogLookup catalog;
     private final CustomerDirectory customers;
     private final BillingPricing pricing;
+    private final BillingSubscriptions subscriptions;
     private final BillingWallets wallets;
     private final OrderSubmission submission;
     private final Clock clock;
@@ -39,6 +42,7 @@ public class CreateOrderUseCase {
             CatalogLookup catalog,
             CustomerDirectory customers,
             BillingPricing pricing,
+            BillingSubscriptions subscriptions,
             BillingWallets wallets,
             OrderSubmission submission,
             Clock clock,
@@ -46,6 +50,7 @@ public class CreateOrderUseCase {
         this.catalog = catalog;
         this.customers = customers;
         this.pricing = pricing;
+        this.subscriptions = subscriptions;
         this.wallets = wallets;
         this.submission = submission;
         this.clock = clock;
@@ -74,18 +79,26 @@ public class CreateOrderUseCase {
         String quantity = command.quantity() == null || command.quantity().isBlank() ? "1" : command.quantity();
         Long events = eventCount(plan, quantity, command.events());
         Instant now = clock.instant();
-        Estimate estimate = pricing.estimate(new BillingPricing.EstimateRequest(
-                plan.billingPlanId(), null, now, usage(plan, quantity, events)));
-        long amount = estimate.amount() == null ? 0 : estimate.amount().amount();
-
-        String reference = "reserve:" + customer.id() + ":" + UUID.randomUUID();
+        String reference = "order:" + customer.id() + ":" + UUID.randomUUID();
         String reservationId = null;
-        if (amount > 0) {
-            ReserveResult reserved = pricing.reserve(
-                    reference,
-                    new BillingPricing.ReserveRequest(
-                            wallet.id(), amount, currency, reservationTtl.toSeconds(), reference));
-            reservationId = reserved.reservation().id();
+        String subscriptionId = null;
+        long amount = 0;
+
+        if (subscriptionPlan(plan)) {
+            SubscriptionDetail started = subscriptions.subscribe(
+                    "subscription:" + reference, wallet.id(), plan.billingPlanId());
+            subscriptionId = started.subscription().id();
+        } else {
+            Estimate estimate = pricing.estimate(new BillingPricing.EstimateRequest(
+                    plan.billingPlanId(), null, now, usage(plan, quantity, events)));
+            amount = estimate.amount() == null ? 0 : estimate.amount().amount();
+            if (amount > 0) {
+                ReserveResult reserved = pricing.reserve(
+                        "reserve:" + reference,
+                        new BillingPricing.ReserveRequest(
+                                wallet.id(), amount, currency, reservationTtl.toSeconds(), reference));
+                reservationId = reserved.reservation().id();
+            }
         }
 
         Order order = Order.queued(
@@ -102,9 +115,14 @@ public class CreateOrderUseCase {
                 amount,
                 currency,
                 reservationId,
+                subscriptionId,
                 now);
         submission.submit(order);
         return order;
+    }
+
+    private static boolean subscriptionPlan(CatalogLookup.PlanSnapshot plan) {
+        return "SUBSCRIPTION".equals(plan.pricingModel()) || "HYBRID".equals(plan.pricingModel());
     }
 
     private static List<UsageInput> usage(CatalogLookup.PlanSnapshot plan, String quantity, Long events) {

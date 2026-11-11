@@ -6,6 +6,7 @@ import dev.ngb.sampletenant.billing.api.BillingInvoices;
 import dev.ngb.sampletenant.billing.api.BillingPayments;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSessions;
+import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.BillingSession;
@@ -22,6 +23,8 @@ import dev.ngb.sampletenant.billing.api.model.Rating;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
 import dev.ngb.sampletenant.billing.api.model.Reservation;
 import dev.ngb.sampletenant.billing.api.model.ReserveResult;
+import dev.ngb.sampletenant.billing.api.model.Subscription;
+import dev.ngb.sampletenant.billing.api.model.SubscriptionDetail;
 import dev.ngb.sampletenant.billing.api.model.UsageEvent;
 import dev.ngb.sampletenant.billing.api.model.UsageEventRequest;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
@@ -64,7 +67,8 @@ public class HttpBillingClient
                 BillingUsage,
                 BillingSessions,
                 BillingPayments,
-                BillingInvoices {
+                BillingInvoices,
+                BillingSubscriptions {
 
     private final HttpClient http;
     private final ObjectMapper json = JsonMapper.builder()
@@ -289,6 +293,46 @@ public class HttpBillingClient
     public InvoiceDetail invoice(String id) {
         return send("GET", "/api/v1/invoices/" + path(id), null, Map.of(), new TypeReference<>() {});
     }
+
+    @Override
+    public SubscriptionDetail subscribe(String idempotencyKey, String walletId, String planId) {
+        return send(
+                "POST",
+                "/api/v1/subscriptions",
+                new SubscribeRequest(walletId, planId),
+                Map.of("Idempotency-Key", idempotencyKey),
+                new TypeReference<>() {});
+    }
+
+    @Override
+    public SubscriptionDetail subscription(String id) {
+        return send("GET", "/api/v1/subscriptions/" + path(id), null, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public SubscriptionDetail cancel(String id) {
+        return send(
+                "POST", "/api/v1/subscriptions/" + path(id) + "/cancel", null, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public List<Subscription> subscriptions(String customerId, String walletId, String status, int limit) {
+        List<String> params = new ArrayList<>();
+        if (customerId != null) {
+            params.add("customerId=" + query(customerId));
+        }
+        if (walletId != null) {
+            params.add("walletId=" + query(walletId));
+        }
+        if (status != null) {
+            params.add("status=" + query(status));
+        }
+        params.add("limit=" + limit);
+        return send(
+                "GET", "/api/v1/subscriptions?" + String.join("&", params), null, Map.of(), new TypeReference<>() {});
+    }
+
+    private record SubscribeRequest(String walletId, String planId) {}
 
     private record SessionRequest(
             String customerId, String returnUrl, List<String> permissions, Long expiresInSeconds) {}

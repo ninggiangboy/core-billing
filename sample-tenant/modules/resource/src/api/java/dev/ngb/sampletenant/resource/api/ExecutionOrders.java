@@ -21,6 +21,7 @@ public interface ExecutionOrders {
             long estimatedMinorUnits,
             String currency,
             String reservationId,
+            String subscriptionId,
             String reference,
             String status) {}
 

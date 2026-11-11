@@ -8,6 +8,7 @@ import dev.ngb.sampletenant.billing.api.BillingInvoices;
 import dev.ngb.sampletenant.billing.api.BillingPayments;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSessions;
+import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import java.time.Duration;
@@ -72,6 +73,11 @@ class BillingConfiguration {
 
     @Bean
     BillingInvoices billingInvoices(HttpBillingClient client) {
+        return client;
+    }
+
+    @Bean
+    BillingSubscriptions billingSubscriptions(HttpBillingClient client) {
         return client;
     }
 }

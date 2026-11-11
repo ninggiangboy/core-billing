@@ -93,6 +93,35 @@ class ExecuteOrdersUseCaseTest {
         assertThat(queue.finished).isTrue();
     }
 
+    @Test
+    void aHybridOrderRatesItsUsageWithoutAReservation() {
+        orders.pricingModel = "HYBRID";
+        orders.estimated = 0;
+        orders.reservationId = null;
+
+        ExecuteOrdersUseCase.Report report = execute.run(10);
+
+        assertThat(report.completed()).isEqualTo(1);
+        assertThat(usage.commands).hasSize(1);
+        assertThat(charges.rated).isTrue();
+        assertThat(charges.captured).isFalse();
+        assertThat(orders.status).isEqualTo("COMPLETED");
+    }
+
+    @Test
+    void aSubscriptionOrderUsesTheSubscriptionChargeAndRecordsNoUsage() {
+        orders.pricingModel = "SUBSCRIPTION";
+        orders.estimated = 0;
+        orders.reservationId = null;
+
+        execute.run(10);
+
+        assertThat(usage.commands).isEmpty();
+        assertThat(charges.rated).isFalse();
+        assertThat(charges.captured).isFalse();
+        assertThat(orders.status).isEqualTo("COMPLETED");
+    }
+
     private static final class FakeQueue implements ExecutionQueue {
         private final List<Claimed> claimed = new ArrayList<>();
         private boolean finished;
@@ -116,13 +145,16 @@ class ExecuteOrdersUseCaseTest {
 
     private static final class FakeOrders implements ExecutionOrders {
         private String status = "QUEUED";
+        private String pricingModel = "TIME_BASED";
+        private long estimated = 1000;
+        private String reservationId = "res_1";
         private String failureReason;
 
         @Override
         public Optional<ExecutionOrder> find(UUID orderId) {
             return Optional.of(new ExecutionOrder(
-                    orderId, UUID.randomUUID(), "cus_1", "wal_1", "bplan_1", "TIME_BASED", "compute.vcpu_minute",
-                    "120", "vCPU-minute", null, 1000, "USD", "res_1", "ORD-1", status));
+                    orderId, UUID.randomUUID(), "cus_1", "wal_1", "bplan_1", pricingModel, "compute.vcpu_minute",
+                    "120", "vCPU-minute", null, estimated, "USD", reservationId, null, "ORD-1", status));
         }
 
         @Override
@@ -175,6 +207,7 @@ class ExecuteOrdersUseCaseTest {
         private boolean failCharge;
         private boolean captured;
         private boolean released;
+        private boolean rated;
 
         @Override
         public Charge charge(String idempotencyKey, ChargeRequest request) {
@@ -197,12 +230,14 @@ class ExecuteOrdersUseCaseTest {
 
         @Override
         public Rating chargeUsage(ChargeUsageRequest request) {
-            throw new UnsupportedOperationException();
+            rated = true;
+            return new Rating("CHARGED", "rat_1", "bplan_1", 1, new Amount(100, "USD"), "chg_2", null, 1,
+                    NOW.minusSeconds(86_400), NOW, List.of(), false);
         }
 
         @Override
         public Rating rating(String id) {
-            throw new UnsupportedOperationException();
+            return chargeUsage(new ChargeUsageRequest("cus_1", "wal_1", "bplan_1", null, NOW, NOW));
         }
 
         private Charge result() {

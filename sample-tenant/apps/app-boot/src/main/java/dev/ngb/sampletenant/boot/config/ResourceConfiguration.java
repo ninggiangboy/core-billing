@@ -1,6 +1,7 @@
 package dev.ngb.sampletenant.boot.config;
 
 import dev.ngb.sampletenant.billing.api.BillingPricing;
+import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.catalog.api.CatalogLookup;
 import dev.ngb.sampletenant.customer.api.CustomerDirectory;
@@ -9,6 +10,7 @@ import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderSubmission;
 import dev.ngb.sampletenant.resource.adapter.persistence.OrderJdbcRepository;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.resource.application.CreateOrderUseCase;
+import dev.ngb.sampletenant.resource.application.ManageOrderUseCase;
 import dev.ngb.sampletenant.resource.application.OrderExecutionService;
 import dev.ngb.sampletenant.resource.application.OrderQueries;
 import dev.ngb.sampletenant.resource.application.port.OrderRepository;
@@ -39,11 +41,19 @@ class ResourceConfiguration {
             CatalogLookup catalog,
             CustomerDirectory customers,
             BillingPricing pricing,
+            BillingSubscriptions subscriptions,
             BillingWallets wallets,
             OrderSubmission submission,
             Clock clock,
             @Value("${sampletenant.resource.reservation-ttl:PT15M}") Duration reservationTtl) {
-        return new CreateOrderUseCase(catalog, customers, pricing, wallets, submission, clock, reservationTtl);
+        return new CreateOrderUseCase(
+                catalog, customers, pricing, subscriptions, wallets, submission, clock, reservationTtl);
+    }
+
+    @Bean
+    ManageOrderUseCase manageOrderUseCase(
+            OrderQueries queries, OrderRepository orders, BillingSubscriptions subscriptions, Clock clock) {
+        return new ManageOrderUseCase(queries, orders, subscriptions, clock);
     }
 
     @Bean

@@ -5,6 +5,7 @@ import dev.ngb.sampletenant.identity.api.Permission;
 import dev.ngb.sampletenant.identity.api.RequiresPermission;
 import dev.ngb.sampletenant.identity.api.Role;
 import dev.ngb.sampletenant.resource.application.CreateOrderUseCase;
+import dev.ngb.sampletenant.resource.application.ManageOrderUseCase;
 import dev.ngb.sampletenant.resource.application.OrderQueries;
 import dev.ngb.sampletenant.resource.domain.Order;
 import java.time.Instant;
@@ -59,10 +60,12 @@ public class OrderController {
 
     private final CreateOrderUseCase create;
     private final OrderQueries queries;
+    private final ManageOrderUseCase manage;
 
-    public OrderController(CreateOrderUseCase create, OrderQueries queries) {
+    public OrderController(CreateOrderUseCase create, OrderQueries queries, ManageOrderUseCase manage) {
         this.create = create;
         this.queries = queries;
+        this.manage = manage;
     }
 
     @PostMapping
@@ -86,5 +89,11 @@ public class OrderController {
     @RequiresPermission(Permission.ORDER_READ)
     public OrderResponse get(@AuthenticationPrincipal AuthenticatedUser principal, @PathVariable UUID id) {
         return OrderResponse.of(queries.forUser(id, principal.id(), principal.role() == Role.ADMIN));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @RequiresPermission(Permission.ORDER_MANAGE)
+    public OrderResponse cancel(@AuthenticationPrincipal AuthenticatedUser principal, @PathVariable UUID id) {
+        return OrderResponse.of(manage.cancel(id, principal.id(), principal.role() == Role.ADMIN));
     }
 }

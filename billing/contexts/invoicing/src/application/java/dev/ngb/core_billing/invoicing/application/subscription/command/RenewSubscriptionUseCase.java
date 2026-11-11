@@ -2,9 +2,9 @@ package dev.ngb.core_billing.invoicing.application.subscription.command;
 
 import dev.ngb.core_billing.invoicing.application.subscription.port.SubscriptionRepository;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionId;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionNotices;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvents;
 import dev.ngb.core_billing.money.api.charge.ChargeCommand;
 import dev.ngb.core_billing.money.api.charge.ChargeResult;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
@@ -145,7 +145,7 @@ public class RenewSubscriptionUseCase {
         if (subscription.cancelAtPeriodEnd()) {
             subscription.cancelNow(now);
             subscriptions.update(subscription);
-            subscriptions.appendEvent(SubscriptionEvent.canceled(ids.newId(), subscription, "ended at the end of the paid period", now));
+            subscriptions.appendEvent(SubscriptionHistoryEntry.canceled(ids.newId(), subscription, "ended at the end of the paid period", now));
             return Outcome.ENDED;
         }
         int number = subscription.periodToCharge();
@@ -165,8 +165,8 @@ public class RenewSubscriptionUseCase {
         }
         subscription.recordRenewed(now);
         subscriptions.update(subscription);
-        subscriptions.appendEvent(SubscriptionEvent.renewed(ids.newId(), subscription, number, amount, chargeId, now));
-        events.publish(new SubscriptionNotices.Renewed(ids.newId(), subscription, number, amount, chargeId, now));
+        subscriptions.appendEvent(SubscriptionHistoryEntry.renewed(ids.newId(), subscription, number, amount, chargeId, now));
+        events.publish(new SubscriptionEvents.Renewed(ids.newId(), subscription, number, amount, chargeId, now));
         return Outcome.RENEWED;
     }
 
@@ -176,8 +176,8 @@ public class RenewSubscriptionUseCase {
         Instant retryAt = attempt >= settings.maxAttempts() ? null : now.plus(settings.backoff().delayAfter(attempt, jitter.getAsDouble()));
         subscription.recordPaymentFailed(retryAt, now);
         subscriptions.update(subscription);
-        subscriptions.appendEvent(SubscriptionEvent.paymentFailed(ids.newId(), subscription, number, amount, reason, now));
-        events.publish(new SubscriptionNotices.PaymentFailed(ids.newId(), subscription, number, amount, reason, attempt, retryAt, now));
+        subscriptions.appendEvent(SubscriptionHistoryEntry.paymentFailed(ids.newId(), subscription, number, amount, reason, now));
+        events.publish(new SubscriptionEvents.PaymentFailed(ids.newId(), subscription, number, amount, reason, attempt, retryAt, now));
         return Outcome.FAILED;
     }
 }

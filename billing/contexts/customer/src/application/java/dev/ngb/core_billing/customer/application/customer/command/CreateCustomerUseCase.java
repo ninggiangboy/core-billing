@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.customer.application.customer.command;
 
 import dev.ngb.core_billing.customer.domain.customer.Customer;
-import dev.ngb.core_billing.customer.domain.customer.CustomerCreated;
+import dev.ngb.core_billing.customer.domain.customer.CustomerEvents.CustomerCreated;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;

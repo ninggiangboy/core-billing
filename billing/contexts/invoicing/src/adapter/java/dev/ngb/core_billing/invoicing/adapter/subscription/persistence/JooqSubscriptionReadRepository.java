@@ -4,10 +4,10 @@ import static dev.ngb.core_billing_jooq.Tables.SUBSCRIPTIONS;
 import static dev.ngb.core_billing_jooq.Tables.SUBSCRIPTION_EVENTS;
 import static org.jooq.impl.DSL.noCondition;
 
-import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionEventView;
+import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionHistoryEntryView;
 import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionReadRepository;
 import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionView;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionStatus;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.sharedkernel.Currency;
@@ -56,7 +56,7 @@ public class JooqSubscriptionReadRepository implements SubscriptionReadRepositor
     }
 
     @Override
-    public List<SubscriptionEventView> history(UUID subscriptionId) {
+    public List<SubscriptionHistoryEntryView> history(UUID subscriptionId) {
         return dsl.select(SUBSCRIPTION_EVENTS.ID, SUBSCRIPTION_EVENTS.TYPE, SUBSCRIPTION_EVENTS.PERIOD_NUMBER, SUBSCRIPTION_EVENTS.PERIOD_START,
                         SUBSCRIPTION_EVENTS.PERIOD_END, SUBSCRIPTION_EVENTS.AMOUNT, SUBSCRIPTIONS.CURRENCY, SUBSCRIPTION_EVENTS.CHARGE_ID,
                         SUBSCRIPTION_EVENTS.DETAIL, SUBSCRIPTION_EVENTS.OCCURRED_AT)
@@ -65,9 +65,9 @@ public class JooqSubscriptionReadRepository implements SubscriptionReadRepositor
                 .on(SUBSCRIPTIONS.ID.eq(SUBSCRIPTION_EVENTS.SUBSCRIPTION_ID).and(SUBSCRIPTIONS.TENANT_ID.eq(SUBSCRIPTION_EVENTS.TENANT_ID)))
                 .where(SUBSCRIPTION_EVENTS.SUBSCRIPTION_ID.eq(subscriptionId))
                 .orderBy(SUBSCRIPTION_EVENTS.OCCURRED_AT, SUBSCRIPTION_EVENTS.ID)
-                .fetch(row -> new SubscriptionEventView(
+                .fetch(row -> new SubscriptionHistoryEntryView(
                         row.value1(),
-                        SubscriptionEvent.Type.valueOf(row.value2()),
+                        SubscriptionHistoryEntry.Type.valueOf(row.value2()),
                         row.value3(),
                         row.value4(),
                         row.value5(),

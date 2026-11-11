@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.ngb.core_billing.invoicing.application.subscription.service.RenewalSettings;
 import dev.ngb.core_billing.invoicing.application.subscription.port.SubscriptionRepository;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionId;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionStatus;
 import dev.ngb.core_billing.money.api.charge.ChargeCommand;
@@ -48,7 +48,7 @@ class RenewSubscriptionUseCaseTest {
     private static final Instant NOW = Instant.parse("2026-11-11T10:00:00Z");
 
     private final Map<SubscriptionId, Subscription> store = new LinkedHashMap<>();
-    private final List<SubscriptionEvent> history = new ArrayList<>();
+    private final List<SubscriptionHistoryEntry> history = new ArrayList<>();
     private final List<DomainEvent> published = new ArrayList<>();
     private final List<ChargeCommand> charged = new ArrayList<>();
     private final UUID brokenPlan = UUID.randomUUID();
@@ -88,7 +88,7 @@ class RenewSubscriptionUseCaseTest {
         }
 
         @Override
-        public void appendEvent(SubscriptionEvent event) {
+        public void appendEvent(SubscriptionHistoryEntry event) {
             history.add(event);
         }
     };

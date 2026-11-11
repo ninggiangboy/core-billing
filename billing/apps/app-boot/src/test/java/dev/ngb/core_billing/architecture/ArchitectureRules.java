@@ -124,7 +124,8 @@ final class ArchitectureRules {
                 new NamedRule("api-implementations-are-services", apiImplementationsAreServices(root)),
                 new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)),
                 new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)),
-                new NamedRule("domain-id-names-its-aggregate", domainIdNamesItsAggregate(root)));
+                new NamedRule("domain-id-names-its-aggregate", domainIdNamesItsAggregate(root)),
+                new NamedRule("domain-events-live-in-an-events-holder", domainEventsLiveInAnEventsHolder(root)));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -547,6 +548,31 @@ final class ArchitectureRules {
                     }
                 })
                 .because("an id is named after the aggregate it identifies, so the pair is found by name");
+    }
+
+    /**
+     * A domain event is a record nested in the {@code <Aggregate>Events} class of its feature, so the events a
+     * feature announces are found in one place. A noun that only contains "Event" (UsageEvent, StripeEvent) is a
+     * domain term, not an announcement, and does not implement DomainEvent.
+     */
+    private static ArchRule domainEventsLiveInAnEventsHolder(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.domain..")
+                .and().areNotInterfaces()
+                .should(new ArchCondition<>("be nested in a class whose name ends in Events when it implements DomainEvent") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        boolean isEvent = item.getAllRawInterfaces().stream().anyMatch(api -> api.getSimpleName().equals("DomainEvent"));
+                        if (!isEvent) {
+                            return;
+                        }
+                        boolean held = item.getEnclosingClass().map(holder -> holder.getSimpleName().endsWith("Events")).orElse(false);
+                        if (!held) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a domain event but is not nested in an *Events class"));
+                        }
+                    }
+                })
+                .because("one place per feature lists what it announces");
     }
 
     private static boolean isApiPackage(String root, String packageName) {

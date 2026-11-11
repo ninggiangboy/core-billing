@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
+import dev.ngb.core_billing.customer.domain.customer.CustomerEvents.CustomerCreated;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import java.time.Instant;

@@ -3,7 +3,7 @@ package dev.ngb.core_billing.invoicing.application.subscription.command;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.subscription.port.SubscriptionRepository;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionId;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
@@ -48,8 +48,8 @@ public class CancelSubscriptionUseCase {
             Instant now = clock.now();
             Subscription.Cancellation outcome = subscription.requestCancel(now);
             switch (outcome) {
-                case CANCELED_NOW -> subscriptions.appendEvent(SubscriptionEvent.canceled(ids.newId(), subscription, "canceled before a paid period was running", now));
-                case SCHEDULED -> subscriptions.appendEvent(SubscriptionEvent.cancelRequested(ids.newId(), subscription, now));
+                case CANCELED_NOW -> subscriptions.appendEvent(SubscriptionHistoryEntry.canceled(ids.newId(), subscription, "canceled before a paid period was running", now));
+                case SCHEDULED -> subscriptions.appendEvent(SubscriptionHistoryEntry.cancelRequested(ids.newId(), subscription, now));
                 case UNCHANGED -> {
                     return subscription;
                 }

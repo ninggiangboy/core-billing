@@ -5,7 +5,7 @@ import static dev.ngb.core_billing_jooq.Tables.SUBSCRIPTION_EVENTS;
 
 import dev.ngb.core_billing.invoicing.application.subscription.port.SubscriptionRepository;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionId;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionStatus;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
@@ -126,7 +126,7 @@ public class JooqSubscriptionRepository implements SubscriptionRepository {
     }
 
     @Override
-    public void appendEvent(SubscriptionEvent event) {
+    public void appendEvent(SubscriptionHistoryEntry event) {
         dsl.insertInto(SUBSCRIPTION_EVENTS)
                 .set(SUBSCRIPTION_EVENTS.ID, event.id())
                 .set(SUBSCRIPTION_EVENTS.TENANT_ID, event.tenantId().value())

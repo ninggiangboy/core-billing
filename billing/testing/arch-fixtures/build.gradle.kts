@@ -11,4 +11,5 @@ dependencies {
     compileOnly("com.google.code.gson:gson")
     compileOnly("org.jooq:jooq")
     compileOnly(project(":libs:jooq-schema"))
+    compileOnly(project(":libs:shared-kernel"))
 }

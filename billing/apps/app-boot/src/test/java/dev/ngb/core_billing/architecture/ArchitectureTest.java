@@ -34,6 +34,15 @@ class ArchitectureTest {
         assertThat(useCases).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(8);
     }
 
+    @org.junit.jupiter.api.Test
+    void theDomainEventRuleHasSubjects() {
+        long events = production.stream()
+                .filter(c -> c.getPackageName().contains(".domain.") && !c.isInterface())
+                .filter(c -> c.getAllRawInterfaces().stream().anyMatch(i -> i.getSimpleName().equals("DomainEvent")))
+                .count();
+        assertThat(events).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(10);
+    }
+
     /**
      * What makes a new pricing model a change inside pricing only: nothing that moves or records money, usage or
      * deliveries knows the pricing context exists.

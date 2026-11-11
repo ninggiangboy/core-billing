@@ -13,5 +13,5 @@ public interface SubscriptionReadRepository {
 
     Optional<SubscriptionView> findById(UUID id);
 
-    List<SubscriptionEventView> history(UUID subscriptionId);
+    List<SubscriptionHistoryEntryView> history(UUID subscriptionId);
 }

@@ -3,7 +3,7 @@ package dev.ngb.core_billing.invoicing.application.subscription.command;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.subscription.port.SubscriptionRepository;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
-import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
+import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionId;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
@@ -85,7 +85,7 @@ public class CreateSubscriptionUseCase {
             Subscription subscription = Subscription.create(new SubscriptionId(ids.newId()), tenantContext.requireTenant(), wallet.customerId(), wallet.id(),
                     wallet.currency(), terms.planId(), terms.planCode(), terms.cycle(), key, hash, now);
             subscriptions.add(subscription);
-            subscriptions.appendEvent(SubscriptionEvent.created(ids.newId(), subscription, now));
+            subscriptions.appendEvent(SubscriptionHistoryEntry.created(ids.newId(), subscription, now));
             auditLog.record(AuditEntry.tenant(subscription.tenantId(), command.audit().actor(), "subscription.created", "subscription/" + subscription.id(),
                     command.audit().requestId(), now));
             return new Result(subscription, false);

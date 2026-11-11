@@ -12,9 +12,9 @@ import java.util.UUID;
  * What the invoicing context tells the Tenant System about a subscription, written to the outbox in the transaction
  * of the change it reports. A notice only reports a fact; what to provision or stop is the Tenant System's decision.
  */
-public final class SubscriptionNotices {
+public final class SubscriptionEvents {
 
-    private SubscriptionNotices() {}
+    private SubscriptionEvents() {}
 
     private static Map<String, Object> money(Money money) {
         return Map.of("minorUnits", money.minorUnits(), "currency", money.currency().code());

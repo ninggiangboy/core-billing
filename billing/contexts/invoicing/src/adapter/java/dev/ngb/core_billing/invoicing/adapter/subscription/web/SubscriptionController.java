@@ -2,7 +2,7 @@ package dev.ngb.core_billing.invoicing.adapter.subscription.web;
 
 import dev.ngb.core_billing.invoicing.application.subscription.command.CancelSubscriptionUseCase;
 import dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase;
-import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionEventView;
+import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionHistoryEntryView;
 import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionQueries;
 import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionView;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
@@ -48,7 +48,7 @@ public class SubscriptionController {
 
     public record SubscriptionEventResponse(
             String id, String type, Integer periodNumber, Instant periodStart, Instant periodEnd, MoneyDto amount, String chargeId, String detail, Instant occurredAt) {
-        static SubscriptionEventResponse of(SubscriptionEventView e) {
+        static SubscriptionEventResponse of(SubscriptionHistoryEntryView e) {
             return new SubscriptionEventResponse(e.id().toString(), e.type().name(), e.periodNumber(), e.periodStart(), e.periodEnd(),
                     e.amount() == null ? null : MoneyDto.of(e.amount()), e.chargeId() == null ? null : e.chargeId().toString(), e.detail(), e.occurredAt());
         }

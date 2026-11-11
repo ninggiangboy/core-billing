@@ -55,6 +55,7 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("adapter-classes-in-feature-then-technology", "TechnologyFirstController");
         CULPRIT_BY_RULE_ID.put("web-does-not-depend-on-persistence", "WebReachesPersistence");
         CULPRIT_BY_RULE_ID.put("domain-id-names-its-aggregate", "OrphanId");
+        CULPRIT_BY_RULE_ID.put("domain-events-live-in-an-events-holder", "StandaloneEvent");
     }
 
     private static JavaClasses fixtures;

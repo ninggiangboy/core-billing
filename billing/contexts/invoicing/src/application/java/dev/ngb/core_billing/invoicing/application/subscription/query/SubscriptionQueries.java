@@ -12,7 +12,7 @@ import java.util.UUID;
 /** Read access to the current tenant's subscriptions, through the read models. */
 public class SubscriptionQueries {
 
-    public record SubscriptionDetail(SubscriptionView subscription, List<SubscriptionEventView> history) {}
+    public record SubscriptionDetail(SubscriptionView subscription, List<SubscriptionHistoryEntryView> history) {}
 
     private final UnitOfWork unitOfWork;
     private final SubscriptionReadRepository subscriptions;

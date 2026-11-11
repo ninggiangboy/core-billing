@@ -76,7 +76,8 @@ billing:
     renewal-max-attempts: 5
     renewal-backoff-base: PT1H
     renewal-backoff-cap: P1D
-    # Switch off to stop creating invoices from closed periods; charges stay collected and are invoiced when it is back on.
+    # Switch off to stop closing periods into invoices and renewing subscriptions; charges stay collected and subscriptions
+    # stay due, and both catch up when it is back on.
     jobs-enabled: true
 
   payments:

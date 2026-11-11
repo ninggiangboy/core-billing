@@ -48,7 +48,7 @@ Items 1, 2, 3, 6 and 7 were confirmed by the project owner on 2026-11-09; item 4
 | 6 | [Outbox relay and outbound webhooks](./phase-06-outbox-relay-and-outbound-webhooks.md) | 4d | 5 | Completed |
 | 7 | [Pricing, usage and cost estimation](./phase-07-pricing-usage-estimation.md) | 6d | 5 | Completed |
 | 8 | [Payments and Stripe](./phase-08-payments-and-stripe.md) | 7d | 5, 6 | Completed |
-| 9 | [Invoicing and subscriptions](./phase-09-invoicing-and-subscriptions.md) | 6d | 7, 8 | Pending |
+| 9 | [Invoicing and subscriptions](./phase-09-invoicing-and-subscriptions.md) | 6d | 7, 8 | Completed |
 | 10 | [Billing session and portal API](./phase-10-billing-session-and-portal-api.md) | 3d | 5, 8 | Pending |
 | 11 | [Sample Tenant System backend](./phase-11-sample-tenant-backend.md) | 8d | 7, 8, 9, 10 | Pending |
 | 12 | [Web workspace and admin apps](./phase-12-web-workspace-and-admin-apps.md) | 8d | 3, then contracts from 4-9 | Pending |

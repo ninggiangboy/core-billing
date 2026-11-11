@@ -36,7 +36,7 @@ A Pricing Plan can define:
 | Workload-based | a start fee for every execution plus a rate for the work consumed |
 | Event-based | count of events x rate (whole numbers only) |
 | Subscription | a fixed amount per billing cycle |
-| Hybrid | a fixed amount per cycle plus usage components |
+| Hybrid | a fixed amount per cycle plus usage components. The base is billed by a subscription once per cycle; charging usage prices only the components, and an estimate of a whole cycle includes the base |
 
 - The first plan that prices a metric fixes the unit it is measured in; a later plan that measures the same metric in another unit is refused.
 
@@ -64,6 +64,7 @@ Pricing reads a customer's usage through the usage context's read-only interface
 - Each usage event is rated at most once: a link row per event, unique on the event, records that it is accounted for. Repeating the request finds nothing left to rate and returns the earlier rating; usage that arrives late is rated on its own.
 - The money charge is keyed by a digest of the event ids, so a retry can never charge twice. A charge the wallet cannot pay is recorded as failed and links nothing, so after a top-up the same request rates the same events again under a new attempt.
 - The rating, the links, the charge, the ledger entry and the events commit in one transaction. The rating keeps the plan version and the breakdown of lines, so the amount stays explainable after the plan changes.
+- Under a Hybrid plan only the usage components are priced here, because the subscription bills the base (see [invoicing-and-subscriptions.md](invoicing-and-subscriptions.md)).
 - One request rates a bounded number of events (`ChargeFromUsageUseCase.MAX_EVENTS`); a longer period is split by the caller.
 
 ## Related

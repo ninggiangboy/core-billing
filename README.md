@@ -9,6 +9,17 @@ Documentation lives in [docs/](docs/README.md). Code lives in:
 | `web/` | Web apps (Platform Admin, Tenant Admin, Customer Portal, Sample Tenant UI) |
 | `contracts/` | OpenAPI and event schemas shared between systems as documents, never as code |
 
+Inside `billing/` the modules are grouped by role, and each Gradle project path follows its directory:
+
+| Directory | Modules |
+|---|---|
+| `contexts/` | The eight bounded contexts: `platform`, `customer`, `money`, `pricing`, `usage`, `invoicing`, `payment`, `webhook` |
+| `libs/` | `shared-kernel` and `jooq-schema` |
+| `apps/` | `app-boot`, which wires the contexts and holds the migrations |
+| `testing/` | `arch-fixtures`, the deliberately violating classes the architecture rules are tested against |
+
+Read [docs/architecture.md](docs/architecture.md#module-boundaries) for what each context owns.
+
 Build the backend: `cd billing && ./gradlew build` (needs JDK 25 and a running Docker daemon for Testcontainers).
 
 Run the app locally:

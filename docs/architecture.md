@@ -116,6 +116,23 @@ The Stripe Platform Account serves Connect. A Tenant's Stripe accounts are eithe
 
 Bounded contexts follow the functional areas in [overview-and-scope.md](overview-and-scope.md): tenancy and customers, identity and authorization, pricing, usage, wallet and ledger, reservation, charge, invoice, payment and refund, subscription, billing session, and webhooks. `billing/settings.gradle.kts` lists the modules that exist and the build files own the dependency rules.
 
+The directories under `billing/` group the modules by the role they play, and each Gradle project path follows its directory (`:contexts:money`, `:libs:jooq-schema`, `:apps:app-boot`):
+
+| Directory | Module | Holds |
+|---|---|---|
+| `contexts/` | `platform` | Tenants, Billing Users, roles, API credentials, Tenant Systems, and the shared request scope, permissions, idempotency and audit |
+| | `customer` | Billing Customers and the Tenant User mapping |
+| | `money` | Wallet, Ledger, Reservation and Charge |
+| | `pricing` | Pricing plans, metrics, rating and the charging orchestration |
+| | `usage` | Usage metering |
+| | `invoicing` | Invoices, subscriptions and the billing cycle |
+| | `payment` | Payments, refunds, Stripe configuration and incidents |
+| | `webhook` | Webhook endpoints and delivery |
+| `libs/` | `shared-kernel` | Value objects and framework-free helpers |
+| | `jooq-schema` | jOOQ classes generated from the migrations and committed |
+| `apps/` | `app-boot` | Spring wiring, security, jobs, web layer, and the Flyway migrations |
+| `testing/` | `arch-fixtures` | Deliberately violating classes that prove each ArchUnit rule can fail |
+
 Decisions:
 
 - The Java root package is `dev.ngb.core_billing` and every module's code sits under it, so Modulith still discovers the modules across Gradle modules by that shared root. The Gradle group is `dev.ngb`, set once for all projects in `billing/build.gradle.kts`.

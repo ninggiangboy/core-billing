@@ -97,7 +97,7 @@ The Stripe Platform Account serves Connect. A Tenant's Stripe accounts are eithe
 | Stripe Connect money flow | Direct charges: the charge is created on the Tenant's connected account, so the Tenant bears fees, refunds and disputes | The specification defers this choice. Direct charges match the rules that each Tenant owns its Stripe account and its data and money stay isolated |
 | Platform data | The Platform owns its own data (administrators, roles, audit entries) as a reserved tenant, so platform-level rows use the same Row-Level Security template and composite foreign keys as every Tenant | Avoids a second isolation model with nullable tenant columns; a Platform-scope request still cannot read another Tenant's rows |
 | Keycloak login identifier | The username `{tenant-code}:{email}`, with duplicate emails allowed in the Realm and a `tenant_code` token claim checked against the hostname | See [authentication-and-authorization.md](authentication-and-authorization.md). Needs no Keycloak extension |
-| Repository layout | One repository with `billing/`, `sample-tenant/` and `web/` directories (assumed, not yet confirmed) | Keeps both systems and all frontends together while they deploy separately |
+| Repository layout | One repository with `billing/`, `sample-tenant/`, `web/` and `contracts/` directories | Keeps both systems and all frontends together while they deploy separately; `contracts/` holds the documents they share, never code |
 | Ledger and wallet model | Append-only, single-entry Ledger per wallet; the balance is a projection verified by a rebuild job; corrections are reversal entries. A wallet holds one immutable currency, so multi-currency means multiple wallets | The Ledger is the financial source of truth, and recovering from a mistake must not rewrite history; single-entry is enough because the system has no internal account transfers. Details in [wallet-ledger-and-charging.md](wallet-ledger-and-charging.md) |
 
 ### Trade-offs behind the recorded choices
@@ -118,7 +118,6 @@ Bounded contexts follow the functional areas in [overview-and-scope.md](overview
 Decisions:
 
 - The Java root package is `dev.ngb.core_billing` and every module's code sits under it, so Modulith still discovers the modules across Gradle modules by that shared root. The Gradle group is `dev.ngb`, set once for all projects in `billing/build.gradle.kts`.
-- The module set is `platform`, `customer`, `pricing`, `usage`, `money`, `invoicing`, `payment`, `webhook`, plus `shared-kernel` and `app-boot`.
 - `money` owns Wallet, Ledger, Reservation and Charge, so the whole money path commits in one transaction that includes its outbox row.
 - `shared-kernel` holds value objects and framework-free technical helpers and ports only. It takes no module dependency and stays small; a growing kernel is split, not extended.
 - Code that every context needs but no context owns lives in exactly one place, chosen by what it depends on: the `Audit` pair and request-id shape in `platform.api.audit`, the idempotency fingerprint and key rule in `platform.api.idempotency`, and JDK-only helpers (`Causes`, `Text`, `PageSize`) plus the `MoneyDto` wire shape in `shared-kernel`. A context never restates a rule another context already owns.
@@ -145,11 +144,3 @@ Decisions:
 | Reliability | Retry, Outbox, Dead Letter and integration error handling |
 | Audit | Administrative actions and transactions are traced |
 | Extensibility | Payment Providers, Pricing Models and Tenant Systems can be added |
-
-## Open decisions
-
-This section is a stateful record. Remove an item when it is decided and move the result to the ledger above.
-
-1. **Repository layout.** Confirm one repository, or split Billing, the Sample Tenant System and the frontends.
-2. **Frontend packaging.** Confirm separate apps in one workspace rather than one SPA with route groups.
-3. **Which workflow follows** the documentation set (for example a phased implementation plan).

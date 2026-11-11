@@ -13,7 +13,7 @@ Documentation for two independently deployable systems: the **Core Billing Syste
 | Document | Owns |
 |---|---|
 | [overview-and-scope.md](overview-and-scope.md) | Purpose, vocabulary, who is responsible for what, non-goals |
-| [architecture.md](architecture.md) | System diagram, decision ledger, module boundaries, technical principles, open decisions |
+| [architecture.md](architecture.md) | System diagram, decision ledger, module boundaries, technical principles |
 | [multi-tenancy-and-data-isolation.md](multi-tenancy-and-data-isolation.md) | Tenant model, isolation strategy, tenant resolution |
 | [authentication-and-authorization.md](authentication-and-authorization.md) | Keycloak usage, Hybrid RBAC, Billing Users |
 | [customers-and-tenant-mapping.md](customers-and-tenant-mapping.md) | Billing Customers and the Tenant User mapping |

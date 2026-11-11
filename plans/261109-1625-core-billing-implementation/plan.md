@@ -20,18 +20,18 @@ The repository holds only documentation. This plan builds, in order: the Core Bi
 ## Outcome, constraints, non-goals, acceptance
 
 - **Outcome.** Two independently deployable systems plus web apps. Billing owns every financial fact; the Sample Tenant System proves the integration using only REST, events and webhooks.
-- **Constraints.** Java and Spring Boot, DDD and Clean Architecture, Gradle multi-module modular monolith, Spring Data JDBC (no JPA), plain-Java `domain` and `application` layers, one ACID transaction for the money path including its outbox row, append-only single-entry Ledger, shared schema with `tenant_id`, composite foreign keys and PostgreSQL RLS, Keycloak for authentication only, Billing-issued API keys for Tenant Systems, Stripe Direct charges. Frontend is React, Vite and TanStack in one monorepo of separate apps.
-- **Non-goals.** Providers other than Stripe (the `PaymentProvider` port is the only seam), custom domains (the domain-mapping table is the only seam), CQRS, event sourcing, microservices, Billing managing Tenant resources or users, deploy pipelines and infrastructure-as-code.
+- **Constraints.** Java and Spring Boot, DDD and Clean Architecture with in-process CQRS (a command side and a query side over one database and one tenant-scoped transaction), Gradle multi-module modular monolith, Spring Data JDBC (no JPA), plain-Java `domain` and `application` layers, one ACID transaction for the money path including its outbox row, append-only single-entry Ledger, shared schema with `tenant_id`, composite foreign keys and PostgreSQL RLS, Keycloak for authentication only, Billing-issued API keys for Tenant Systems, Stripe Direct charges. Frontend is React, Vite and TanStack in one monorepo of separate apps.
+- **Non-goals.** Providers other than Stripe (the `PaymentProvider` port is the only seam), custom domains (the domain-mapping table is the only seam), event sourcing, microservices, Billing managing Tenant resources or users, deploy pipelines and infrastructure-as-code.
 - **Acceptance.** Every success criterion below is checked; each phase's Verification section passes; the 15 scenarios pass in the end-to-end suite of phase 14.
 
 ## Assumptions carried into the plan
 
-Items 1, 2, 3, 6 and 7 were confirmed by the project owner on 2026-11-09; items 4 and 5 remain assumptions. Each is recorded in `docs/architecture.md` in phase 14.
+Items 1, 2, 3, 6 and 7 were confirmed by the project owner on 2026-11-09; item 4 was later replaced by the project owner (see below); item 5 remains an assumption. Each is recorded in `docs/architecture.md` in phase 14.
 
 1. One repository with `billing/`, `sample-tenant/`, `web/` and `contracts/` at the root (open decision 2).
 2. `web/` is a pnpm workspace of four Vite apps plus shared packages (open decision 3).
 3. Keycloak login identifier is the username `{tenant-code}:{email}`, built by the Billing UI from the hostname, with duplicate emails allowed in the realm (open decision 1). No custom Keycloak extension.
-4. Java root package `io.corebilling` (renamable in phase 1 only; free to change before any code exists).
+4. Java root package `dev.ngb.core_billing`, with the Gradle group `dev.ngb`. It replaced the original `io.corebilling` after phase 1; the completed phase 1 and 2 notes still name the old package as it was then.
 5. Charge from usage is orchestrated in `pricing`, which reads quantities through `usage.api` (read-only) and calls `money.api`. This adds one read-only synchronous edge to the money path in the architecture document.
 6. Refunding a wallet top-up is allowed only up to the unspent balance, because a refund must not drive a Prepaid wallet negative.
 7. UI kit is Tailwind CSS with shadcn/ui (Radix) components.

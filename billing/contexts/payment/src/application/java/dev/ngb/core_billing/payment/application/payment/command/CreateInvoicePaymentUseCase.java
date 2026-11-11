@@ -71,7 +71,8 @@ public class CreateInvoicePaymentUseCase implements StartInvoicePayment {
         StripeConfiguration configuration = configurations.findLive().orElseThrow(() -> new ConflictException("Stripe is not configured"));
         Optional<Payment> existing = payments.findByIdempotencyKey(key);
         if (existing.isPresent()) {
-            if (!existing.get().requestHash().equals(hash) || !existing.get().isForInvoice()) {
+            Fingerprint.requireSameRequest("payment", key, existing.get().requestHash(), hash);
+            if (!existing.get().isForInvoice()) {
                 throw new IdempotencyConflictException("payment", key);
             }
             if (existing.get().checkoutSessionId() == null && !existing.get().configurationId().equals(configuration.id())) {

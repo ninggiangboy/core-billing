@@ -12,7 +12,6 @@ import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
@@ -131,9 +130,7 @@ public class ChargeUseCase implements ChargeWallet {
     }
 
     private ChargeResult replay(Charge original, String hash, ChargeCommand command) {
-        if (!original.requestHash().equals(hash)) {
-            throw new IdempotencyConflictException("charge", command.idempotencyKey());
-        }
+        Fingerprint.requireSameRequest("charge", command.idempotencyKey(), original.requestHash(), hash);
         var entry = ledger.findByCharge(original.id());
         return result(original, entry.map(e -> e.id()).orElse(null), true);
     }

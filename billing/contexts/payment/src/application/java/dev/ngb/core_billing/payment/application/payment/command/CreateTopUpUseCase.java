@@ -10,7 +10,6 @@ import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
@@ -91,9 +90,7 @@ public class CreateTopUpUseCase {
         StripeConfiguration configuration = configurations.findLive().orElseThrow(() -> new ConflictException("Stripe is not configured"));
         Optional<Payment> existing = payments.findByIdempotencyKey(key);
         if (existing.isPresent()) {
-            if (!existing.get().requestHash().equals(hash)) {
-                throw new IdempotencyConflictException("payment", key);
-            }
+            Fingerprint.requireSameRequest("payment", key, existing.get().requestHash(), hash);
             if (existing.get().checkoutSessionId() == null && !existing.get().configurationId().equals(configuration.id())) {
                 // The payment was stored for a configuration that has since been replaced; Stripe would report it to the old one.
                 throw new ConflictException("the Stripe configuration changed since this top-up was started; start it again with a new Idempotency-Key");

@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.platform.api.idempotency;
 
+import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +32,17 @@ public final class Fingerprint {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 is required by the Java platform", e);
+        }
+    }
+
+    /**
+     * Confirms that a request replaying {@code key} carries the same content as the request that created the row.
+     *
+     * @throws IdempotencyConflictException when the two hashes differ
+     */
+    public static void requireSameRequest(String scope, String key, String storedHash, String requestHash) {
+        if (!storedHash.equals(requestHash)) {
+            throw new IdempotencyConflictException(scope, key);
         }
     }
 

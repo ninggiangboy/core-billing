@@ -11,7 +11,6 @@ import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
@@ -69,9 +68,7 @@ public class CreateSubscriptionUseCase {
         Result created = unitOfWork.transactional(() -> {
             Optional<Subscription> existing = subscriptions.findByIdempotencyKey(key);
             if (existing.isPresent()) {
-                if (!existing.get().requestHash().equals(hash)) {
-                    throw new IdempotencyConflictException("subscription", key);
-                }
+                Fingerprint.requireSameRequest("subscription", key, existing.get().requestHash(), hash);
                 return new Result(existing.get(), true);
             }
             WalletSummary wallet = wallets.find(command.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));

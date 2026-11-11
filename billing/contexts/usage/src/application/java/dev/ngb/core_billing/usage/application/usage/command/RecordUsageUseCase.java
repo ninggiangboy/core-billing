@@ -4,7 +4,6 @@ import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.api.lookup.CustomerSummary;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
@@ -128,9 +127,7 @@ public class RecordUsageUseCase {
         }
         UsageEvent existing = events.findByIdempotencyKey(event.idempotencyKey())
                 .orElseThrow(() -> new IllegalStateException("usage event vanished after a key conflict"));
-        if (!existing.requestHash().equals(event.requestHash())) {
-            throw new IdempotencyConflictException("usage", event.idempotencyKey());
-        }
+        Fingerprint.requireSameRequest("usage", event.idempotencyKey(), existing.requestHash(), event.requestHash());
         return new Recorded(existing, true);
     }
 

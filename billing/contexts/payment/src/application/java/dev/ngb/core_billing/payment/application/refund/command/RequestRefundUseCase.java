@@ -13,7 +13,6 @@ import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
@@ -141,9 +140,7 @@ public class RequestRefundUseCase {
     private Prepared prepare(Command command, String key, String hash) {
         Optional<Refund> existing = refunds.findByIdempotencyKey(key);
         if (existing.isPresent()) {
-            if (!existing.get().requestHash().equals(hash)) {
-                throw new IdempotencyConflictException("refund", key);
-            }
+            Fingerprint.requireSameRequest("refund", key, existing.get().requestHash(), hash);
             Payment payment = payments.findById(existing.get().paymentId()).orElseThrow();
             return new Prepared(existing.get(), payment, usable(payment), true);
         }

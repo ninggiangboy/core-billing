@@ -12,12 +12,33 @@ public final class Causes {
     /** PostgreSQL: a deadlock was detected or the statement gave up waiting for a lock. */
     private static final Set<String> RETRYABLE_SQL_STATES = Set.of("40P01", "55P03");
 
+    /** PostgreSQL: a unique constraint was violated. */
+    private static final String UNIQUE_VIOLATION = "23505";
+
     private Causes() {}
 
     /** True when {@code type} appears anywhere in the cause chain of {@code throwable}. */
     public static boolean contains(Throwable throwable, Class<? extends Throwable> type) {
         for (Throwable t = throwable; t != null; t = t.getCause()) {
             if (type.isInstance(t)) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True when a {@code SQLException} in the chain is a unique violation ({@code 23505}) whose message names
+     * {@code constraint} in double quotes, as PostgreSQL reports it.
+     */
+    public static boolean violates(Throwable throwable, String constraint) {
+        String quoted = "\"" + constraint + "\"";
+        for (Throwable t = throwable; t != null; t = t.getCause()) {
+            if (t instanceof SQLException sql && UNIQUE_VIOLATION.equals(sql.getSQLState())
+                    && sql.getMessage() != null && sql.getMessage().contains(quoted)) {
                 return true;
             }
             if (t.getCause() == t) {

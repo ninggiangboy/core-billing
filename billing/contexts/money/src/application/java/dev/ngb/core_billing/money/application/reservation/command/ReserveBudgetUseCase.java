@@ -9,7 +9,6 @@ import dev.ngb.core_billing.money.domain.event.MoneyEvents;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
@@ -63,9 +62,7 @@ public class ReserveBudgetUseCase implements ReserveBudget {
             var existing = reservations.findByIdempotencyKey(command.idempotencyKey());
             if (existing.isPresent()) {
                 Reservation reservation = existing.get();
-                if (!reservation.requestHash().equals(hash)) {
-                    throw new IdempotencyConflictException("reservation", command.idempotencyKey());
-                }
+                Fingerprint.requireSameRequest("reservation", command.idempotencyKey(), reservation.requestHash(), hash);
                 return result(reservation, true);
             }
             Instant now = clock.now();

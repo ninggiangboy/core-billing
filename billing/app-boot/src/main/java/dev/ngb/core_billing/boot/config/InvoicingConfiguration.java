@@ -2,7 +2,14 @@ package dev.ngb.core_billing.boot.config;
 
 import dev.ngb.core_billing.invoicing.adapter.messaging.InvoicingEventListener;
 import dev.ngb.core_billing.invoicing.adapter.persistence.cycle.JdbcUnbilledLineRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JdbcInvoiceReadRepository;
 import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JdbcInvoiceRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JdbcSubscriptionReadRepository;
+import dev.ngb.core_billing.invoicing.application.invoice.command.ManageInvoiceUseCase;
+import dev.ngb.core_billing.invoicing.application.invoice.query.InvoiceQueries;
+import dev.ngb.core_billing.invoicing.application.invoice.query.InvoiceReadRepository;
+import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionQueries;
+import dev.ngb.core_billing.invoicing.application.subscription.query.SubscriptionReadRepository;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CollectChargeUseCase;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CycleSettings;
@@ -142,5 +149,30 @@ class InvoicingConfiguration {
     CancelSubscriptionUseCase cancelSubscriptionUseCase(
             UnitOfWork unitOfWork, SubscriptionRepository subscriptions, CustomerLookup customers, AuditLog auditLog, IdGenerator ids, Clock clock) {
         return new CancelSubscriptionUseCase(unitOfWork, subscriptions, customers, auditLog, ids, clock);
+    }
+
+    @Bean
+    InvoiceReadRepository invoiceReadRepository(JdbcClient jdbc) {
+        return new JdbcInvoiceReadRepository(jdbc);
+    }
+
+    @Bean
+    SubscriptionReadRepository subscriptionReadRepository(JdbcClient jdbc) {
+        return new JdbcSubscriptionReadRepository(jdbc);
+    }
+
+    @Bean
+    InvoiceQueries invoiceQueries(UnitOfWork unitOfWork, InvoiceReadRepository invoices, CustomerLookup customers) {
+        return new InvoiceQueries(unitOfWork, invoices, customers);
+    }
+
+    @Bean
+    SubscriptionQueries subscriptionQueries(UnitOfWork unitOfWork, SubscriptionReadRepository subscriptions, CustomerLookup customers) {
+        return new SubscriptionQueries(unitOfWork, subscriptions, customers);
+    }
+
+    @Bean
+    ManageInvoiceUseCase manageInvoiceUseCase(UnitOfWork unitOfWork, InvoiceRepository invoices, AuditLog auditLog, Clock clock) {
+        return new ManageInvoiceUseCase(unitOfWork, invoices, auditLog, clock);
     }
 }

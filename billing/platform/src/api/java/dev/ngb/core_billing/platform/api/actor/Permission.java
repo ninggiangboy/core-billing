@@ -49,7 +49,17 @@ public enum Permission {
     /** Starts a wallet top-up through the Tenant's Stripe configuration. */
     PAYMENT_CREATE("payment:create", false, true, true),
     /** Sends money back to a customer's card. Administrators only: never granted to a Tenant System. */
-    REFUND_CREATE("refund:create", false, true, false);
+    REFUND_CREATE("refund:create", false, true, false),
+
+    INVOICE_READ("invoice:read", false, true, true),
+    /** Asks for an invoice for one charge. */
+    INVOICE_CREATE("invoice:create", false, true, true),
+    /** Voids an invoice or writes it off as uncollectible. Administrators only: it changes what a customer is asked to pay. */
+    INVOICE_MANAGE("invoice:manage", false, true, false),
+
+    SUBSCRIPTION_READ("subscription:read", false, true, true),
+    /** Starts and cancels subscriptions. */
+    SUBSCRIPTION_MANAGE("subscription:manage", false, true, true);
 
     private final String code;
     private final boolean platform;

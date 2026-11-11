@@ -748,6 +748,111 @@ paths:
       x-required-permission: credential:manage
       x-allowed-callers:
       - tenant-user
+  /api/v1/subscriptions:
+    get:
+      tags:
+      - invoicing-controller
+      operationId: subscriptions
+      parameters:
+      - name: customerId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: walletId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionResponse"
+      x-required-permission: subscription:read
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
+    post:
+      tags:
+      - invoicing-controller
+      operationId: subscribe
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscribeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubscriptionDetailResponse"
+      x-required-permission: subscription:manage
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
+  /api/v1/subscriptions/{id}/cancel:
+    post:
+      tags:
+      - invoicing-controller
+      operationId: cancel
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubscriptionDetailResponse"
+      x-required-permission: subscription:manage
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
   /api/v1/stripe/reconcile:
     post:
       tags:
@@ -1273,6 +1378,169 @@ paths:
       x-required-permission: ledger:reverse
       x-allowed-callers:
       - tenant-user
+  /api/v1/invoices:
+    get:
+      tags:
+      - invoicing-controller
+      operationId: invoices
+      parameters:
+      - name: customerId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: walletId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvoiceResponse"
+      x-required-permission: invoice:read
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
+    post:
+      tags:
+      - invoicing-controller
+      operationId: invoiceCharge
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceChargeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvoiceDetailResponse"
+      x-required-permission: invoice:create
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
+  /api/v1/invoices/{id}/void:
+    post:
+      tags:
+      - invoicing-controller
+      operationId: voidInvoice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoidRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvoiceDetailResponse"
+      x-required-permission: invoice:manage
+      x-allowed-callers:
+      - tenant-user
+  /api/v1/invoices/{id}/uncollectible:
+    post:
+      tags:
+      - invoicing-controller
+      operationId: markUncollectible
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvoiceDetailResponse"
+      x-required-permission: invoice:manage
+      x-allowed-callers:
+      - tenant-user
+  /api/v1/invoices/{id}/payments:
+    post:
+      tags:
+      - invoicing-controller
+      operationId: pay
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PayInvoiceResponse"
+      x-required-permission: payment:create
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
   /api/v1/customers:
     get:
       tags:
@@ -1662,6 +1930,28 @@ paths:
       x-required-permission: tenant-system:read
       x-allowed-callers:
       - tenant-user
+  /api/v1/subscriptions/{id}:
+    get:
+      tags:
+      - invoicing-controller
+      operationId: subscription
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubscriptionDetailResponse"
+      x-required-permission: subscription:read
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
   /api/v1/stripe/incidents:
     get:
       tags:
@@ -1985,6 +2275,28 @@ paths:
                 $ref: "#/components/schemas/MeResponse"
       x-allowed-callers:
       - platform-user
+      - tenant-user
+      - tenant-system
+  /api/v1/invoices/{id}:
+    get:
+      tags:
+      - invoicing-controller
+      operationId: invoice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvoiceDetailResponse"
+      x-required-permission: invoice:read
+      x-allowed-callers:
       - tenant-user
       - tenant-system
   /api/v1/customers/by-external-user/{externalUserId}:
@@ -2503,6 +2815,90 @@ components:
         overlapMinutes:
           type: integer
           format: int64
+    SubscribeRequest:
+      type: object
+      properties:
+        walletId:
+          type: string
+        planId:
+          type: string
+    SubscriptionDetailResponse:
+      type: object
+      properties:
+        subscription:
+          $ref: "#/components/schemas/SubscriptionResponse"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubscriptionEventResponse"
+    SubscriptionEventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        periodNumber:
+          type: integer
+          format: int32
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        chargeId:
+          type: string
+        detail:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    SubscriptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        walletId:
+          type: string
+        planId:
+          type: string
+        planCode:
+          type: string
+        cycle:
+          type: string
+        status:
+          type: string
+        anchor:
+          type: string
+          format: date-time
+        periodsCharged:
+          type: integer
+          format: int32
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        cancelAtPeriodEnd:
+          type: boolean
+        canceledAt:
+          type: string
+          format: date-time
+        nextRenewalAt:
+          type: string
+          format: date-time
+        renewalAttempts:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
     ReconcileResponse:
       type: object
       properties:
@@ -3031,6 +3427,127 @@ components:
           $ref: "#/components/schemas/LedgerEntryResponse"
         replayed:
           type: boolean
+    InvoiceChargeRequest:
+      type: object
+      properties:
+        chargeId:
+          type: string
+    InvoiceDetailResponse:
+      type: object
+      properties:
+        invoice:
+          $ref: "#/components/schemas/InvoiceResponse"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemResponse"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoicePaymentResponse"
+    InvoicePaymentResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        status:
+          type: string
+        failureReason:
+          type: string
+        ledgerEntryId:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        settledAt:
+          type: string
+          format: date-time
+    InvoiceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        number:
+          type: string
+        customerId:
+          type: string
+        walletId:
+          type: string
+        status:
+          type: string
+        origin:
+          type: string
+        total:
+          $ref: "#/components/schemas/MoneyDto"
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        settlement:
+          type: string
+        voidReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        issuedAt:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+        voidedAt:
+          type: string
+          format: date-time
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        source:
+          type: string
+        chargeId:
+          type: string
+        subscriptionId:
+          type: string
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        description:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        incurredAt:
+          type: string
+          format: date-time
+    VoidRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+    PayInvoiceResponse:
+      type: object
+      properties:
+        invoice:
+          $ref: "#/components/schemas/InvoiceDetailResponse"
+        payment:
+          $ref: "#/components/schemas/StartedPaymentResponse"
+    StartedPaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        checkoutUrl:
+          type: string
     CreateCustomerRequest:
       type: object
       properties:

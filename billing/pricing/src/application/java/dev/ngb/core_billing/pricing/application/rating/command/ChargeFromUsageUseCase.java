@@ -153,7 +153,8 @@ public class ChargeFromUsageUseCase {
             return new Result(outcome(earlier), earlier, true);
         }
 
-        Quote quote = version.quote(plan.currency(), summarize(open));
+        // A Hybrid plan's base is billed by its subscription; only the usage is priced here.
+        Quote quote = version.quoteUsage(plan.currency(), summarize(open));
         String setKey = setKey(open);
         int attempt = ratings.failedAttempts(setKey) + 1;
         RatingId ratingId = new RatingId(ids.newId());

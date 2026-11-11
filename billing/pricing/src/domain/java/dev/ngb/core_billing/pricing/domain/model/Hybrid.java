@@ -50,6 +50,13 @@ public record Hybrid(BigDecimal fixedPrice, List<PriceRule> components) implemen
     public List<PriceLine> price(UsageSummary usage) {
         List<PriceLine> lines = new ArrayList<>();
         lines.add(new PriceLine("base amount for one billing cycle", null, BigDecimal.ONE, fixedPrice));
+        lines.addAll(priceUsage(usage));
+        return lines;
+    }
+
+    /** Only the usage components, without the base: what is billed for what was used, next to the base a subscription bills per cycle. */
+    public List<PriceLine> priceUsage(UsageSummary usage) {
+        List<PriceLine> lines = new ArrayList<>();
         components.forEach(c -> lines.addAll(c.price(usage)));
         return lines;
     }

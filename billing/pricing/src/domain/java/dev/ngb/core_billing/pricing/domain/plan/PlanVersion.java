@@ -71,9 +71,24 @@ public final class PlanVersion {
         }
     }
 
-    /** Prices {@code usage} under this version in {@code currency}: exact lines, one rounding, then the limits. */
+    /** Prices {@code usage} under this version in {@code currency}: exact lines, one rounding, then the limits. A Hybrid includes its base. */
     public Quote quote(Currency currency, UsageSummary usage) {
-        List<PriceLine> lines = new ArrayList<>(rule.price(usage));
+        return quoteOf(currency, new ArrayList<>(rule.price(usage)));
+    }
+
+    /**
+     * Prices what was used under this version, for charging usage. A Hybrid plan bills its base amount through its
+     * subscription, once per cycle, so only the usage components are priced here (with the same single rounding and
+     * the limits); every other model prices exactly as {@link #quote}.
+     */
+    public Quote quoteUsage(Currency currency, UsageSummary usage) {
+        if (rule instanceof Hybrid hybrid) {
+            return quoteOf(currency, new ArrayList<>(hybrid.priceUsage(usage)));
+        }
+        return quote(currency, usage);
+    }
+
+    private Quote quoteOf(Currency currency, List<PriceLine> lines) {
         BigDecimal exact = BigDecimal.ZERO;
         for (PriceLine line : lines) {
             exact = exact.add(line.amount());

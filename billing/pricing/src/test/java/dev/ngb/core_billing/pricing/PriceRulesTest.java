@@ -269,4 +269,23 @@ class PriceRulesTest {
         assertThatThrownBy(() -> new TimeBased("m", "hour", d("1000000000000001"), d("0"))).hasMessageContaining("too large");
         assertThatThrownBy(() -> new EventBased("m", "call", null)).hasMessageContaining("required");
     }
+
+    @Test
+    void aHybridChargedForUsageIsPricedWithoutItsBaseBecauseTheSubscriptionBillsTheBase() {
+        PlanVersion v = version(new Hybrid(d("2900"), List.of(new EventBased("api-calls", "call", d("0.05")))), BillingCycle.MONTHLY, null, null, RoundingPolicy.HALF_UP);
+        UsageSummary calls = usage("api-calls", "1000", 1);
+
+        assertThat(v.quote(USD, calls).amount().minorUnits()).as("an estimate of a whole cycle includes the base").isEqualTo(2_950);
+        Quote used = v.quoteUsage(USD, calls);
+        assertThat(used.amount().minorUnits()).isEqualTo(50);
+        assertThat(used.lines()).extracting(PriceLine::description).noneMatch(d -> d.contains("base"));
+        assertThat(v.quoteUsage(USD, UsageSummary.none()).amount().minorUnits()).isZero();
+    }
+
+    @Test
+    void everyOtherModelPricesUsageExactlyAsAQuote() {
+        PlanVersion v = version(new EventBased("api-calls", "call", d("0.05")), null, null, null, RoundingPolicy.HALF_UP);
+        UsageSummary calls = usage("api-calls", "1000", 1);
+        assertThat(v.quoteUsage(USD, calls).amount()).isEqualTo(v.quote(USD, calls).amount());
+    }
 }

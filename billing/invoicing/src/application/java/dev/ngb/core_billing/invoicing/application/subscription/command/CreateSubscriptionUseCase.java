@@ -80,7 +80,7 @@ public class CreateSubscriptionUseCase {
             SubscriptionTerms terms = plans.subscriptionTerms(command.planId(), now)
                     .orElseThrow(() -> new ConflictException("the plan does not exist, is retired, or has no recurring price in force now"));
             if (!terms.currency().equals(wallet.currency())) {
-                throw new IllegalArgumentException("the wallet is in " + wallet.currency() + " but the plan is priced in " + terms.currency());
+                throw new IllegalArgumentException("the wallet is in %s but the plan is priced in %s".formatted(wallet.currency(), terms.currency()));
             }
             Subscription subscription = Subscription.create(new SubscriptionId(ids.newId()), tenantContext.requireTenant(), wallet.customerId(), wallet.id(),
                     wallet.currency(), terms.planId(), terms.planCode(), terms.cycle(), key, hash, now);

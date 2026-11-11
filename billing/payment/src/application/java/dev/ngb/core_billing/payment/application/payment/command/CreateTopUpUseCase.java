@@ -105,7 +105,7 @@ public class CreateTopUpUseCase {
         WalletSummary wallet = wallets.find(command.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));
         customers.findFor(wallet.customerId(), command.caller()).orElseThrow(() -> new NotFoundException("wallet not found"));
         if (!wallet.currency().equals(command.amount().currency())) {
-            throw new IllegalArgumentException("the top-up is in " + command.amount().currency() + " but the wallet is in " + wallet.currency());
+            throw new IllegalArgumentException("the top-up is in %s but the wallet is in %s".formatted(command.amount().currency(), wallet.currency()));
         }
         Instant now = clock.now();
         Payment payment = Payment.start(new PaymentId(ids.newId()), configuration, wallet.id(), wallet.customerId(), command.amount(), key, hash, now);

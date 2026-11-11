@@ -42,7 +42,7 @@ public class JdbcIdempotencyStore implements IdempotencyStore {
             throw new IdempotencyConflictException(scope, key);
         }
         if (existing.status() == null) {
-            throw new IllegalStateException("idempotency key was accepted but never completed: " + scope + "/" + key);
+            throw new IllegalStateException("idempotency key was accepted but never completed: %s/%s".formatted(scope, key));
         }
         return Optional.of(new StoredResponse(existing.status(), existing.body()));
     }
@@ -57,7 +57,7 @@ public class JdbcIdempotencyStore implements IdempotencyStore {
                 .params(response.status(), response.body(), tenantId.value(), scope, key)
                 .update();
         if (updated != 1) {
-            throw new IllegalStateException("idempotency key was not begun: " + scope + "/" + key);
+            throw new IllegalStateException("idempotency key was not begun: %s/%s".formatted(scope, key));
         }
     }
 

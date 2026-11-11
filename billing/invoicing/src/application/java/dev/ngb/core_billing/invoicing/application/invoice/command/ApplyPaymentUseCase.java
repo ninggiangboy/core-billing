@@ -83,7 +83,8 @@ public class ApplyPaymentUseCase {
             }
             Money amount = amount(data);
             if (!amount.currency().equals(invoice.currency())) {
-                throw new IllegalStateException("a payment of invoice " + invoice.id() + " is in " + amount.currency() + " but the invoice is in " + invoice.currency());
+                throw new IllegalStateException(
+                        "a payment of invoice %s is in %s but the invoice is in %s".formatted(invoice.id(), amount.currency(), invoice.currency()));
             }
             LedgerPostingResult posted = credit.credit(new CreditCommand(invoice.walletId(), amount, "invoice/" + invoice.id(),
                     "Payment of invoice " + invoice.number(), "invoice-payoff:" + paymentId, ACTOR));

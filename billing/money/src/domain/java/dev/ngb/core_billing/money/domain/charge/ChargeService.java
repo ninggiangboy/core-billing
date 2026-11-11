@@ -51,7 +51,7 @@ public final class ChargeService {
             throw new IllegalArgumentException("a charge must be positive");
         }
         if (!amount.currency().equals(wallet.currency())) {
-            throw new IllegalArgumentException("currency mismatch: wallet is " + wallet.currency() + ", charge is " + amount.currency());
+            throw new IllegalArgumentException("currency mismatch: wallet is %s, charge is %s".formatted(wallet.currency(), amount.currency()));
         }
         ChargeId chargeId = new ChargeId(ids.newId());
         ReservationId reservationId = request.reservation() == null ? null : request.reservation().id();

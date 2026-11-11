@@ -87,7 +87,7 @@ public class RecordUsageUseCase {
                 try {
                     prepared.add(prepare(items.get(i), tenantId, caller, knownCustomers, now));
                 } catch (IllegalArgumentException invalid) {
-                    throw new IllegalArgumentException("usage event " + i + ": " + invalid.getMessage(), invalid);
+                    throw new IllegalArgumentException("usage event %s: %s".formatted(i, invalid.getMessage()), invalid);
                 }
             }
             List<Recorded> results = new ArrayList<>();
@@ -109,7 +109,7 @@ public class RecordUsageUseCase {
         String expected = metricUnits.unitOf(item.metric())
                 .orElseThrow(() -> new IllegalArgumentException("unknown metric '" + item.metric() + "': no pricing plan measures it"));
         if (!expected.equals(item.unit())) {
-            throw new IllegalArgumentException("metric '" + item.metric() + "' is measured in '" + expected + "', not '" + item.unit() + "'");
+            throw new IllegalArgumentException("metric '%s' is measured in '%s', not '%s'".formatted(item.metric(), expected, item.unit()));
         }
         CustomerSummary customer = knownCustomers.computeIfAbsent(item.customerId(),
                 id -> customers.findFor(id, caller).orElseThrow(() -> new NotFoundException("customer not found")));

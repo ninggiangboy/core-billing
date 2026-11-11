@@ -145,7 +145,7 @@ public final class BillingUser {
 
     private void requireValidInScope(Permission permission) {
         if (!permission.validIn(scope)) {
-            throw new IllegalArgumentException(permission.code() + " cannot be granted in " + scope + " scope");
+            throw new IllegalArgumentException("%s cannot be granted in %s scope".formatted(permission.code(), scope));
         }
     }
 

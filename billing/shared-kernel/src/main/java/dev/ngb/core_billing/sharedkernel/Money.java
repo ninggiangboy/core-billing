@@ -62,7 +62,7 @@ public record Money(long minorUnits, Currency currency) {
         Objects.requireNonNull(other, "other");
         if (!currency.equals(other.currency)) {
             throw new IllegalArgumentException(
-                    "currency mismatch: " + currency + " vs " + other.currency);
+                    "currency mismatch: %s vs %s".formatted(currency, other.currency));
         }
     }
 

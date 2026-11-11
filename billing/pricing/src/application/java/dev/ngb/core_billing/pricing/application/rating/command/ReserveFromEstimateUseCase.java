@@ -53,7 +53,7 @@ public class ReserveFromEstimateUseCase {
             customers.findFor(wallet.customerId(), command.caller()).orElseThrow(() -> new NotFoundException("wallet not found"));
             EstimateCostUseCase.Estimate estimate = estimates.estimate(new EstimateCostUseCase.Request(command.planId(), command.version(), command.at(), command.usage()));
             if (!wallet.currency().equals(estimate.plan().currency())) {
-                throw new IllegalArgumentException("the wallet is in " + wallet.currency() + " but the plan is priced in " + estimate.plan().currency());
+                throw new IllegalArgumentException("the wallet is in %s but the plan is priced in %s".formatted(wallet.currency(), estimate.plan().currency()));
             }
             if (!estimate.quote().amount().isPositive()) {
                 throw new IllegalArgumentException("the estimate is zero, so there is nothing to reserve");

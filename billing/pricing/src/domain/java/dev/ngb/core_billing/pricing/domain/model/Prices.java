@@ -26,7 +26,7 @@ final class Prices {
             throw new IllegalArgumentException(name + " is too large");
         }
         if (value.stripTrailingZeros().scale() > MAX_SCALE) {
-            throw new IllegalArgumentException(name + " allows at most " + MAX_SCALE + " decimal places");
+            throw new IllegalArgumentException("%s allows at most %s decimal places".formatted(name, MAX_SCALE));
         }
         return value;
     }

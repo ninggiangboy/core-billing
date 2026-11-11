@@ -187,7 +187,7 @@ public final class Invoice {
 
     private void requireStatus(InvoiceStatus expected, String action) {
         if (status != expected) {
-            throw new IllegalStateException("only a " + expected + " invoice can be " + action + "; this one is " + status);
+            throw new IllegalStateException("only a %s invoice can be %s; this one is %s".formatted(expected, action, status));
         }
     }
 

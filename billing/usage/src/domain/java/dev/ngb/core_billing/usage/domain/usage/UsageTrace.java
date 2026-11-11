@@ -17,7 +17,7 @@ public record UsageTrace(TenantSystemId tenantSystemId, String resourceRef, Stri
             return null;
         }
         if (text.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException(name + " is limited to " + MAX_LENGTH + " characters");
+            throw new IllegalArgumentException("%s is limited to %s characters".formatted(name, MAX_LENGTH));
         }
         return text.strip();
     }

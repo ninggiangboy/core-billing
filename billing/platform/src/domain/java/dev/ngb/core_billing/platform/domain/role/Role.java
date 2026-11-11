@@ -71,7 +71,7 @@ public final class Role {
 
     private void add(Permission permission) {
         if (!permission.validIn(scope)) {
-            throw new IllegalArgumentException(permission.code() + " is not valid in " + scope + " scope");
+            throw new IllegalArgumentException("%s is not valid in %s scope".formatted(permission.code(), scope));
         }
         permissions.add(permission);
     }

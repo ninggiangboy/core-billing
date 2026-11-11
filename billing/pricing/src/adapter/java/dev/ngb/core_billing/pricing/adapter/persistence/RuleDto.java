@@ -51,7 +51,7 @@ public record RuleDto(
     public PriceRule toRule(PricingModel model) {
         PricingModel effective = this.model == null ? model : PricingModel.valueOf(this.model);
         if (effective != model && model != null) {
-            throw new IllegalArgumentException("the rule is " + effective + " but the plan is " + model);
+            throw new IllegalArgumentException("the rule is %s but the plan is %s".formatted(effective, model));
         }
         return switch (effective) {
             case TIME_BASED -> new TimeBased(metric, unit, decimal(unitPrice, "unitPrice"), increment == null ? BigDecimal.ZERO : decimal(increment, "increment"));

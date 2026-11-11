@@ -119,8 +119,8 @@ public class ReconcileStripeUseCase {
         Payment payment = local.get();
         boolean stripePaid = checkout.status() == PaymentProvider.CheckoutStatus.COMPLETE && checkout.payment() == PaymentProvider.CheckoutPayment.PAID;
         if (payment.status() == PaymentStatus.SUCCEEDED && !stripePaid) {
-            flag(configuration, "payment/" + payment.id(), "Billing has the payment as succeeded but Stripe's session is "
-                    + checkout.status() + "/" + checkout.payment());
+            flag(configuration, "payment/" + payment.id(),
+                    "Billing has the payment as succeeded but Stripe's session is %s/%s".formatted(checkout.status(), checkout.payment()));
             return new int[] {0, 1};
         }
         if (payment.status().isFinal()) {
@@ -171,8 +171,8 @@ public class ReconcileStripeUseCase {
     }
 
     private int failed(StripeConfiguration configuration, String subject, RuntimeException failure) {
-        unitOfWork.transactional(() -> flag(configuration, subject, "Reconciliation could not examine this: " + failure.getClass().getSimpleName() + ": "
-                + failure.getMessage()));
+        unitOfWork.transactional(() -> flag(configuration, subject,
+                "Reconciliation could not examine this: %s: %s".formatted(failure.getClass().getSimpleName(), failure.getMessage())));
         return 1;
     }
 

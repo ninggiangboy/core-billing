@@ -86,7 +86,7 @@ public class CreateInvoicePaymentUseCase implements StartInvoicePayment {
             throw new IllegalArgumentException("the wallet belongs to another customer");
         }
         if (!wallet.currency().equals(command.amount().currency())) {
-            throw new IllegalArgumentException("the payment is in " + command.amount().currency() + " but the wallet is in " + wallet.currency());
+            throw new IllegalArgumentException("the payment is in %s but the wallet is in %s".formatted(command.amount().currency(), wallet.currency()));
         }
         Payment payment = Payment.startForInvoice(new PaymentId(ids.newId()), configuration, command.invoiceId(), wallet.id(), wallet.customerId(),
                 command.amount(), key, hash, clock.now());

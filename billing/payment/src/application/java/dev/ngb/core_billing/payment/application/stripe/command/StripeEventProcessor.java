@@ -187,7 +187,7 @@ public class StripeEventProcessor {
         }
         Instant now = clock.now();
         int number = event.beginAttempt();
-        String why = failure.getClass().getSimpleName() + ": " + failure.getMessage();
+        String why = "%s: %s".formatted(failure.getClass().getSimpleName(), failure.getMessage());
         Instant retryAt = number >= settings.eventMaxAttempts() ? null : now.plus(settings.eventBackoff().delayAfter(number, random.getAsDouble()));
         event.failed(why, retryAt, now);
         events.addAttempt(event, number, "FAILED", why, now);
@@ -200,6 +200,6 @@ public class StripeEventProcessor {
 
     private void reject(StripeEvent event, String detail, Instant now) {
         incidents.record(ids.newId(), event.tenantId(), event.configurationId(), IncidentKind.EVENT_REJECTED, "event/" + event.eventId(),
-                event.type() + ": " + detail, now);
+                "%s: %s".formatted(event.type(), detail), now);
     }
 }

@@ -30,7 +30,7 @@ public record EventBased(String metric, String unit, BigDecimal unitPrice) imple
     public List<PriceLine> price(UsageSummary usage) {
         BigDecimal count = usage.of(metric).quantity();
         if (!Prices.isWhole(count)) {
-            throw new IllegalArgumentException("event-based pricing needs a whole number of " + unit + ", got " + Prices.plain(count));
+            throw new IllegalArgumentException("event-based pricing needs a whole number of %s, got %s".formatted(unit, Prices.plain(count)));
         }
         return List.of(new PriceLine(Prices.plain(count) + " " + unit + " x " + Prices.plain(unitPrice), metric, count, Prices.times(count, unitPrice)));
     }

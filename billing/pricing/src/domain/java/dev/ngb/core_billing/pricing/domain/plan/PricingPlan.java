@@ -74,7 +74,7 @@ public final class PricingPlan {
             throw new IllegalStateException("the plan is retired and takes no new versions");
         }
         if (rule.model() != model) {
-            throw new IllegalArgumentException("this plan is " + model + "; a " + rule.model() + " rule does not fit");
+            throw new IllegalArgumentException("this plan is %s; a %s rule does not fit".formatted(model, rule.model()));
         }
         Instant start = validFrom == null ? now : validFrom;
         if (!versions.isEmpty() && start.isBefore(latest().validFrom())) {

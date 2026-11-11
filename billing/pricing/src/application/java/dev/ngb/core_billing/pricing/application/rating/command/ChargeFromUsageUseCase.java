@@ -131,7 +131,7 @@ public class ChargeFromUsageUseCase {
         customers.findFor(c.customerId(), c.caller()).orElseThrow(() -> new NotFoundException("customer not found"));
         PricingPlan plan = plans.findById(c.planId()).orElseThrow(() -> new NotFoundException("pricing plan not found"));
         if (!wallet.currency().equals(plan.currency())) {
-            throw new IllegalArgumentException("the wallet is in " + wallet.currency() + " but the plan is priced in " + plan.currency());
+            throw new IllegalArgumentException("the wallet is in %s but the plan is priced in %s".formatted(wallet.currency(), plan.currency()));
         }
         // A retired plan can still be charged: usage that was recorded under it must be billed.
         PlanVersion version = PlanSelection.choose(plan, c.version(), c.to().minusNanos(1));

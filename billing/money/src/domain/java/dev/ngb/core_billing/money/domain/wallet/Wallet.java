@@ -182,7 +182,7 @@ public final class Wallet {
     private Money requireCurrency(Money money) {
         Objects.requireNonNull(money, "money");
         if (!money.currency().equals(currency)) {
-            throw new IllegalArgumentException("currency mismatch: wallet is " + currency + ", amount is " + money.currency());
+            throw new IllegalArgumentException("currency mismatch: wallet is %s, amount is %s".formatted(currency, money.currency()));
         }
         return money;
     }

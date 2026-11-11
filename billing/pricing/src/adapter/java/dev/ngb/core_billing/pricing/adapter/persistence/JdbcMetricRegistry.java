@@ -23,7 +23,7 @@ public class JdbcMetricRegistry implements MetricRegistry {
         }
         String existing = currentUnit(metric).orElseThrow();
         if (!existing.equals(unit)) {
-            throw new ConflictException("metric '" + metric + "' is already measured in '" + existing + "', not '" + unit + "'");
+            throw new ConflictException("metric '%s' is already measured in '%s', not '%s'".formatted(metric, existing, unit));
         }
         return false;
     }

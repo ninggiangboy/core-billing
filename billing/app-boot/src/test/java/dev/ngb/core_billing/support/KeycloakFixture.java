@@ -1,6 +1,5 @@
 package dev.ngb.core_billing.support;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -142,14 +141,6 @@ public final class KeycloakFixture {
     }
 
     private static Path realmExport() {
-        Path dir = Path.of("").toAbsolutePath();
-        while (dir != null) {
-            Path candidate = dir.resolve("ops/keycloak/realm-export.json");
-            if (Files.exists(candidate)) {
-                return candidate;
-            }
-            dir = dir.getParent();
-        }
-        throw new IllegalStateException("ops/keycloak/realm-export.json not found above " + Path.of("").toAbsolutePath());
+        return RepositoryPaths.repositoryRoot().resolve("ops/keycloak/realm-export.json");
     }
 }

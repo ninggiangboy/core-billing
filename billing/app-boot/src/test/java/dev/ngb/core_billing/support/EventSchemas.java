@@ -40,14 +40,7 @@ public final class EventSchemas {
     private EventSchemas() {}
 
     public static Path directory() {
-        Path dir = Path.of("").toAbsolutePath();
-        while (dir != null) {
-            if (Files.isDirectory(dir.resolve("contracts/events")) && Files.isDirectory(dir.resolve("billing"))) {
-                return dir.resolve("contracts/events");
-            }
-            dir = dir.getParent();
-        }
-        throw new IllegalStateException("contracts/events not found");
+        return RepositoryPaths.repositoryRoot().resolve("contracts/events");
     }
 
     public static Set<String> types() {

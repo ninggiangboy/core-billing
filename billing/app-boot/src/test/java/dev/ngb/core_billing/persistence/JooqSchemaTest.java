@@ -3,6 +3,7 @@ package dev.ngb.core_billing.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core_billing.support.PostgresContainerConfig;
+import dev.ngb.core_billing.support.RepositoryPaths;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -32,7 +33,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class JooqSchemaTest {
 
     private static final String PACKAGE = "dev.ngb.core_billing_jooq";
-    private static final Path COMMITTED = Path.of("..", "jooq-schema", "src", "main", "java", PACKAGE.replace('.', '/'));
+    private static final Path COMMITTED = RepositoryPaths.billingRoot()
+            .resolve(Path.of("jooq-schema", "src", "main", "java", PACKAGE.replace('.', '/')));
 
     @Test
     void committedSchemaMatchesTheMigrations() throws IOException {

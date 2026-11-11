@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
+import dev.ngb.core_billing.support.RepositoryPaths;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -123,13 +124,6 @@ class OpenApiContractTest {
     }
 
     private static Path repositoryRoot() {
-        Path dir = Path.of("").toAbsolutePath();
-        while (dir != null) {
-            if (Files.isDirectory(dir.resolve("contracts")) && Files.isDirectory(dir.resolve("billing"))) {
-                return dir;
-            }
-            dir = dir.getParent();
-        }
-        throw new IllegalStateException("repository root not found");
+        return RepositoryPaths.repositoryRoot();
     }
 }

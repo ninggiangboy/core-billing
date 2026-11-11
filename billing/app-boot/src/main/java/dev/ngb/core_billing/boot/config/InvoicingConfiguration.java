@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.boot.config;
 
 import dev.ngb.core_billing.invoicing.adapter.messaging.InvoicingEventListener;
-import dev.ngb.core_billing.invoicing.adapter.persistence.cycle.JdbcUnbilledLineRepository;
-import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JdbcInvoiceReadRepository;
-import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JdbcInvoiceRepository;
-import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JdbcSubscriptionReadRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.cycle.JooqUnbilledLineRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JooqInvoiceReadRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JooqInvoiceRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JooqSubscriptionReadRepository;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ManageInvoiceUseCase;
 import dev.ngb.core_billing.invoicing.application.invoice.query.InvoiceQueries;
 import dev.ngb.core_billing.invoicing.application.invoice.query.InvoiceReadRepository;
@@ -16,7 +16,7 @@ import dev.ngb.core_billing.invoicing.application.cycle.command.CycleSettings;
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
-import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JdbcSubscriptionRepository;
+import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JooqSubscriptionRepository;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ChargeLineFactory;
 import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceChargeUseCase;
 import dev.ngb.core_billing.invoicing.application.subscription.command.CancelSubscriptionUseCase;
@@ -46,17 +46,16 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import org.springframework.context.annotation.Bean;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Wires the invoicing module. Holds no business rules. */
 @Configuration(proxyBeanMethods = false)
 class InvoicingConfiguration {
 
     @Bean
-    InvoiceRepository invoiceRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcInvoiceRepository(aggregates, jdbc);
+    InvoiceRepository invoiceRepository(DSLContext dsl) {
+        return new JooqInvoiceRepository(dsl);
     }
 
     @Bean
@@ -76,8 +75,8 @@ class InvoicingConfiguration {
     }
 
     @Bean
-    UnbilledLineRepository unbilledLineRepository(JdbcClient jdbc) {
-        return new JdbcUnbilledLineRepository(jdbc);
+    UnbilledLineRepository unbilledLineRepository(DSLContext dsl) {
+        return new JooqUnbilledLineRepository(dsl);
     }
 
     @Bean
@@ -120,8 +119,8 @@ class InvoicingConfiguration {
     }
 
     @Bean
-    SubscriptionRepository subscriptionRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcSubscriptionRepository(aggregates, jdbc);
+    SubscriptionRepository subscriptionRepository(DSLContext dsl) {
+        return new JooqSubscriptionRepository(dsl);
     }
 
     @Bean
@@ -152,13 +151,13 @@ class InvoicingConfiguration {
     }
 
     @Bean
-    InvoiceReadRepository invoiceReadRepository(JdbcClient jdbc) {
-        return new JdbcInvoiceReadRepository(jdbc);
+    InvoiceReadRepository invoiceReadRepository(DSLContext dsl) {
+        return new JooqInvoiceReadRepository(dsl);
     }
 
     @Bean
-    SubscriptionReadRepository subscriptionReadRepository(JdbcClient jdbc) {
-        return new JdbcSubscriptionReadRepository(jdbc);
+    SubscriptionReadRepository subscriptionReadRepository(DSLContext dsl) {
+        return new JooqSubscriptionReadRepository(dsl);
     }
 
     @Bean

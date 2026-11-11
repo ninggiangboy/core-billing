@@ -16,6 +16,7 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -48,7 +49,14 @@ public class CollectChargeUseCase {
         this.clock = clock;
     }
 
-    /** @return true when a line was added */
+    /** What invoicing needs from a {@code charge.succeeded} payload. */
+    private record Charged(WalletId walletId, UUID chargeId, Money amount, String source, String reference) {}
+
+    /**
+     * @return true when a line was added. A payload that does not have the shape of a charge event is ignored rather
+     *     than failing: every consumer of an event shares one transaction with the others (the webhook delivery
+     *     among them), so a consumer that throws on something it cannot read would block delivery to the Tenant.
+     */
     public boolean handle(DomainEvent event) {
         if (!EVENT_TYPE.equals(event.type())) {
             return false;
@@ -57,10 +65,16 @@ public class CollectChargeUseCase {
             if (!inbox.firstTime(CONSUMER, event)) {
                 return false;
             }
-            Map<String, Object> data = event.payload();
-            WalletSummary wallet = wallets.find(WalletId.of((String) data.get("walletId"))).orElse(null);
+            Charged charged = read(event.payload()).orElse(null);
+            if (charged == null) {
+                return false;
+            }
+            WalletSummary wallet = wallets.find(charged.walletId()).orElse(null);
             if (wallet == null || wallet.mode() != WalletMode.POSTPAID) {
                 return false;
+            }
+            if (!charged.amount().currency().equals(wallet.currency())) {
+                throw new IllegalStateException("a charge is in the currency of its wallet");
             }
             Instant now = clock.now();
             Instant start = settings.cycle().calendarStart(event.occurredAt());
@@ -68,19 +82,20 @@ public class CollectChargeUseCase {
                 // The period was billed before this event reached us; the line belongs to the period that is open now.
                 start = settings.cycle().calendarStart(now);
             }
-            InvoiceItem item = lineFactory.lineFor(UUID.fromString((String) data.get("chargeId")), (String) data.get("source"), (String) data.get("reference"),
-                    amount(data, wallet.currency()), event.occurredAt());
+            InvoiceItem item = lineFactory.lineFor(charged.chargeId(), charged.source(), charged.reference(), charged.amount(), event.occurredAt());
             return lines.add(new UnbilledLine(event.tenantId(), wallet.customerId(), wallet.id(), item, start, settings.cycle().calendarEnd(start)));
         });
     }
 
     @SuppressWarnings("unchecked")
-    private static Money amount(Map<String, Object> data, Currency walletCurrency) {
-        Map<String, Object> amount = (Map<String, Object>) data.get("amount");
-        Money money = Money.of(((Number) amount.get("minorUnits")).longValue(), Currency.of((String) amount.get("currency")));
-        if (!money.currency().equals(walletCurrency)) {
-            throw new IllegalStateException("a charge is in the currency of its wallet");
+    private static Optional<Charged> read(Map<String, Object> data) {
+        try {
+            Map<String, Object> amount = (Map<String, Object>) data.get("amount");
+            Money money = Money.of(((Number) amount.get("minorUnits")).longValue(), Currency.of((String) amount.get("currency")));
+            return Optional.of(new Charged(WalletId.of((String) data.get("walletId")), UUID.fromString((String) data.get("chargeId")), money,
+                    (String) data.get("source"), (String) data.get("reference")));
+        } catch (NullPointerException | ClassCastException | IllegalArgumentException malformed) {
+            return Optional.empty();
         }
-        return money;
     }
 }

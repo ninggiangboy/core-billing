@@ -154,6 +154,15 @@ class PostpaidCycleIntegrationTest {
     }
 
     @Test
+    void aChargeEventWithAnUnreadablePayloadIsIgnoredSoItCannotBlockTheOtherConsumers() {
+        World world = worlds.postpaid(1_000_000);
+        EventEnvelope garbage = new EventEnvelope(UUID.randomUUID(), world.tenant().id(), "charge.succeeded", "charge/x", Instant.now(), Map.of("n", 1));
+
+        assertThat(scopes.inTenant(world.tenant().id(), () -> collect.handle(garbage))).isFalse();
+        assertThat(count("select count(*) from invoice_items where tenant_id = ?", world)).isZero();
+    }
+
+    @Test
     void aLateChargeForAnAlreadyInvoicedPeriodWaitsForTheOpenPeriod() {
         World world = worlds.postpaid(1_000_000);
         charge(world, 300);

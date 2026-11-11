@@ -15,10 +15,10 @@ import dev.ngb.core_billing.webhook.adapter.crypto.RandomSigningKeys;
 import dev.ngb.core_billing.webhook.adapter.http.HttpComponentsWebhookSender;
 import dev.ngb.core_billing.webhook.adapter.messaging.JacksonEventBodyWriter;
 import dev.ngb.core_billing.webhook.adapter.messaging.WebhookEventListener;
-import dev.ngb.core_billing.webhook.adapter.persistence.JdbcWebhookDeliveryRepository;
-import dev.ngb.core_billing.webhook.adapter.persistence.JdbcWebhookEndpointRepository;
-import dev.ngb.core_billing.webhook.adapter.persistence.delivery.JdbcWebhookDeliveryReadRepository;
-import dev.ngb.core_billing.webhook.adapter.persistence.endpoint.JdbcWebhookEndpointReadRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.JooqWebhookDeliveryRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.JooqWebhookEndpointRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.delivery.JooqWebhookDeliveryReadRepository;
+import dev.ngb.core_billing.webhook.adapter.persistence.endpoint.JooqWebhookEndpointReadRepository;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryQueries;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryReadRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
+import org.jooq.DSLContext;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -75,23 +75,23 @@ class WebhookConfiguration {
     }
 
     @Bean
-    WebhookEndpointRepository webhookEndpointRepository(JdbcClient jdbc) {
-        return new JdbcWebhookEndpointRepository(jdbc);
+    WebhookEndpointRepository webhookEndpointRepository(DSLContext dsl) {
+        return new JooqWebhookEndpointRepository(dsl);
     }
 
     @Bean
-    WebhookDeliveryRepository webhookDeliveryRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcWebhookDeliveryRepository(aggregates, jdbc);
+    WebhookDeliveryRepository webhookDeliveryRepository(DSLContext dsl) {
+        return new JooqWebhookDeliveryRepository(dsl);
     }
 
     @Bean
-    EndpointReadRepository endpointReadRepository(JdbcClient jdbc) {
-        return new JdbcWebhookEndpointReadRepository(jdbc);
+    EndpointReadRepository endpointReadRepository(DSLContext dsl) {
+        return new JooqWebhookEndpointReadRepository(dsl);
     }
 
     @Bean
-    DeliveryReadRepository deliveryReadRepository(JdbcClient jdbc) {
-        return new JdbcWebhookDeliveryReadRepository(jdbc);
+    DeliveryReadRepository deliveryReadRepository(DSLContext dsl) {
+        return new JooqWebhookDeliveryReadRepository(dsl);
     }
 
     @Bean

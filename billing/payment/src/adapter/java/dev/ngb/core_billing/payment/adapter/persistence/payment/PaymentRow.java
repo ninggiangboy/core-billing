@@ -30,6 +30,7 @@ record PaymentRow(
         String checkoutUrl,
         String failureReason,
         UUID ledgerEntryId,
+        UUID invoiceId,
         String idempotencyKey,
         String requestHash,
         Instant createdAt,
@@ -53,12 +54,13 @@ record PaymentRow(
                 payment.checkoutUrl(),
                 payment.failureReason(),
                 payment.ledgerEntryId(),
+                payment.invoiceId(),
                 payment.idempotencyKey(),
                 payment.requestHash(),
                 payment.createdAt(),
                 payment.updatedAt(),
                 payment.completedAt(),
-                "TOP_UP");
+                payment.isForInvoice() ? "INVOICE" : "TOP_UP");
     }
 
     Payment toDomain() {
@@ -77,6 +79,7 @@ record PaymentRow(
                 checkoutUrl,
                 failureReason,
                 ledgerEntryId,
+                invoiceId,
                 idempotencyKey,
                 requestHash,
                 createdAt,

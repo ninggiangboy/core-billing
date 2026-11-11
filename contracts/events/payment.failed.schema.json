@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://corebilling.io/events/payment.failed.schema.json",
   "title": "Payment failed",
-  "description": "A wallet top-up ended without money: Stripe could not collect it, or the customer's attempts were all declined. The wallet was not changed. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "description": "A wallet top-up or an invoice payment ended without money: Stripe could not collect it, or the customer's attempts were all declined. The wallet and the invoice were not changed. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",
   "required": [
     "paymentId",
@@ -29,6 +29,11 @@
     },
     "reason": {
       "type": "string"
+    },
+    "invoiceId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The invoice this payment was for. Absent for a wallet top-up."
     }
   },
   "$defs": {

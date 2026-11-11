@@ -159,4 +159,36 @@ class PaymentDomainTest {
         assertThat(c.disconnectedAt()).isNotNull();
         assertThatThrownBy(() -> c.observeAccount(true, NOW)).isInstanceOf(IllegalStateException.class);
     }
+
+    private static Payment invoicePayment(long amount) {
+        return Payment.startForInvoice(new PaymentId(UUID.randomUUID()), activeDirect(), UUID.randomUUID(), new WalletId(UUID.randomUUID()),
+                new CustomerId(UUID.randomUUID()), Money.of(amount, USD), "key-inv", "hash", NOW);
+    }
+
+    @Test
+    void anInvoicePaymentSucceedsWithoutALedgerEntry() {
+        Payment p = invoicePayment(1000);
+        assertThat(p.isForInvoice()).isTrue();
+        assertThat(p.succeed()).isEqualTo(Payment.Change.APPLIED);
+
+        p.recordInvoiceSettlement(NOW);
+
+        assertThat(p.status()).isEqualTo(PaymentStatus.SUCCEEDED);
+        assertThat(p.ledgerEntryId()).isNull();
+        assertThat(p.completedAt()).isEqualTo(NOW);
+        assertThat(p.succeed()).isEqualTo(Payment.Change.STALE);
+    }
+
+    @Test
+    void aTopUpIsNeverSettledWithoutCrediting() {
+        assertThatThrownBy(() -> payment(1000).recordInvoiceSettlement(NOW)).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void aFailedInvoicePaymentCannotBeSettledLater() {
+        Payment p = invoicePayment(1000);
+        p.fail("declined", NOW);
+        assertThat(p.succeed()).isEqualTo(Payment.Change.CONTRADICTION);
+        assertThatThrownBy(() -> p.recordInvoiceSettlement(NOW)).isInstanceOf(IllegalStateException.class);
+    }
 }

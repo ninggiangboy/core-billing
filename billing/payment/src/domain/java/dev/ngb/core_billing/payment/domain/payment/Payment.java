@@ -11,9 +11,10 @@ import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 
 /**
- * A top-up of one wallet through the Tenant's Stripe configuration. It moves forward only
- * ({@link PaymentStatus}), and it is SUCCEEDED only when a verified Stripe result has been applied to the
- * ledger in the same transaction, so {@code ledgerEntryId} is present exactly then.
+ * A payment through the Tenant's Stripe configuration: a top-up of one wallet, or the payment of one invoice.
+ * It moves forward only ({@link PaymentStatus}). A top-up is SUCCEEDED only when a verified Stripe result has been
+ * applied to the ledger in the same transaction, so {@code ledgerEntryId} is present exactly then. An invoice
+ * payment succeeds without a ledger entry: invoicing credits the wallet from the event that reports it.
  */
 public final class Payment {
 
@@ -40,6 +41,7 @@ public final class Payment {
     private String checkoutUrl;
     private String failureReason;
     private UUID ledgerEntryId;
+    private final UUID invoiceId;
     private final String idempotencyKey;
     private final String requestHash;
     private final Instant createdAt;
@@ -49,7 +51,7 @@ public final class Payment {
     private Payment(
             PaymentId id, TenantId tenantId, StripeConfigurationId configurationId, WalletId walletId, CustomerId customerId, Money amount,
             Money refunded, PaymentStatus status, String checkoutSessionId, String paymentIntentId, String checkoutUrl, String failureReason,
-            UUID ledgerEntryId, String idempotencyKey, String requestHash, Instant createdAt, Instant updatedAt, Instant completedAt) {
+            UUID ledgerEntryId, UUID invoiceId, String idempotencyKey, String requestHash, Instant createdAt, Instant updatedAt, Instant completedAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
         this.configurationId = Objects.requireNonNull(configurationId, "configurationId");
@@ -63,6 +65,7 @@ public final class Payment {
         this.checkoutUrl = checkoutUrl;
         this.failureReason = failureReason;
         this.ledgerEntryId = ledgerEntryId;
+        this.invoiceId = invoiceId;
         this.idempotencyKey = Objects.requireNonNull(idempotencyKey, "idempotencyKey");
         this.requestHash = Objects.requireNonNull(requestHash, "requestHash");
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
@@ -77,15 +80,27 @@ public final class Payment {
             PaymentId id, StripeConfiguration configuration, WalletId walletId, CustomerId customerId, Money amount, String idempotencyKey,
             String requestHash, Instant now) {
         return new Payment(id, configuration.tenantId(), configuration.id(), walletId, customerId, amount, Money.zero(amount.currency()),
-                PaymentStatus.REQUIRES_ACTION, null, null, null, null, null, idempotencyKey, requestHash, now, now, null);
+                PaymentStatus.REQUIRES_ACTION, null, null, null, null, null, null, idempotencyKey, requestHash, now, now, null);
+    }
+
+    /**
+     * A payment of one invoice, through the same configuration and checkout as a top-up. The wallet is the invoice's:
+     * it is credited by invoicing when this payment succeeds, not by the payment context.
+     */
+    public static Payment startForInvoice(
+            PaymentId id, StripeConfiguration configuration, UUID invoiceId, WalletId walletId, CustomerId customerId, Money amount,
+            String idempotencyKey, String requestHash, Instant now) {
+        return new Payment(id, configuration.tenantId(), configuration.id(), walletId, customerId, amount, Money.zero(amount.currency()),
+                PaymentStatus.REQUIRES_ACTION, null, null, null, null, null, Objects.requireNonNull(invoiceId, "invoiceId"), idempotencyKey, requestHash,
+                now, now, null);
     }
 
     public static Payment restore(
             PaymentId id, TenantId tenantId, StripeConfigurationId configurationId, WalletId walletId, CustomerId customerId, Money amount,
             Money refunded, PaymentStatus status, String checkoutSessionId, String paymentIntentId, String checkoutUrl, String failureReason,
-            UUID ledgerEntryId, String idempotencyKey, String requestHash, Instant createdAt, Instant updatedAt, Instant completedAt) {
+            UUID ledgerEntryId, UUID invoiceId, String idempotencyKey, String requestHash, Instant createdAt, Instant updatedAt, Instant completedAt) {
         return new Payment(id, tenantId, configurationId, walletId, customerId, amount, refunded, status, checkoutSessionId, paymentIntentId,
-                checkoutUrl, failureReason, ledgerEntryId, idempotencyKey, requestHash, createdAt, updatedAt, completedAt);
+                checkoutUrl, failureReason, ledgerEntryId, invoiceId, idempotencyKey, requestHash, createdAt, updatedAt, completedAt);
     }
 
     /** Remembers the Stripe objects once Stripe has created them. Safe to repeat with the same values. */
@@ -131,6 +146,28 @@ public final class Payment {
             throw new IllegalStateException("a " + status + " payment cannot be credited");
         }
         this.ledgerEntryId = Objects.requireNonNull(entryId, "entryId");
+        this.status = PaymentStatus.SUCCEEDED;
+        this.failureReason = null;
+        this.completedAt = completedAt == null ? now : completedAt;
+        this.updatedAt = now;
+    }
+
+    /** True for a payment of an invoice, which never credits the wallet itself. */
+    public boolean isForInvoice() {
+        return invoiceId != null;
+    }
+
+    /**
+     * Records that the money for an invoice arrived. The wallet is credited by invoicing from the
+     * {@code payment.succeeded} event this success announces, so the payment carries no ledger entry.
+     */
+    public void recordInvoiceSettlement(Instant now) {
+        if (!isForInvoice()) {
+            throw new IllegalStateException("only an invoice payment is settled without a ledger entry");
+        }
+        if (status.isFinal() && status != PaymentStatus.SUCCEEDED) {
+            throw new IllegalStateException("a " + status + " payment cannot be settled");
+        }
         this.status = PaymentStatus.SUCCEEDED;
         this.failureReason = null;
         this.completedAt = completedAt == null ? now : completedAt;
@@ -226,6 +263,11 @@ public final class Payment {
 
     public UUID ledgerEntryId() {
         return ledgerEntryId;
+    }
+
+    /** The invoice this payment settles, or null for a top-up. */
+    public UUID invoiceId() {
+        return invoiceId;
     }
 
     public String idempotencyKey() {

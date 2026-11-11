@@ -19,7 +19,7 @@ public class JdbcPaymentRepository implements PaymentRepository {
     private static final int MAX_FAILURE = 500;
 
     private static final String COLUMNS = "id, tenant_id, configuration_id, wallet_id, customer_id, currency, amount, refunded_amount, status, "
-            + "checkout_session_id, payment_intent_id, checkout_url, failure_reason, ledger_entry_id, idempotency_key, request_hash, created_at, "
+            + "checkout_session_id, payment_intent_id, checkout_url, failure_reason, ledger_entry_id, invoice_id, idempotency_key, request_hash, created_at, "
             + "updated_at, completed_at, purpose";
 
     private final JdbcAggregateOperations aggregates;

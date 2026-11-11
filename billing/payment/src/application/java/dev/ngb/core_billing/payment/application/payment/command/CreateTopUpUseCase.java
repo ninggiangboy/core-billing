@@ -22,11 +22,8 @@ import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.payment.application.stripe.command.ProviderRejectedException;
-import dev.ngb.core_billing.payment.application.stripe.port.ProviderAccess;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 
@@ -54,9 +51,7 @@ public class CreateTopUpUseCase {
     private final PaymentRepository payments;
     private final WalletLookup wallets;
     private final CustomerLookup customers;
-    private final PaymentProvider provider;
-    private final ProviderAccess access;
-    private final PaymentSettings settings;
+    private final CheckoutOpener checkouts;
     private final AuditLog auditLog;
     private final TenantContext tenantContext;
     private final IdGenerator ids;
@@ -64,16 +59,13 @@ public class CreateTopUpUseCase {
 
     public CreateTopUpUseCase(
             UnitOfWork unitOfWork, StripeConfigurationRepository configurations, PaymentRepository payments, WalletLookup wallets,
-            CustomerLookup customers, PaymentProvider provider, ProviderAccess access, PaymentSettings settings, AuditLog auditLog,
-            TenantContext tenantContext, IdGenerator ids, Clock clock) {
+            CustomerLookup customers, CheckoutOpener checkouts, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.configurations = configurations;
         this.payments = payments;
         this.wallets = wallets;
         this.customers = customers;
-        this.provider = provider;
-        this.access = access;
-        this.settings = settings;
+        this.checkouts = checkouts;
         this.auditLog = auditLog;
         this.tenantContext = tenantContext;
         this.ids = ids;
@@ -91,27 +83,7 @@ public class CreateTopUpUseCase {
         if (payment.checkoutSessionId() != null || payment.status() != PaymentStatus.REQUIRES_ACTION) {
             return new Result(payment, prepared.replayed());
         }
-        PaymentProvider.CreatedCheckout checkout;
-        try {
-            checkout = provider.createCheckout(access.of(prepared.configuration()), new PaymentProvider.CheckoutRequest(payment.id(),
-                    payment.tenantId(), payment.amount(), "Wallet top-up", urlFor(settings.checkoutSuccessUrl(), payment.id()),
-                    urlFor(settings.checkoutCancelUrl(), payment.id())), "topup-" + payment.id());
-        } catch (ProviderRejectedException rejected) {
-            // Stripe said no for good: the payment never reached a customer, so close it and tell the caller.
-            unitOfWork.transactional(() -> {
-                Payment locked = payments.lockById(payment.id()).orElseThrow();
-                locked.fail(rejected.getMessage(), clock.now());
-                payments.update(locked);
-            });
-            throw rejected;
-        }
-        Payment attached = unitOfWork.transactional(() -> {
-            Payment locked = payments.lockById(payment.id()).orElseThrow();
-            locked.attachCheckout(checkout.sessionId(), checkout.url(), clock.now());
-            payments.update(locked);
-            return locked;
-        });
-        return new Result(attached, false);
+        return new Result(checkouts.open(payment, prepared.configuration(), "Wallet top-up", "topup-" + payment.id()), false);
     }
 
     private Prepared prepare(Command command, String key, String hash) {
@@ -142,9 +114,5 @@ public class CreateTopUpUseCase {
         auditLog.record(AuditEntry.tenant(tenantId, command.audit().actor(), "payment.top-up-started", "payment/" + payment.id(),
                 command.audit().requestId(), now));
         return new Prepared(payment, configuration, false);
-    }
-
-    private static String urlFor(String template, PaymentId id) {
-        return template.replace("{PAYMENT_ID}", id.toString());
     }
 }

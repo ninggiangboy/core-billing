@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/invoice.paid.schema.json",
+  "title": "Invoice paid",
+  "description": "An invoice was paid: a verified Stripe payment succeeded and the wallet was credited by the invoice total (the Postpaid debt was paid off), or the invoice documents a charge the wallet had already paid. A browser redirect never causes it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "invoiceId",
+    "number",
+    "customerId",
+    "walletId",
+    "total",
+    "settlement",
+    "paidAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "invoiceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "number": {
+      "type": "string"
+    },
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "total": {
+      "$ref": "#/$defs/money"
+    },
+    "settlement": {
+      "type": "string",
+      "enum": [
+        "PAYMENT",
+        "WALLET"
+      ],
+      "description": "PAYMENT when a verified payment paid it; WALLET when the wallet had already paid the charge."
+    },
+    "paymentId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The payment that paid the invoice. Absent when the wallet had already paid."
+    },
+    "paidAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

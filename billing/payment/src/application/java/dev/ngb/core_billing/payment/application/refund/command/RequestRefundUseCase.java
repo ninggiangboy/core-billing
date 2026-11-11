@@ -152,6 +152,10 @@ public class RequestRefundUseCase {
         if (payment.status() != PaymentStatus.SUCCEEDED) {
             throw new ConflictException("only a succeeded payment can be refunded; this one is " + payment.status());
         }
+        if (payment.isForInvoice()) {
+            // Refunding it would bring the paid-off debt back while the invoice stays paid.
+            throw new ConflictException("a payment of an invoice cannot be refunded through Billing");
+        }
         if (payment.paymentIntentId() == null) {
             throw new ConflictException("the payment has no Stripe payment to refund");
         }

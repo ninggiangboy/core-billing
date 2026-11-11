@@ -18,6 +18,8 @@ import dev.ngb.core_billing.payment.adapter.persistence.refund.JdbcRefundReadRep
 import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeConfigurationReadRepository;
 import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeEventReadRepository;
 import dev.ngb.core_billing.payment.adapter.stripe.StripePaymentProvider;
+import dev.ngb.core_billing.payment.application.payment.command.CheckoutOpener;
+import dev.ngb.core_billing.payment.application.payment.command.CreateInvoicePaymentUseCase;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
@@ -202,12 +204,23 @@ class PaymentConfiguration {
     }
 
     @Bean
+    CheckoutOpener checkoutOpener(
+            UnitOfWork unitOfWork, PaymentRepository payments, PaymentProvider provider, ProviderAccess access, PaymentSettings settings, Clock clock) {
+        return new CheckoutOpener(unitOfWork, payments, provider, access, settings, clock);
+    }
+
+    @Bean
     CreateTopUpUseCase createTopUpUseCase(
             UnitOfWork unitOfWork, StripeConfigurationRepository configurations, PaymentRepository payments, WalletLookup wallets,
-            CustomerLookup customers, PaymentProvider provider, ProviderAccess access, PaymentSettings settings, AuditLog auditLog,
-            TenantContext tenantContext, IdGenerator ids, Clock clock) {
-        return new CreateTopUpUseCase(unitOfWork, configurations, payments, wallets, customers, provider, access, settings, auditLog, tenantContext,
-                ids, clock);
+            CustomerLookup customers, CheckoutOpener checkouts, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new CreateTopUpUseCase(unitOfWork, configurations, payments, wallets, customers, checkouts, auditLog, tenantContext, ids, clock);
+    }
+
+    @Bean
+    CreateInvoicePaymentUseCase createInvoicePaymentUseCase(
+            UnitOfWork unitOfWork, StripeConfigurationRepository configurations, PaymentRepository payments, WalletLookup wallets, CheckoutOpener checkouts,
+            IdGenerator ids, Clock clock) {
+        return new CreateInvoicePaymentUseCase(unitOfWork, configurations, payments, wallets, checkouts, ids, clock);
     }
 
     @Bean

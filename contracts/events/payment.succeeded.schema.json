@@ -2,14 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://corebilling.io/events/payment.succeeded.schema.json",
   "title": "Payment succeeded",
-  "description": "A wallet top-up was paid through Stripe and the wallet was credited. Sent only after Stripe's own webhook was verified; a browser redirect never causes it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "description": "A payment was paid through Stripe. For a wallet top-up the wallet was credited before this event; for a payment of an invoice (`invoiceId` is present) the wallet is credited and the invoice marked paid by the following `invoice.paid`. Sent only after Stripe's own webhook was verified; a browser redirect never causes it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",
   "required": [
     "paymentId",
     "walletId",
     "customerId",
-    "amount",
-    "ledgerEntryId"
+    "amount"
   ],
   "additionalProperties": false,
   "properties": {
@@ -30,7 +29,13 @@
     },
     "ledgerEntryId": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "The ledger entry of the credit. Absent for a payment of an invoice, which credits the wallet afterwards."
+    },
+    "invoiceId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The invoice this payment was for. Absent for a wallet top-up."
     }
   },
   "$defs": {

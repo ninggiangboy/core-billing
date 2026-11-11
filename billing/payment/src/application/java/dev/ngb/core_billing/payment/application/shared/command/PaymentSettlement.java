@@ -252,6 +252,13 @@ public class PaymentSettlement {
         if (change == Payment.Change.CONTRADICTION) {
             return Result.rejected("Stripe reports payment " + payment.id() + " as paid, but it is already " + payment.status());
         }
+        if (payment.isForInvoice()) {
+            // The invoice's wallet is credited by invoicing, from the event this success announces, in its own transaction step.
+            payment.recordInvoiceSettlement(now);
+            payments.update(payment);
+            events.publish(new PaymentEvents.PaymentSucceeded(ids.newId(), payment, now));
+            return Result.applied("invoice payment succeeded; invoicing applies it");
+        }
         // One credit per payment, whichever event or reconciliation run gets here first.
         LedgerPostingResult posted = credit.credit(new CreditCommand(payment.walletId(), payment.amount(), "payment/" + payment.id(),
                 "Stripe top-up " + payment.id(), "topup:" + payment.id(), "stripe"));

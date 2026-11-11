@@ -58,7 +58,7 @@ class EventContractIntegrationTest {
     private static final Set<String> EMITTED_HERE = Set.of(
             "reservation.created", "reservation.released", "reservation.expired", "charge.succeeded", "charge.failed", "wallet.credited",
             "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated",
-            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created");
+            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created", "invoice.paid");
 
     @Autowired MoneyTestWorld worlds;
     @Autowired ScopeTestSupport scopes;
@@ -163,16 +163,25 @@ class EventContractIntegrationTest {
         return payloads;
     }
 
-    /** Collects Postpaid charges, closes their period and returns what landed in the outbox. */
+    /** Collects Postpaid charges, closes their period, pays the invoice through a verified Stripe result and returns what landed in the outbox. */
     private List<Payload> produceInvoicingEvents() {
-        World w = worlds.postpaid(1_000_000);
-        var tenant = w.tenant().id();
-        var money = w.wallet().currency();
-        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(w.wallet().id(), null, Money.of(300, money), null, "work", UUID.randomUUID().toString())));
-        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(w.wallet().id(), null, Money.of(700, money), null, "more work", UUID.randomUUID().toString())));
+        World postpaid = worlds.postpaid(1_000_000);
+        var w = payments.directFor(postpaid, "acct_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14));
+        var tenant = postpaid.tenant().id();
+        var money = postpaid.wallet().currency();
+        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(postpaid.wallet().id(), null, Money.of(300, money), null, "work", UUID.randomUUID().toString())));
+        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(postpaid.wallet().id(), null, Money.of(700, money), null, "more work", UUID.randomUUID().toString())));
         scopes.runInTenant(tenant, relay::relayDue);
         owner.jdbc().update("update invoice_items set cycle_start = cycle_start - interval '1 month', cycle_end = cycle_end - interval '1 month' where tenant_id = ?", tenant.value());
         scopes.inTenant(tenant, closeCycle::runOnce);
+
+        UUID invoiceId = owner.jdbc().queryForObject("select id from invoices where tenant_id = ?", UUID.class, tenant.value());
+        var paymentId = new dev.ngb.core_billing.payment.domain.payment.PaymentId(UUID.randomUUID());
+        scopes.runInTenant(tenant, () -> unitOfWork.transactional(() -> paymentRepository.add(dev.ngb.core_billing.payment.domain.payment.Payment.startForInvoice(paymentId,
+                w.configuration(), invoiceId, postpaid.wallet().id(), postpaid.customerId(), Money.of(1000, money), "key-" + paymentId, "hash-" + paymentId, Instant.now()))));
+        deliver(w, dev.ngb.core_billing.support.StripeEvents.paidCheckout(dev.ngb.core_billing.support.StripeEvents.newEventId(), null, "cs_" + paymentId, "pi_" + paymentId,
+                paymentId.toString(), 1000));
+        scopes.runInTenant(tenant, relay::relayDue);
 
         List<Payload> payloads = new ArrayList<>();
         owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {

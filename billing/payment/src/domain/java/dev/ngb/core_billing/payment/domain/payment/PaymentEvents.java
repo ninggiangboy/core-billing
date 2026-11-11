@@ -31,7 +31,7 @@ public final class PaymentEvents {
         return map;
     }
 
-    /** A top-up was paid and the wallet credited. */
+    /** A top-up was paid and the wallet credited, or an invoice payment was paid (the wallet is then credited by invoicing). */
     public record PaymentSucceeded(UUID eventId, Payment payment, Instant occurredAt) implements DomainEvent {
         public static final String TYPE = "payment.succeeded";
 
@@ -53,7 +53,9 @@ public final class PaymentEvents {
         @Override
         public Map<String, Object> payload() {
             return PaymentEvents.payload("paymentId", payment.id().toString(), "walletId", payment.walletId().toString(), "customerId",
-                    payment.customerId().toString(), "amount", money(payment.amount()), "ledgerEntryId", payment.ledgerEntryId().toString());
+                    payment.customerId().toString(), "amount", money(payment.amount()), "ledgerEntryId",
+                    payment.ledgerEntryId() == null ? null : payment.ledgerEntryId().toString(), "invoiceId",
+                    payment.invoiceId() == null ? null : payment.invoiceId().toString());
         }
     }
 
@@ -79,7 +81,8 @@ public final class PaymentEvents {
         @Override
         public Map<String, Object> payload() {
             return PaymentEvents.payload("paymentId", payment.id().toString(), "walletId", payment.walletId().toString(), "customerId",
-                    payment.customerId().toString(), "amount", money(payment.amount()), "reason", payment.failureReason());
+                    payment.customerId().toString(), "amount", money(payment.amount()), "reason", payment.failureReason(), "invoiceId",
+                    payment.invoiceId() == null ? null : payment.invoiceId().toString());
         }
     }
 

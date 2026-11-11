@@ -1,6 +1,7 @@
 package dev.ngb.core_billing.invoicing.adapter.messaging;
 
 import dev.ngb.core_billing.invoicing.application.cycle.command.CollectChargeUseCase;
+import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
 import dev.ngb.core_billing.sharedkernel.EventEnvelope;
 import org.springframework.context.event.EventListener;
 
@@ -11,13 +12,16 @@ import org.springframework.context.event.EventListener;
 public class InvoicingEventListener {
 
     private final CollectChargeUseCase collectCharge;
+    private final ApplyPaymentUseCase applyPayment;
 
-    public InvoicingEventListener(CollectChargeUseCase collectCharge) {
+    public InvoicingEventListener(CollectChargeUseCase collectCharge, ApplyPaymentUseCase applyPayment) {
         this.collectCharge = collectCharge;
+        this.applyPayment = applyPayment;
     }
 
     @EventListener
     public void on(EventEnvelope event) {
         collectCharge.handle(event);
+        applyPayment.handle(event);
     }
 }

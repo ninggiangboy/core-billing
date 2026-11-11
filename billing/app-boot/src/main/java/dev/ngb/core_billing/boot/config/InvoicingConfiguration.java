@@ -7,7 +7,14 @@ import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycl
 import dev.ngb.core_billing.invoicing.application.cycle.command.CollectChargeUseCase;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CycleSettings;
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
+import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
+import dev.ngb.core_billing.invoicing.application.invoice.command.PayInvoiceUseCase;
+import dev.ngb.core_billing.money.api.wallet.CreditWallet;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
+import dev.ngb.core_billing.payment.api.invoice.StartInvoicePayment;
+import dev.ngb.core_billing.platform.api.audit.AuditLog;
+import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.sharedkernel.EventInbox;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -61,7 +68,20 @@ class InvoicingConfiguration {
     }
 
     @Bean
-    InvoicingEventListener invoicingEventListener(CollectChargeUseCase collectCharge) {
-        return new InvoicingEventListener(collectCharge);
+    PayInvoiceUseCase payInvoiceUseCase(
+            UnitOfWork unitOfWork, InvoiceRepository invoices, CustomerLookup customers, StartInvoicePayment payments, AuditLog auditLog,
+            TenantContext tenantContext, Clock clock) {
+        return new PayInvoiceUseCase(unitOfWork, invoices, customers, payments, auditLog, tenantContext, clock);
+    }
+
+    @Bean
+    ApplyPaymentUseCase applyPaymentUseCase(
+            UnitOfWork unitOfWork, EventInbox inbox, InvoiceRepository invoices, CreditWallet credit, EventPublisher events, IdGenerator ids, Clock clock) {
+        return new ApplyPaymentUseCase(unitOfWork, inbox, invoices, credit, events, ids, clock);
+    }
+
+    @Bean
+    InvoicingEventListener invoicingEventListener(CollectChargeUseCase collectCharge, ApplyPaymentUseCase applyPayment) {
+        return new InvoicingEventListener(collectCharge, applyPayment);
     }
 }

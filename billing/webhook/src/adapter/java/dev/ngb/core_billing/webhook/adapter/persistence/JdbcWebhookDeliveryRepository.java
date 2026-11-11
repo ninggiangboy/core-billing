@@ -49,7 +49,8 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
                         insert into webhook_deliveries (id, tenant_id, endpoint_id, event_id, event_type, body, status, attempts, next_attempt_at,
                                                         resend_of, created_at)
                         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """ + conflict)
+                        %s
+                        """.formatted(conflict))
                 .params(row.id(), row.tenantId(), row.endpointId(), row.eventId(), row.eventType(), row.body(), row.status(),
                         row.attempts(), Timestamp.from(row.nextAttemptAt()), row.resendOf(), Timestamp.from(row.createdAt()))
                 .update();
@@ -94,8 +95,13 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
         if (claimed.isEmpty()) {
             return List.of();
         }
-        return jdbc.sql("select " + COLUMNS + ", e.url as endpoint_url, e.key_id, e.secret_ciphertext from webhook_deliveries d "
-                        + "join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id where d.id = any(?) order by d.id")
+        return jdbc.sql("""
+                        select %s, e.url as endpoint_url, e.key_id, e.secret_ciphertext
+                        from webhook_deliveries d
+                        join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id
+                        where d.id = any(?)
+                        order by d.id
+                        """.formatted(COLUMNS))
                 .param(claimed.toArray(UUID[]::new))
                 .query(ClaimedDeliveryRow.class)
                 .list()

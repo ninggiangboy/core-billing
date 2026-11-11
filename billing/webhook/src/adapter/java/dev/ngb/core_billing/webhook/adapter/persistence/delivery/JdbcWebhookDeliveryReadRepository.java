@@ -24,8 +24,12 @@ public class JdbcWebhookDeliveryReadRepository implements DeliveryReadRepository
 
     @Override
     public List<WebhookDeliveryView> list(DeliveryStatus status, UUID endpointId, UUID before, int limit, UUID tenantSystemId) {
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from webhook_deliveries d "
-                + "join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id where true");
+        StringBuilder sql = new StringBuilder("""
+                        select %s
+                        from webhook_deliveries d
+                        join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id
+                        where true
+                        """.formatted(COLUMNS));
         List<Object> params = new ArrayList<>();
         if (tenantSystemId != null) {
             sql.append(" and e.tenant_system_id = ?");
@@ -51,14 +55,21 @@ public class JdbcWebhookDeliveryReadRepository implements DeliveryReadRepository
     @Override
     public Optional<WebhookDeliveryView> findById(UUID id, UUID tenantSystemId) {
         if (tenantSystemId == null) {
-            return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d where d.id = ?")
+            return jdbc.sql("""
+                            select %s
+                            from webhook_deliveries d
+                            where d.id = ?
+                            """.formatted(COLUMNS))
                     .param(id)
                     .query(WebhookDeliveryView.class)
                     .optional();
         }
-        return jdbc.sql("select " + COLUMNS + " from webhook_deliveries d "
-                        + "join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id "
-                        + "where d.id = ? and e.tenant_system_id = ?")
+        return jdbc.sql("""
+                        select %s
+                        from webhook_deliveries d
+                        join webhook_endpoints e on e.tenant_id = d.tenant_id and e.id = d.endpoint_id
+                        where d.id = ? and e.tenant_system_id = ?
+                        """.formatted(COLUMNS))
                 .params(id, tenantSystemId)
                 .query(WebhookDeliveryView.class)
                 .optional();
@@ -66,8 +77,12 @@ public class JdbcWebhookDeliveryReadRepository implements DeliveryReadRepository
 
     @Override
     public List<DeliveryAttemptView> attempts(UUID deliveryId) {
-        return jdbc.sql("select attempt_no, status_code, error, response_excerpt, latency_ms, attempted_at from webhook_delivery_attempts "
-                        + "where delivery_id = ? order by attempt_no")
+        return jdbc.sql("""
+                        select attempt_no, status_code, error, response_excerpt, latency_ms, attempted_at
+                        from webhook_delivery_attempts
+                        where delivery_id = ?
+                        order by attempt_no
+                        """)
                 .param(deliveryId)
                 .query(DeliveryAttemptView.class)
                 .list();

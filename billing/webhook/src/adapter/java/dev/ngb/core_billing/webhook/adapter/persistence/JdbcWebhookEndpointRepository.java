@@ -23,7 +23,10 @@ public class JdbcWebhookEndpointRepository implements WebhookEndpointRepository 
 
     @Override
     public void add(WebhookEndpoint e) {
-        jdbc.sql("insert into webhook_endpoints (" + INSERT_COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        jdbc.sql("""
+                        insert into webhook_endpoints (%s)
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """.formatted(INSERT_COLUMNS))
                 .params(e.id().value(), e.tenantId().value(), e.tenantSystemId() == null ? null : e.tenantSystemId().value(), e.url(), e.description(),
                         e.eventTypes().toArray(String[]::new), e.status().name(), e.keyId(), e.secretCiphertext(), Timestamp.from(e.createdAt()),
                         Timestamp.from(e.updatedAt()), e.secretRotatedAt() == null ? null : Timestamp.from(e.secretRotatedAt()))
@@ -47,7 +50,11 @@ public class JdbcWebhookEndpointRepository implements WebhookEndpointRepository 
 
     @Override
     public Optional<WebhookEndpoint> findById(WebhookEndpointId id) {
-        return jdbc.sql("select " + SELECT_COLUMNS + " from webhook_endpoints where id = ?")
+        return jdbc.sql("""
+                        select %s
+                        from webhook_endpoints
+                        where id = ?
+                        """.formatted(SELECT_COLUMNS))
                 .param(id.value())
                 .query(WebhookEndpointRow.class)
                 .optional()
@@ -56,7 +63,12 @@ public class JdbcWebhookEndpointRepository implements WebhookEndpointRepository 
 
     @Override
     public List<WebhookEndpoint> findSubscribed(String eventType) {
-        return jdbc.sql("select " + SELECT_COLUMNS + " from webhook_endpoints where status = 'ACTIVE' and (? = any(event_types) or '*' = any(event_types)) order by id")
+        return jdbc.sql("""
+                        select %s
+                        from webhook_endpoints
+                        where status = 'ACTIVE' and (? = any(event_types) or '*' = any(event_types))
+                        order by id
+                        """.formatted(SELECT_COLUMNS))
                 .param(eventType)
                 .query(WebhookEndpointRow.class)
                 .list()

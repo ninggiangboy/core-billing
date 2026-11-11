@@ -22,10 +22,19 @@ public class JdbcWebhookEndpointReadRepository implements EndpointReadRepository
     @Override
     public List<WebhookEndpointView> list(UUID tenantSystemId) {
         if (tenantSystemId == null) {
-            return jdbc.sql("select " + COLUMNS + " from webhook_endpoints order by created_at, id")
+            return jdbc.sql("""
+                            select %s
+                            from webhook_endpoints
+                            order by created_at, id
+                            """.formatted(COLUMNS))
                     .query(WebhookEndpointView.class).list();
         }
-        return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where tenant_system_id = ? order by created_at, id")
+        return jdbc.sql("""
+                        select %s
+                        from webhook_endpoints
+                        where tenant_system_id = ?
+                        order by created_at, id
+                        """.formatted(COLUMNS))
                 .param(tenantSystemId)
                 .query(WebhookEndpointView.class)
                 .list();
@@ -34,12 +43,20 @@ public class JdbcWebhookEndpointReadRepository implements EndpointReadRepository
     @Override
     public Optional<WebhookEndpointView> findById(UUID id, UUID tenantSystemId) {
         if (tenantSystemId == null) {
-            return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where id = ?")
+            return jdbc.sql("""
+                            select %s
+                            from webhook_endpoints
+                            where id = ?
+                            """.formatted(COLUMNS))
                     .param(id)
                     .query(WebhookEndpointView.class)
                     .optional();
         }
-        return jdbc.sql("select " + COLUMNS + " from webhook_endpoints where id = ? and tenant_system_id = ?")
+        return jdbc.sql("""
+                        select %s
+                        from webhook_endpoints
+                        where id = ? and tenant_system_id = ?
+                        """.formatted(COLUMNS))
                 .params(id, tenantSystemId)
                 .query(WebhookEndpointView.class)
                 .optional();

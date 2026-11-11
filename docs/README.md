@@ -26,6 +26,7 @@ Documentation for two independently deployable systems: the **Core Billing Syste
 | [sample-tenant-system.md](sample-tenant-system.md) | The reference tenant and its integration scenarios |
 | [security-and-reliability.md](security-and-reliability.md) | Security and operational requirements |
 | [concurrency-and-locking.md](concurrency-and-locking.md) | Lock order, coordination transactions, and the lock safety net |
+| [runtime-profiles.md](runtime-profiles.md) | api, worker and migrate profiles, pools, probes and rollout order |
 
 ## Stateful records
 

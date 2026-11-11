@@ -1,7 +1,7 @@
 ---
 title: "Split the runtime into api and worker profiles"
 description: "One jar, three Spring profiles: HTTP api, background worker and Flyway migrate. Singleton heavy jobs through time-bounded leases, a shared Postgres rate limiter, and no new deadlock risk."
-status: in-progress
+status: completed
 priority: P1
 branch: dev
 tags: [backend, deployment, database, reliability]

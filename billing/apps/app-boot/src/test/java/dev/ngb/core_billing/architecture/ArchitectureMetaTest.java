@@ -47,6 +47,10 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("read-side-does-not-depend-on-write", "QueryReachesWritePort");
         CULPRIT_BY_RULE_ID.put("query-side-uses-no-domain-aggregates", "QueryReachesAggregate");
         CULPRIT_BY_RULE_ID.put("write-ports-serve-no-reads", "WritePort");
+        CULPRIT_BY_RULE_ID.put("application-classes-in-a-role-package", "StrayFeatureRootClass");
+        CULPRIT_BY_RULE_ID.put("command-package-holds-only-use-cases", "HelperInCommand");
+        CULPRIT_BY_RULE_ID.put("port-package-holds-no-implementations", "ImplementationInPort");
+        CULPRIT_BY_RULE_ID.put("repository-pair-shares-a-package", "JooqSplitReadRepository");
     }
 
     private static JavaClasses fixtures;

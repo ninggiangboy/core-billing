@@ -29,6 +29,8 @@ import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.StripeEvents;
+import dev.ngb.core_billing.support.UncommittedRace;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +69,7 @@ class InvoicePaymentIntegrationTest {
     @Autowired FakePaymentProvider stripe;
     @Autowired ScopeTestSupport scopes;
     @Autowired OwnerDatabase owner;
+    @Autowired UnitOfWork unitOfWork;
 
     @BeforeEach
     void resetStripe() {
@@ -210,6 +213,21 @@ class InvoicePaymentIntegrationTest {
                 debt.invoice().value(), debt.money().wallet().id(), debt.money().customerId(), Money.of(1, MoneyTestWorld.USD), "Other amount", "pay-1"))))
                 .isInstanceOf(IdempotencyConflictException.class);
         assertThat(owner.count("select count(*) from payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
+    }
+
+    @Test
+    void aPaymentArrivingWhileTheFirstIsUncommittedWaitsAndReplaysIt() throws Exception {
+        Debt debt = invoicedDebt();
+
+        var race = UncommittedRace.run(unitOfWork, scopes, owner, debt.money().tenant().id(), "insert into %\"payments\"%",
+                () -> pay(debt, "held-pay"), () -> pay(debt, "held-pay"));
+
+        assertThat(race.first().payment().replayed()).isFalse();
+        assertThat(race.second().payment().replayed()).as("the second insert found the key taken and replayed").isTrue();
+        assertThat(race.second().payment().paymentId()).isEqualTo(race.first().payment().paymentId());
+        assertThat(owner.count("select count(*) from payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
+        assertThat(owner.count("select count(*) from invoice_payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
+        assertThat(stripe.checkoutSessions.get()).isEqualTo(1);
     }
 
     @Test

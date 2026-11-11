@@ -26,6 +26,7 @@ import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
+import dev.ngb.core_billing.support.UncommittedRace;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -168,6 +169,22 @@ class CustomerIntegrationTest {
         assertThatThrownBy(() -> scopes.inTenant(tenant.id(), () -> customerQueries.get(new CustomerId(ids.newId()))))
                 .isInstanceOf(NotFoundException.class);
         assertThat(clock.now()).isNotNull();
+    }
+
+    @Test
+    void aDuplicateArrivingWhileTheFirstIsUncommittedWaitsAndReplaysIt() throws Exception {
+        Tenant tenant = scopes.newTenant();
+        TenantSystemId system = newSystem(tenant);
+
+        var race = UncommittedRace.run(unitOfWork, scopes, owner, tenant.id(), "insert into %\"customers\"%",
+                () -> scopes.inTenant(tenant.id(), () -> createCustomer.execute(command(system, "user_held", "Acme", "held-key"))),
+                () -> scopes.inTenant(tenant.id(), () -> createCustomer.execute(command(system, "user_held", "Acme", "held-key"))));
+
+        assertThat(race.first().replayed()).isFalse();
+        assertThat(race.second().replayed()).as("the second insert found the key taken and replayed").isTrue();
+        assertThat(race.second().customer().id()).isEqualTo(race.first().customer().id());
+        assertThat(race.second().customer().identities()).isEqualTo(race.first().customer().identities());
+        assertThat(owner.count("select count(*) from customers where tenant_id = ?", tenant.id().value())).isEqualTo(1);
     }
 
     @Test

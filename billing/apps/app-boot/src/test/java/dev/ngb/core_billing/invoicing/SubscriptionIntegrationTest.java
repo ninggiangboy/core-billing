@@ -23,6 +23,7 @@ import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
+import dev.ngb.core_billing.support.UncommittedRace;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -89,6 +90,22 @@ class SubscriptionIntegrationTest {
         assertThat(again.subscription().id()).isEqualTo(first.subscription().id());
         assertThat(owner.count("select count(*) from subscriptions where tenant_id = ?", world.tenant().id().value())).isEqualTo(1);
         assertThatThrownBy(() -> subscribe(world, proPlan(world), "sub-1")).isInstanceOf(IdempotencyConflictException.class);
+    }
+
+    @Test
+    void aCreateArrivingWhileTheFirstIsUncommittedWaitsAndReplaysIt() throws Exception {
+        World world = worlds.prepaid(100_000);
+        UUID plan = proPlan(world);
+
+        var race = UncommittedRace.run(unitOfWork, scopes, owner, world.tenant().id(), "insert into %\"subscriptions\"%",
+                () -> subscribe(world, plan, "held-sub"), () -> subscribe(world, plan, "held-sub"));
+
+        assertThat(race.first().replayed()).isFalse();
+        assertThat(race.second().replayed()).as("the second insert found the key taken and replayed").isTrue();
+        UUID id = race.first().subscription().id().value();
+        assertThat(race.second().subscription().id().value()).isEqualTo(id);
+        assertThat(owner.count("select count(*) from subscriptions where tenant_id = ?", world.tenant().id().value())).isEqualTo(1);
+        assertThat(owner.count("select count(*) from charges where reference = ?", "subscription:" + id + ":0")).as("one first-period charge").isEqualTo(1);
     }
 
     @Test

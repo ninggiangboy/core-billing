@@ -49,6 +49,7 @@ import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.StripeEvents;
+import dev.ngb.core_billing.support.UncommittedRace;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -214,6 +215,21 @@ class PaymentIntegrationTest {
         startTopUp(w, 5000, "reused");
 
         assertThatThrownBy(() -> startTopUp(w, 6000, "reused")).isInstanceOf(IdempotencyConflictException.class);
+    }
+
+    @Test
+    void aTopUpArrivingWhileTheFirstIsUncommittedWaitsAndReplaysIt() throws Exception {
+        PayWorld w = worlds.direct(0);
+
+        var race = UncommittedRace.run(unitOfWork, scopes, owner, w.money().tenant().id(), "insert into %\"payments\"%",
+                () -> startTopUp(w, 5000, "held-topup"), () -> startTopUp(w, 5000, "held-topup"));
+
+        assertThat(race.first().replayed()).isFalse();
+        assertThat(race.second().replayed()).as("the second insert found the key taken and replayed").isTrue();
+        assertThat(race.second().payment().id()).isEqualTo(race.first().payment().id());
+        assertThat(race.second().payment().checkoutUrl()).isEqualTo(race.first().payment().checkoutUrl());
+        assertThat(owner.count("select count(*) from payments where tenant_id = ?", w.money().tenant().id().value())).isEqualTo(1);
+        assertThat(stripe.checkoutSessions.get()).isEqualTo(1);
     }
 
     @Test
@@ -922,6 +938,23 @@ class PaymentIntegrationTest {
         assertThat(stripe.refunds).hasSize(1);
         assertThat(held(w)).isEqualTo(1000);
         assertThatThrownBy(() -> requestRefund(w, p, 2000L, "same")).isInstanceOf(IdempotencyConflictException.class);
+    }
+
+    @Test
+    void aRefundArrivingWhileTheFirstIsUncommittedWaitsOnThePaymentAndReplaysIt() throws Exception {
+        PayWorld w = worlds.direct(0);
+        Payment p = settledPayment(w, 5000);
+        TenantId tenant = w.money().tenant().id();
+        RequestRefundUseCase.Command command = new RequestRefundUseCase.Command(p.id(), null, "requested", "held-refund", AUDIT);
+
+        var race = UncommittedRace.run(unitOfWork, scopes, owner, tenant, "%from %\"payments\"%for update%",
+                () -> scopes.inTenant(tenant, () -> refund.execute(command)), () -> scopes.inTenant(tenant, () -> refund.execute(command)));
+
+        assertThat(race.first().replayed()).isFalse();
+        assertThat(race.second().replayed()).as("the key is read after the payment lock, so the refund is found").isTrue();
+        assertThat(race.second().refund().id()).isEqualTo(race.first().refund().id());
+        assertThat(owner.count("select count(*) from refunds where tenant_id = ?", tenant.value())).isEqualTo(1);
+        assertThat(held(w)).as("one hold").isEqualTo(5000);
     }
 
     @Test

@@ -49,19 +49,33 @@ public class JdbcWalletRepository implements WalletRepository {
 
     @Override
     public Optional<Wallet> lockById(WalletId id) {
-        return jdbc.sql("select " + COLUMNS + " from wallets where id = ? for update").param(id.value()).query(WalletRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from wallets
+                        where id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(id.value()).query(WalletRow.class).optional()
                 .map(WalletRow::toDomain);
     }
 
     @Override
     public Optional<Wallet> tryLockById(WalletId id) {
-        return jdbc.sql("select " + COLUMNS + " from wallets where id = ? for update skip locked").param(id.value()).query(WalletRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from wallets
+                        where id = ?
+                        for update skip locked
+                        """.formatted(COLUMNS)).param(id.value()).query(WalletRow.class).optional()
                 .map(WalletRow::toDomain);
     }
 
     @Override
     public Optional<Wallet> findByCustomer(CustomerId customerId, Currency currency) {
-        return jdbc.sql("select " + COLUMNS + " from wallets where customer_id = ? and currency = ?")
+        return jdbc.sql("""
+                        select %s
+                        from wallets
+                        where customer_id = ? and currency = ?
+                        """.formatted(COLUMNS))
                 .params(customerId.value(), currency.code())
                 .query(WalletRow.class)
                 .optional()

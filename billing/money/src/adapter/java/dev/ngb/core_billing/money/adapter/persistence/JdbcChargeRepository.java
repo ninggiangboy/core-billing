@@ -43,7 +43,11 @@ public class JdbcChargeRepository implements ChargeRepository {
 
     @Override
     public Optional<Charge> findByIdempotencyKey(String idempotencyKey) {
-        return jdbc.sql("select " + COLUMNS + " from charges where idempotency_key = ?").param(idempotencyKey).query(ChargeRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from charges
+                        where idempotency_key = ?
+                        """.formatted(COLUMNS)).param(idempotencyKey).query(ChargeRow.class).optional()
                 .map(ChargeRow::toDomain);
     }
 }

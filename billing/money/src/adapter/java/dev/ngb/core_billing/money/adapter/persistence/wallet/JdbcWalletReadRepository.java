@@ -52,12 +52,21 @@ public class JdbcWalletReadRepository implements WalletReadRepository {
 
     @Override
     public Optional<WalletView> findById(WalletId id) {
-        return jdbc.sql("select " + COLUMNS + " from wallets where id = ?").param(id.value()).query(Row.class).optional().map(Row::toView);
+        return jdbc.sql("""
+                        select %s
+                        from wallets
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id.value()).query(Row.class).optional().map(Row::toView);
     }
 
     @Override
     public List<WalletView> listByCustomer(CustomerId customerId) {
-        return jdbc.sql("select " + COLUMNS + " from wallets where customer_id = ? order by currency")
+        return jdbc.sql("""
+                        select %s
+                        from wallets
+                        where customer_id = ?
+                        order by currency
+                        """.formatted(COLUMNS))
                 .param(customerId.value())
                 .query(Row.class)
                 .list()

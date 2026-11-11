@@ -55,6 +55,10 @@ public class JdbcChargeReadRepository implements ChargeReadRepository {
 
     @Override
     public Optional<ChargeView> findById(ChargeId id) {
-        return jdbc.sql("select " + COLUMNS + " from charges where id = ?").param(id.value()).query(Row.class).optional().map(Row::toView);
+        return jdbc.sql("""
+                        select %s
+                        from charges
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id.value()).query(Row.class).optional().map(Row::toView);
     }
 }

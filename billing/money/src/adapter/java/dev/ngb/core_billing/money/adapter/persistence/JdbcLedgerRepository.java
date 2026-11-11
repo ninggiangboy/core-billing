@@ -35,7 +35,10 @@ public class JdbcLedgerRepository implements LedgerRepository {
     public void append(LedgerEntry entry) {
         LedgerEntryRow row = LedgerEntryRow.from(entry);
         try {
-            jdbc.sql("insert into ledger_entries (" + COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+            jdbc.sql("""
+                            insert into ledger_entries (%s)
+                            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """.formatted(COLUMNS))
                     .params(row.id(), row.tenantId(), row.walletId(), row.currency(), row.seq(), row.type(), row.amount(), row.reference(),
                             row.reservationId(), row.chargeId(), row.reversalOf(), row.actor(), row.reason(), row.idempotencyKey(),
                             Timestamp.from(row.createdAt()))
@@ -55,21 +58,33 @@ public class JdbcLedgerRepository implements LedgerRepository {
 
     @Override
     public Optional<LedgerEntry> findByIdempotencyKey(String idempotencyKey) {
-        return jdbc.sql("select " + COLUMNS + " from ledger_entries where idempotency_key = ?").param(idempotencyKey).query(LedgerEntryRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from ledger_entries
+                        where idempotency_key = ?
+                        """.formatted(COLUMNS)).param(idempotencyKey).query(LedgerEntryRow.class)
                 .optional()
                 .map(LedgerEntryRow::toDomain);
     }
 
     @Override
     public Optional<LedgerEntry> findByCharge(ChargeId chargeId) {
-        return jdbc.sql("select " + COLUMNS + " from ledger_entries where charge_id = ?").param(chargeId.value()).query(LedgerEntryRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from ledger_entries
+                        where charge_id = ?
+                        """.formatted(COLUMNS)).param(chargeId.value()).query(LedgerEntryRow.class)
                 .optional()
                 .map(LedgerEntryRow::toDomain);
     }
 
     @Override
     public Optional<LedgerEntry> findReversalOf(LedgerEntryId original) {
-        return jdbc.sql("select " + COLUMNS + " from ledger_entries where reversal_of = ?").param(original.value()).query(LedgerEntryRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from ledger_entries
+                        where reversal_of = ?
+                        """.formatted(COLUMNS)).param(original.value()).query(LedgerEntryRow.class)
                 .optional()
                 .map(LedgerEntryRow::toDomain);
     }

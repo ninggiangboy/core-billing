@@ -52,6 +52,10 @@ public class JdbcReservationReadRepository implements ReservationReadRepository 
 
     @Override
     public Optional<ReservationView> findById(ReservationId id) {
-        return jdbc.sql("select " + COLUMNS + " from reservations where id = ?").param(id.value()).query(Row.class).optional().map(Row::toView);
+        return jdbc.sql("""
+                        select %s
+                        from reservations
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id.value()).query(Row.class).optional().map(Row::toView);
     }
 }

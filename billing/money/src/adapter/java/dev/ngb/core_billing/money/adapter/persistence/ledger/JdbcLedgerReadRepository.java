@@ -57,7 +57,13 @@ public class JdbcLedgerReadRepository implements LedgerReadRepository {
 
     @Override
     public List<LedgerEntryView> page(WalletId walletId, long afterSequence, int limit) {
-        return jdbc.sql("select " + COLUMNS + " from ledger_entries where wallet_id = ? and seq > ? order by seq limit ?")
+        return jdbc.sql("""
+                        select %s
+                        from ledger_entries
+                        where wallet_id = ? and seq > ?
+                        order by seq
+                        limit ?
+                        """.formatted(COLUMNS))
                 .params(walletId.value(), afterSequence, limit)
                 .query(Row.class)
                 .list()

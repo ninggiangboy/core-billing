@@ -52,7 +52,11 @@ public class JdbcReservationRepository implements ReservationRepository {
 
     @Override
     public Optional<Reservation> findByIdempotencyKey(String idempotencyKey) {
-        return jdbc.sql("select " + COLUMNS + " from reservations where idempotency_key = ?").param(idempotencyKey).query(ReservationRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from reservations
+                        where idempotency_key = ?
+                        """.formatted(COLUMNS)).param(idempotencyKey).query(ReservationRow.class)
                 .optional()
                 .map(ReservationRow::toDomain);
     }

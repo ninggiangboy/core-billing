@@ -159,7 +159,7 @@ class MultiInstanceRuntimeIntegrationTest {
                 "--billing.webhooks.backoff-cap=PT1S",
                 "--billing.webhooks.max-attempts=5",
                 "--billing.webhooks.allow-insecure-targets=true",
-                "--billing.jobs.verify-ledger-cron=0 0 0 1 1 *",
+                "--billing.jobs.verify-ledger-initial-delay=PT1H",
                 "--billing.jobs.expire-reservations-delay=PT1H",
                 "--billing.rate-limit.cleanup-delay=PT1H",
                 "--spring.task.scheduling.shutdown.await-termination=false"));

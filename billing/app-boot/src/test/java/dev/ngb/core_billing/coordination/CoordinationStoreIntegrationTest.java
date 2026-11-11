@@ -52,6 +52,9 @@ class CoordinationStoreIntegrationTest {
         assertThat(runs.claim(job, "2026-11-11", tenant)).as("a repeated claim does nothing").isFalse();
         assertThat(runs.claim(job, "2026-11-11", UUID.randomUUID())).as("another tenant has its own run").isTrue();
         assertThat(runs.claim(job, "2026-11-12", tenant)).as("the next key runs again").isTrue();
+
+        runs.release(job, "2026-11-11", tenant);
+        assertThat(runs.claim(job, "2026-11-11", tenant)).as("a released claim can be taken again").isTrue();
     }
 
     @Test

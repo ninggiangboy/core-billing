@@ -16,11 +16,14 @@ as the unprivileged application role with Flyway switched off, so a rolling star
 ## What each profile owns
 
 - **Jobs.** `worker` owns outbox relay, webhook delivery, subscription renewal, billing cycle close, reservation
-  expiry, ledger verification, Stripe retry and reconciliation, Stripe reconciliation and rate-limit cleanup.
+  expiry, ledger verification, Stripe retry, Stripe reconciliation and rate-limit cleanup.
   `api` owns none of them. A test asserts both halves.
 - **Jobs that must not run twice.** Ledger verification and Stripe reconciliation take a time-bounded lease in
-  `job_leases`; a per-day `job_runs` record makes a second ledger verification the same day a no-op. The platform
-  bootstrap runs under the same lease, so two instances starting together do not both seed. See
+  `job_leases`; a per-day `job_runs` record makes a second ledger verification the same day a no-op. Ledger
+  verification runs on a short fixed delay from 03:00 UTC rather than once at 03:00: a worker that dies mid-round
+  hands the remaining tenants to the next tick of another worker once the lease expires, and a tenant whose
+  verification failed gives its run record back so a later tick tries it again. The platform bootstrap runs under
+  the same lease, so two instances starting together do not both seed. See
   [concurrency-and-locking.md](concurrency-and-locking.md).
 - **Skip-locked jobs.** Outbox, webhook delivery, subscription renewal, billing cycle close and reservation expiry
   already claim one row at a time with `for update skip locked`, so they stay multi-worker safe and are deliberately

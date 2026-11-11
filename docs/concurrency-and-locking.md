@@ -33,9 +33,10 @@ Two consequences:
    This is why a lease table is used instead of an advisory lock. If an advisory lock is ever unavoidable, only
    `pg_try_advisory_lock` is allowed; the blocking forms are forbidden.
 2. **One statement touches one lease row.** A multi-row update has no defined lock order and can deadlock.
-3. **A run record is claimed before the work.** `job_runs` is inserted with `on conflict do nothing` in its own
-   short transaction. A second run for the same key and Tenant inserts nothing and does no work. The claim is not
-   inserted at the end of a long transaction.
+3. **A run record is claimed before the work, and released when it fails.** `job_runs` is inserted with
+   `on conflict do nothing` in its own short transaction. A second run for the same key and Tenant inserts nothing
+   and does no work. The claim is not inserted at the end of a long transaction. A failed attempt deletes the claim,
+   so a later tick retries that key instead of waiting for the next day.
 4. **The rate limiter runs in the authentication step, alone.** It is one function call that locks one bucket row in
    its own transaction. It never runs inside a business transaction: that would put a rate-limit row in front of the
    wallet and add a new lock edge to every money path. A request whose key does not authenticate spends one of a

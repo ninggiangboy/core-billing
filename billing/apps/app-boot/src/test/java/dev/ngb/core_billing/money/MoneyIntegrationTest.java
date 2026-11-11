@@ -44,6 +44,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -197,6 +198,84 @@ class MoneyIntegrationTest {
             assertThat(count("ledger_entries", w)).isEqualTo(2);
         } finally {
             pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void concurrentReservationsWithOneKeyHoldOnce() throws Exception {
+        World w = worlds.prepaid(10_000);
+        ExecutorService pool = Executors.newFixedThreadPool(8);
+        try {
+            List<CompletableFuture<ReservationResult>> futures = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                futures.add(CompletableFuture.supplyAsync(() -> scopes.inTenant(w.tenant().id(), () -> reserveBudget.reserve(
+                        new ReserveBudgetCommand(w.wallet().id(), usd(700), Duration.ofMinutes(5), "vm", "parallel-res"))), pool));
+            }
+            Set<Object> ids = new HashSet<>();
+            for (var future : futures) {
+                ids.add(future.get(60, TimeUnit.SECONDS).id());
+            }
+            assertThat(ids).hasSize(1);
+            assertThat(count("reservations", w)).isEqualTo(1);
+            assertThat(wallet(w).held()).isEqualTo(usd(700));
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void theSameChargeKeyOnTwoWalletsConcurrentlyConflicts() throws Exception {
+        World a = worlds.prepaid(10_000);
+        World b = worlds.anotherWallet(a, 10_000);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            CompletableFuture<Object> one = CompletableFuture.supplyAsync(() -> attempt(start, () -> charge(a, 100, "cross-charge")), pool);
+            CompletableFuture<Object> two = CompletableFuture.supplyAsync(() -> attempt(start, () -> charge(b, 100, "cross-charge")), pool);
+            start.countDown();
+
+            Object first = one.get(60, TimeUnit.SECONDS);
+            Object second = two.get(60, TimeUnit.SECONDS);
+            assertThat(List.of(first, second)).filteredOn(ChargeResult.class::isInstance).as("one wallet wins").hasSize(1);
+            assertThat(List.of(first, second)).filteredOn(IdempotencyConflictException.class::isInstance).hasSize(1);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void theSameReservationKeyOnTwoWalletsConcurrentlyConflicts() throws Exception {
+        World a = worlds.prepaid(10_000);
+        World b = worlds.anotherWallet(a, 10_000);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            CompletableFuture<Object> one = CompletableFuture.supplyAsync(() -> attempt(start,
+                    () -> scopes.inTenant(a.tenant().id(), () -> reserveBudget.reserve(
+                            new ReserveBudgetCommand(a.wallet().id(), usd(100), Duration.ofMinutes(5), "vm", "cross-res")))), pool);
+            CompletableFuture<Object> two = CompletableFuture.supplyAsync(() -> attempt(start,
+                    () -> scopes.inTenant(b.tenant().id(), () -> reserveBudget.reserve(
+                            new ReserveBudgetCommand(b.wallet().id(), usd(100), Duration.ofMinutes(5), "vm", "cross-res")))), pool);
+            start.countDown();
+
+            Object first = one.get(60, TimeUnit.SECONDS);
+            Object second = two.get(60, TimeUnit.SECONDS);
+            assertThat(List.of(first, second)).filteredOn(ReservationResult.class::isInstance).as("one wallet wins").hasSize(1);
+            assertThat(List.of(first, second)).filteredOn(IdempotencyConflictException.class::isInstance).hasSize(1);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    private static Object attempt(CountDownLatch start, java.util.function.Supplier<?> work) {
+        try {
+            start.await(10, TimeUnit.SECONDS);
+            return work.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new IllegalStateException(e);
+        } catch (RuntimeException e) {
+            return e;
         }
     }
 

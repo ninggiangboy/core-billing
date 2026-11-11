@@ -1141,8 +1141,8 @@ paths:
               $ref: "#/components/schemas/ReserveRequest"
         required: true
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           content:
             '*/*':
               schema:

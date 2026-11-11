@@ -81,10 +81,15 @@ public class ChargeController {
         return ChargeResponse.ofView(new ChargeResult(found.id(), found.status(), found.failureReason(), found.amount(), null, false), found);
     }
 
-    /** 201 for a recorded charge; 402 when the wallet could not pay (the failure is recorded and repeatable). */
+    /**
+     * 201 for a new recorded charge, 200 when a replayed key returns the earlier charge, and 402 when the wallet
+     * could not pay (the failure is recorded and repeatable).
+     */
     private ResponseEntity<ChargeResponse> chargeResponse(ChargeResult result, UUID caller) {
         ChargeView stored = queries.charge(result.id(), caller);
-        HttpStatus status = result.status() == ChargeStatus.FAILED ? HttpStatus.PAYMENT_REQUIRED : HttpStatus.CREATED;
+        HttpStatus status = result.status() == ChargeStatus.FAILED
+                ? HttpStatus.PAYMENT_REQUIRED
+                : result.replayed() ? HttpStatus.OK : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(ChargeResponse.ofView(result, stored));
     }
 }

@@ -398,6 +398,7 @@ class PricingUsageHttpIntegrationTest {
         assertThat(parse(created).get("estimate").get("amount").get("amount").asLong()).isEqualTo(14);
         assertThat(parse(created).get("reservation").get("amount").get("amount").asLong()).isEqualTo(14);
         MvcResult replay = withHeader(ops, "/api/v1/pricing/reservations", key, request);
+        assertThat(replay.getResponse().getStatus()).as("a replayed reservation answers 200").isEqualTo(200);
         assertThat(parse(replay).get("reservation").get("id").asString()).isEqualTo(parse(created).get("reservation").get("id").asString());
         assertThat(parse(replay).get("reservation").get("replayed").asBoolean()).isTrue();
         assertThat(ok(call(acme, ops, HttpMethod.GET, "/api/v1/wallets/" + wallet, null)).get("held").get("amount").asLong()).isEqualTo(14);

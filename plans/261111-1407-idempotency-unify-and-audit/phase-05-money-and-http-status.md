@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Money: conflict mapping and replay status"
-status: pending
+status: completed
 priority: P2
 effort: "3h"
 dependencies: [1]
@@ -40,22 +40,22 @@ wallets, and answer 200 on replay.
 
 ## Tasks & Steps
 
-- [ ] 1. In the charge and reservation repositories, map only `Causes.violates(e, <TABLE>_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName())`
+- [x] 1. In the charge and reservation repositories, map only `Causes.violates(e, <TABLE>_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName())`
       to `IdempotencyConflictException(scope, key)`. Leave every other duplicate as it is.
-- [ ] 2. In `JooqLedgerRepository.append`, map the key constraint to `IdempotencyConflictException("ledger", key)`.
+- [x] 2. In `JooqLedgerRepository.append`, map the key constraint to `IdempotencyConflictException("ledger", key)`.
       A `(wallet_id, seq)` clash means the wallet lock was skipped, so it becomes an `IllegalStateException` that names it.
-- [ ] 3. Javadoc on `ChargeUseCase` and `ReserveBudgetUseCase`: the key is read after the wallet lock, which is what makes
+- [x] 3. Javadoc on `ChargeUseCase` and `ReserveBudgetUseCase`: the key is read after the wallet lock, which is what makes
       the read race-free under READ COMMITTED; do not move it above the lock.
-- [ ] 4. HTTP: charge and capture answer 200 when `replayed` and the charge succeeded, 402 for a failed charge
+- [x] 4. HTTP: charge and capture answer 200 when `replayed` and the charge succeeded, 402 for a failed charge
       whether replayed or not, and 201 otherwise. Reservation and pricing reservation answer 200 when replayed and 201
       otherwise. Update each javadoc.
-- [ ] 5. Tests:
+- [x] 5. Tests:
        - 8 parallel reservations with one key give one reservation and one hold.
        - The same key on two wallets, concurrently, for a charge and for a reservation: one success and one 409 with the
          idempotency-conflict message.
        - An HTTP replay of a charge, a capture, a reservation and a pricing reservation answers 200 with the same id.
          A failed charge replays as 402.
-- [ ] 6. Regenerate the API contract: `./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true`.
+- [x] 6. Regenerate the API contract: `./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true`.
 
 ## Verification
 

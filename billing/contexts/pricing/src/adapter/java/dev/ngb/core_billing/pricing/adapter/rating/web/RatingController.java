@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** What is done with a plan: cost estimation, reserving the estimate, and charging usage. Amounts that are charged are integers in minor units. */
@@ -132,16 +131,16 @@ public class RatingController {
         return EstimateResponse.of(estimates.estimate(new EstimateCostUseCase.Request(PricingPlanId.of(required(request.planId(), "planId")), request.version(), request.at(), measures(request.usage()))));
     }
 
-    /** Holds the estimated cost on the wallet. 201 on success, 402 when the wallet cannot cover it. */
+    /** Holds the estimated cost on the wallet. 201 for a new reservation, 200 when the key replays one, 402 when the wallet cannot cover it. */
     @PostMapping("/pricing/reservations")
-    @ResponseStatus(HttpStatus.CREATED)
     @RequiresPermission(Permission.RESERVATION_MANAGE)
-    public ReserveResponse reserveEstimate(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
+    public ResponseEntity<ReserveResponse> reserveEstimate(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
         ReserveFromEstimateUseCase.Result result = reserve.reserve(new ReserveFromEstimateUseCase.Command(
                 WalletId.of(required(request.walletId(), "walletId")), PricingPlanId.of(required(request.planId(), "planId")), request.version(), request.at(),
                 measures(request.usage()),
                 Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, currentActor.caller()));
-        return new ReserveResponse(EstimateResponse.of(result.estimate()), ReservationDto.of(result.reservation()));
+        HttpStatus status = result.reservation().replayed() ? HttpStatus.OK : HttpStatus.CREATED;
+        return ResponseEntity.status(status).body(new ReserveResponse(EstimateResponse.of(result.estimate()), ReservationDto.of(result.reservation())));
     }
 
     /**

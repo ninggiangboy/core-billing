@@ -77,7 +77,7 @@ created: 2026-11-11
 | 2 | [Customer key on the row, store removed](./phase-02-customer-row-key.md) | 4h | completed |
 | 3 | [Payment: top-up, invoice payment, refund](./phase-03-payment-flows.md) | 3h | completed |
 | 4 | [Subscription create](./phase-04-subscription-create.md) | 1.5h | completed |
-| 5 | [Money: conflict mapping and replay status](./phase-05-money-and-http-status.md) | 3h | pending |
+| 5 | [Money: conflict mapping and replay status](./phase-05-money-and-http-status.md) | 3h | completed |
 | 6 | [Docs and full verification](./phase-06-docs-and-verification.md) | 1.5h | pending |
 
 Phases run in order. Phase 1 blocks all others. Phases 3, 4 and 5 touch disjoint contexts, but all

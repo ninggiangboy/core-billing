@@ -7,6 +7,7 @@ import dev.ngb.core_billing.money.api.reservation.ReservationStatus;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
@@ -46,6 +47,9 @@ public class JooqReservationRepository implements ReservationRepository {
                     .set(RESERVATIONS.REQUEST_HASH, r.requestHash())
                     .execute();
         } catch (RuntimeException e) {
+            if (Causes.violates(e, "reservations_tenant_id_idempotency_key_key")) {
+                throw new IdempotencyConflictException("reservation", r.idempotencyKey());
+            }
             if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this idempotency key was already used for a reservation");
             }

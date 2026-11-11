@@ -9,6 +9,7 @@ import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
 import dev.ngb.core_billing.money.domain.charge.Charge;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
@@ -47,6 +48,9 @@ public class JooqChargeRepository implements ChargeRepository {
                     .set(CHARGES.CREATED_AT, c.createdAt())
                     .execute();
         } catch (RuntimeException e) {
+            if (Causes.violates(e, "charges_tenant_id_idempotency_key_key")) {
+                throw new IdempotencyConflictException("charge", c.idempotencyKey());
+            }
             if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this idempotency key was already used for a charge");
             }

@@ -23,6 +23,10 @@ import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 /**
  * Checks that the wallet can cover the amount (or the Postpaid limit) and holds it for a bounded time, once per
  * idempotency key. Nothing is posted to the ledger until the reservation is captured.
+ * <p>
+ * The key is read after the wallet lock, which is what makes the read race-free under READ COMMITTED: a
+ * concurrent duplicate waits on that lock and then sees the reservation the first request wrote. Do not move
+ * the read above the lock.
  */
 public class ReserveBudgetUseCase implements ReserveBudget {
 

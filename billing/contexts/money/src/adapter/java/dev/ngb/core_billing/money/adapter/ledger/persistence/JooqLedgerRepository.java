@@ -9,6 +9,7 @@ import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
@@ -51,6 +52,12 @@ public class JooqLedgerRepository implements LedgerRepository {
                     .set(LEDGER_ENTRIES.CREATED_AT, entry.createdAt())
                     .execute();
         } catch (RuntimeException e) {
+            if (Causes.violates(e, "ledger_entries_tenant_id_idempotency_key_key")) {
+                throw new IdempotencyConflictException("ledger", entry.origin().idempotencyKey());
+            }
+            if (Causes.violates(e, "ledger_entries_wallet_id_seq_key")) {
+                throw new IllegalStateException("the wallet sequence was assigned without holding the wallet lock", e);
+            }
             if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this idempotency key or entry was already posted");
             }

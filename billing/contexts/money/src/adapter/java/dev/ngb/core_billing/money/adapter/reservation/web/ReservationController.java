@@ -61,7 +61,8 @@ public class ReservationController {
         ReservationResult result = reserve.reserve(new ReserveBudgetCommand(
                 WalletId.of(request.walletId()), new MoneyDto(request.amount(), request.currency()).toMoney(),
                 Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, currentActor.caller()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.ofView(queries.reservation(result.id(), currentActor.caller())));
+        return ResponseEntity.status(result.replayed() ? HttpStatus.OK : HttpStatus.CREATED)
+                .body(ReservationResponse.ofView(queries.reservation(result.id(), currentActor.caller())));
     }
 
     @GetMapping("/reservations/{id}")

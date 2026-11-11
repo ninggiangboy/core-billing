@@ -30,6 +30,10 @@ import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
  * Records the actual cost incurred, from usage, from a reservation or on its own, once per idempotency key.
  * The charge, the ledger entry, the wallet projection, the reservation state and the outbox event commit in
  * one transaction. A wallet that cannot pay yields a recorded {@code insufficient_funds} failure, not an error.
+ * <p>
+ * The key is read after the wallet lock, which is what makes the read race-free under READ COMMITTED: a
+ * concurrent duplicate waits on that lock and then sees the charge the first request wrote. Do not move the
+ * read above the lock.
  */
 public class ChargeUseCase implements ChargeWallet {
 

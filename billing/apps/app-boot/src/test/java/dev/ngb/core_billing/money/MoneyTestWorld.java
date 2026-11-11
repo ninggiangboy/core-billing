@@ -45,6 +45,17 @@ public class MoneyTestWorld {
         return world(WalletMode.POSTPAID, creditLimit, 0);
     }
 
+    /** A second prepaid wallet in the same tenant, owned by another customer, for cross-wallet races. */
+    public World anotherWallet(World base, long initialBalance) {
+        Tenant tenant = base.tenant();
+        CustomerId customerId = scopes.inTenant(tenant.id(), () -> createCustomer.execute(new CreateCustomerUseCase.Command(
+                null, null, "Customer " + UUID.randomUUID(), null, UUID.randomUUID().toString(), new Audit("user/test", "req"))).customer().id());
+        Wallet wallet = scopes.inTenant(tenant.id(), () -> openWallet.execute(new OpenWalletUseCase.Command(
+                customerId, USD, WalletMode.PREPAID, null, new Audit("user/test", "req"))).wallet());
+        credit(tenant, wallet, initialBalance);
+        return new World(tenant, customerId, wallet);
+    }
+
     private World world(WalletMode mode, long limit, long initialBalance) {
         Tenant tenant = scopes.newTenant();
         CustomerId customerId = scopes.inTenant(tenant.id(), () -> createCustomer.execute(new CreateCustomerUseCase.Command(

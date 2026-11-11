@@ -143,9 +143,10 @@ class MoneyHttpIntegrationTest {
                 HttpWorld.Map2.of("walletId", wallet, "amount", 4_000, "currency", "USD", "ttlSeconds", 600, "reference", "vm-1"));
         assertThat(reserved.getResponse().getStatus()).isEqualTo(201);
         String reservationId = parse(reserved).get("id").asString();
-        assertThat(parse(post(acme, key, "res-1", "/api/v1/reservations",
-                HttpWorld.Map2.of("walletId", wallet, "amount", 4_000, "currency", "USD", "ttlSeconds", 600, "reference", "vm-1"))).get("id").asString())
-                .isEqualTo(reservationId);
+        MvcResult reservationReplay = post(acme, key, "res-1", "/api/v1/reservations",
+                HttpWorld.Map2.of("walletId", wallet, "amount", 4_000, "currency", "USD", "ttlSeconds", 600, "reference", "vm-1"));
+        assertThat(reservationReplay.getResponse().getStatus()).as("a replayed reservation answers 200").isEqualTo(200);
+        assertThat(parse(reservationReplay).get("id").asString()).isEqualTo(reservationId);
         assertThat(post(acme, key, "res-2", "/api/v1/reservations", HttpWorld.Map2.of("walletId", wallet, "amount", 6_001, "currency", "USD"))
                 .getResponse().getStatus()).as("more than is available").isEqualTo(402);
 
@@ -153,9 +154,10 @@ class MoneyHttpIntegrationTest {
                 HttpWorld.Map2.of("amount", 2_500, "currency", "USD", "reference", "vm-1 final"));
         assertThat(capture.getResponse().getStatus()).isEqualTo(201);
         assertThat(parse(capture).get("status").asString()).isEqualTo("SUCCEEDED");
-        assertThat(parse(post(acme, key, "cap-1", "/api/v1/reservations/" + reservationId + "/capture",
-                HttpWorld.Map2.of("amount", 2_500, "currency", "USD", "reference", "vm-1 final"))).get("id").asString())
-                .isEqualTo(parse(capture).get("id").asString());
+        MvcResult captureReplay = post(acme, key, "cap-1", "/api/v1/reservations/" + reservationId + "/capture",
+                HttpWorld.Map2.of("amount", 2_500, "currency", "USD", "reference", "vm-1 final"));
+        assertThat(captureReplay.getResponse().getStatus()).as("a replayed capture answers 200").isEqualTo(200);
+        assertThat(parse(captureReplay).get("id").asString()).isEqualTo(parse(capture).get("id").asString());
 
         JsonNode afterCapture = world.body(world.call(HttpMethod.GET, acme.host(), key, "/api/v1/wallets/" + wallet, null));
         assertThat(afterCapture.get("balance").get("amount").asLong()).isEqualTo(7_500);
@@ -166,6 +168,10 @@ class MoneyHttpIntegrationTest {
                 HttpWorld.Map2.of("walletId", wallet, "amount", 500, "currency", "USD", "usageRef", "usage-42")));
         assertThat(charge.get("status").asString()).isEqualTo("SUCCEEDED");
         assertThat(charge.get("usageRef").asString()).isEqualTo("usage-42");
+        MvcResult chargeReplay = post(acme, key, "chg-1", "/api/v1/charges",
+                HttpWorld.Map2.of("walletId", wallet, "amount", 500, "currency", "USD", "usageRef", "usage-42"));
+        assertThat(chargeReplay.getResponse().getStatus()).as("a replayed charge answers 200").isEqualTo(200);
+        assertThat(parse(chargeReplay).get("id").asString()).isEqualTo(charge.get("id").asString());
         assertThat(world.body(world.call(HttpMethod.GET, acme.host(), key, "/api/v1/charges/" + charge.get("id").asString(), null)).get("status").asString())
                 .isEqualTo("SUCCEEDED");
         assertThat(post(acme, key, "chg-1", "/api/v1/charges", HttpWorld.Map2.of("walletId", wallet, "amount", 501, "currency", "USD", "usageRef", "usage-42"))

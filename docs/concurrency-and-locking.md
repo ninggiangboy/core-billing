@@ -33,10 +33,12 @@ Two consequences:
    This is why a lease table is used instead of an advisory lock. If an advisory lock is ever unavoidable, only
    `pg_try_advisory_lock` is allowed; the blocking forms are forbidden.
 2. **One statement touches one lease row.** A multi-row update has no defined lock order and can deadlock.
-3. **A run record is claimed before the work, and released when it fails.** `job_runs` is inserted with
-   `on conflict do nothing` in its own short transaction. A second run for the same key and Tenant inserts nothing
-   and does no work. The claim is not inserted at the end of a long transaction. A failed attempt deletes the claim,
-   so a later tick retries that key instead of waiting for the next day.
+3. **A run record is claimed before the work, released when it fails and marked finished when it succeeds.**
+   `job_runs` is inserted in its own short transaction; a conflicting claim inserts nothing and does no work. The
+   claim is not inserted at the end of a long transaction. A failed attempt deletes the claim, so a later tick
+   retries that key instead of waiting for the next day. A successful run sets `finished_at`, so it is never
+   repeated. A claim left unfinished by a process that died is taken over once it is older than the job's TTL, so
+   that Tenant does not lose its run for the day.
 4. **The rate limiter runs in the authentication step, alone.** It is one function call that locks one bucket row in
    its own transaction. It never runs inside a business transaction: that would put a rate-limit row in front of the
    wallet and add a new lock edge to every money path. A request whose key does not authenticate spends one of a
@@ -56,9 +58,10 @@ Two consequences:
    `application-worker.yml` and `application-migrate.yml`; they are starting points to measure under load.
 9. **Treat `40P01` and `55P03` as retryable.** The api answers 503 with `Retry-After` and expects the caller to
    repeat the request with the same `Idempotency-Key`; every money operation has one. A job logs the round and
-   retries on its next tick without counting an attempt: renewal leaves the period due, and the Stripe retry and the
-   outbox relay leave the row due. None of them turns a lock that simply timed out into a failure notice or a dead
-   letter.
+   retries on its next tick without counting an attempt: renewal leaves the period due, the Stripe event retry and
+   the outbox relay leave the row due, and reconciliation leaves the item for the next run. A contended row is
+   passed over for the rest of the tick, so it cannot starve the rows behind it. None of them turns a lock that
+   simply timed out into a failure notice, a reconciliation incident or a dead letter.
 
 ## Adding a flow
 

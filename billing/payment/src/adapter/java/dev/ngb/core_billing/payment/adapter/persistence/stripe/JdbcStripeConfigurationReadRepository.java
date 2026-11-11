@@ -55,7 +55,11 @@ public class JdbcStripeConfigurationReadRepository implements StripeConfiguratio
 
     @Override
     public Optional<StripeConfigurationView> findLive() {
-        return jdbc.sql("select " + COLUMNS + " from stripe_configurations where status <> 'DISCONNECTED'")
+        return jdbc.sql("""
+                        select %s
+                        from stripe_configurations
+                        where status <> 'DISCONNECTED'
+                        """.formatted(COLUMNS))
                 .query(Row.class)
                 .optional()
                 .map(Row::toView);

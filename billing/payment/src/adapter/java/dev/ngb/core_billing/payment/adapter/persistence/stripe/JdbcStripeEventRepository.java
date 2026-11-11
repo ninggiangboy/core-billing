@@ -34,8 +34,11 @@ public class JdbcStripeEventRepository implements StripeEventRepository {
     public boolean insertIfAbsent(StripeEvent e) {
         // The inbox is first-writer-wins per Stripe account and event id.
         StripeEventRow row = StripeEventRow.from(e);
-        return jdbc.sql("insert into stripe_events (" + COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-                        + "on conflict (stripe_account, event_id) do nothing")
+        return jdbc.sql("""
+                        insert into stripe_events (%s)
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        on conflict (stripe_account, event_id) do nothing
+                        """.formatted(COLUMNS))
                 .params(row.id(), row.tenantId(), row.configurationId(), row.stripeAccount(), row.eventId(), row.type(), row.livemode(), row.payload(),
                         row.status(), row.attempts(), Rows.timestamp(row.nextAttemptAt()), row.lastError(), Rows.timestamp(row.receivedAt()),
                         Rows.timestamp(row.processedAt()))
@@ -54,7 +57,12 @@ public class JdbcStripeEventRepository implements StripeEventRepository {
 
     @Override
     public Optional<StripeEvent> lockById(StoredEventId id) {
-        return jdbc.sql("select " + COLUMNS + " from stripe_events where id = ? for update").param(id.value()).query(StripeEventRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from stripe_events
+                        where id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(id.value()).query(StripeEventRow.class)
                 .optional()
                 .map(StripeEventRow::toDomain);
     }

@@ -42,7 +42,11 @@ public class JdbcStripeEventReadRepository implements StripeEventReadRepository 
     @Override
     public List<StripeEventView> list(EventStatus status, UUID before, int limit) {
         List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from stripe_events where true");
+        StringBuilder sql = new StringBuilder("""
+                        select %s
+                        from stripe_events
+                        where true
+                        """.formatted(COLUMNS));
         if (status != null) {
             sql.append(" and status = ?");
             params.add(status.name());
@@ -58,12 +62,21 @@ public class JdbcStripeEventReadRepository implements StripeEventReadRepository 
 
     @Override
     public Optional<StripeEventView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from stripe_events where id = ?").param(id).query(Row.class).optional().map(Row::toView);
+        return jdbc.sql("""
+                        select %s
+                        from stripe_events
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id).query(Row.class).optional().map(Row::toView);
     }
 
     @Override
     public List<EventAttemptView> attempts(UUID eventId) {
-        return jdbc.sql("select attempt_no as attempt, outcome, detail, attempted_at from stripe_event_attempts where event_row_id = ? order by attempt_no")
+        return jdbc.sql("""
+                        select attempt_no as attempt, outcome, detail, attempted_at
+                        from stripe_event_attempts
+                        where event_row_id = ?
+                        order by attempt_no
+                        """)
                 .param(eventId)
                 .query(EventAttemptView.class)
                 .list();

@@ -47,27 +47,46 @@ public class JdbcPaymentRepository implements PaymentRepository {
 
     @Override
     public Optional<Payment> lockById(PaymentId id) {
-        return jdbc.sql("select " + COLUMNS + " from payments where id = ? for update").param(id.value()).query(PaymentRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from payments
+                        where id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(id.value()).query(PaymentRow.class).optional()
                 .map(PaymentRow::toDomain);
     }
 
     @Override
     public Optional<Payment> lockByCheckoutSession(String sessionId) {
-        return jdbc.sql("select " + COLUMNS + " from payments where checkout_session_id = ? for update").param(sessionId).query(PaymentRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from payments
+                        where checkout_session_id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(sessionId).query(PaymentRow.class)
                 .optional()
                 .map(PaymentRow::toDomain);
     }
 
     @Override
     public Optional<Payment> lockByPaymentIntent(String intentId) {
-        return jdbc.sql("select " + COLUMNS + " from payments where payment_intent_id = ? for update").param(intentId).query(PaymentRow.class)
+        return jdbc.sql("""
+                        select %s
+                        from payments
+                        where payment_intent_id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(intentId).query(PaymentRow.class)
                 .optional()
                 .map(PaymentRow::toDomain);
     }
 
     @Override
     public Optional<Payment> findByIdempotencyKey(String key) {
-        return jdbc.sql("select " + COLUMNS + " from payments where idempotency_key = ?").param(key).query(PaymentRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from payments
+                        where idempotency_key = ?
+                        """.formatted(COLUMNS)).param(key).query(PaymentRow.class).optional()
                 .map(PaymentRow::toDomain);
     }
 
@@ -85,8 +104,12 @@ public class JdbcPaymentRepository implements PaymentRepository {
 
     @Override
     public List<PaymentAttempt> attempts(PaymentId id) {
-        return jdbc.sql("select id, tenant_id, payment_id, stripe_event_id, failure_code, failure_message, occurred_at from payment_attempts "
-                        + "where payment_id = ? order by occurred_at, id")
+        return jdbc.sql("""
+                        select id, tenant_id, payment_id, stripe_event_id, failure_code, failure_message, occurred_at
+                        from payment_attempts
+                        where payment_id = ?
+                        order by occurred_at, id
+                        """)
                 .param(id.value())
                 .query(PaymentAttemptRow.class)
                 .list()

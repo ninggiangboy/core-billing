@@ -50,7 +50,12 @@ public class JdbcRefundReadRepository implements RefundReadRepository {
 
     @Override
     public List<RefundView> byPayment(UUID paymentId) {
-        return jdbc.sql("select " + COLUMNS + " from refunds where payment_id = ? order by id")
+        return jdbc.sql("""
+                        select %s
+                        from refunds
+                        where payment_id = ?
+                        order by id
+                        """.formatted(COLUMNS))
                 .param(paymentId)
                 .query(Row.class)
                 .list()
@@ -61,6 +66,10 @@ public class JdbcRefundReadRepository implements RefundReadRepository {
 
     @Override
     public Optional<RefundView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from refunds where id = ?").param(id).query(Row.class).optional().map(Row::toView);
+        return jdbc.sql("""
+                        select %s
+                        from refunds
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id).query(Row.class).optional().map(Row::toView);
     }
 }

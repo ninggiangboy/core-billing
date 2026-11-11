@@ -70,7 +70,11 @@ public class JdbcPaymentReadRepository implements PaymentReadRepository {
             return List.of();
         }
         List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("select " + COLUMNS + " from payments where true");
+        StringBuilder sql = new StringBuilder("""
+                        select %s
+                        from payments
+                        where true
+                        """.formatted(COLUMNS));
         if (walletId != null) {
             sql.append(" and wallet_id = ?");
             params.add(walletId.value());
@@ -94,12 +98,21 @@ public class JdbcPaymentReadRepository implements PaymentReadRepository {
 
     @Override
     public Optional<PaymentView> findById(UUID id) {
-        return jdbc.sql("select " + COLUMNS + " from payments where id = ?").param(id).query(Row.class).optional().map(Row::toView);
+        return jdbc.sql("""
+                        select %s
+                        from payments
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id).query(Row.class).optional().map(Row::toView);
     }
 
     @Override
     public List<PaymentAttemptView> attempts(UUID paymentId) {
-        return jdbc.sql("select failure_code, failure_message, occurred_at from payment_attempts where payment_id = ? order by occurred_at, id")
+        return jdbc.sql("""
+                        select failure_code, failure_message, occurred_at
+                        from payment_attempts
+                        where payment_id = ?
+                        order by occurred_at, id
+                        """)
                 .param(paymentId)
                 .query(PaymentAttemptView.class)
                 .list();

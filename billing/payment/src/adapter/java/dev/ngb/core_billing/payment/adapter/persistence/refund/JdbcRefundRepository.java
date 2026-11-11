@@ -38,19 +38,32 @@ public class JdbcRefundRepository implements RefundRepository {
 
     @Override
     public Optional<Refund> lockById(RefundId id) {
-        return jdbc.sql("select " + COLUMNS + " from refunds where id = ? for update").param(id.value()).query(RefundRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from refunds
+                        where id = ?
+                        for update
+                        """.formatted(COLUMNS)).param(id.value()).query(RefundRow.class).optional()
                 .map(RefundRow::toDomain);
     }
 
     @Override
     public Optional<Refund> findByStripeRefundId(String stripeRefundId) {
-        return jdbc.sql("select " + COLUMNS + " from refunds where stripe_refund_id = ?").param(stripeRefundId).query(RefundRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from refunds
+                        where stripe_refund_id = ?
+                        """.formatted(COLUMNS)).param(stripeRefundId).query(RefundRow.class).optional()
                 .map(RefundRow::toDomain);
     }
 
     @Override
     public Optional<Refund> findByIdempotencyKey(String key) {
-        return jdbc.sql("select " + COLUMNS + " from refunds where idempotency_key = ?").param(key).query(RefundRow.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from refunds
+                        where idempotency_key = ?
+                        """.formatted(COLUMNS)).param(key).query(RefundRow.class).optional()
                 .map(RefundRow::toDomain);
     }
 

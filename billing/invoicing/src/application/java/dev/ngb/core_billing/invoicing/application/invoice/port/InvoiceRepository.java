@@ -4,6 +4,7 @@ import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface InvoiceRepository {
 
@@ -14,6 +15,9 @@ public interface InvoiceRepository {
     void update(Invoice invoice);
 
     Optional<Invoice> findById(InvoiceId id);
+
+    /** The invoice that bills this charge, if any. */
+    Optional<Invoice> findByCharge(UUID chargeId);
 
     /** Loads the invoice and holds its row until the transaction ends. */
     Optional<Invoice> lockById(InvoiceId id);

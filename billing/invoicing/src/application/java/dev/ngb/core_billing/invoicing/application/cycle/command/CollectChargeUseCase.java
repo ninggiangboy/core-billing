@@ -1,6 +1,7 @@
 package dev.ngb.core_billing.invoicing.application.cycle.command;
 
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
+import dev.ngb.core_billing.invoicing.application.invoice.command.ChargeDescription;
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
 import dev.ngb.core_billing.invoicing.domain.invoice.ItemSource;
@@ -28,8 +29,6 @@ public class CollectChargeUseCase {
 
     public static final String CONSUMER = "invoicing.cycle";
     public static final String EVENT_TYPE = "charge.succeeded";
-
-    private static final int MAX_DESCRIPTION = InvoiceItem.MAX_DESCRIPTION;
 
     private final UnitOfWork unitOfWork;
     private final EventInbox inbox;
@@ -71,7 +70,7 @@ public class CollectChargeUseCase {
                 start = settings.cycle().calendarStart(now);
             }
             InvoiceItem item = new InvoiceItem(ids.newId(), ItemSource.CHARGE, UUID.fromString((String) data.get("chargeId")), null, null, null,
-                    describe(data), amount(data, wallet.currency()), event.occurredAt());
+                    ChargeDescription.of((String) data.get("source"), (String) data.get("reference")), amount(data, wallet.currency()), event.occurredAt());
             return lines.add(new UnbilledLine(event.tenantId(), wallet.customerId(), wallet.id(), item, start, settings.cycle().calendarEnd(start)));
         });
     }
@@ -84,15 +83,5 @@ public class CollectChargeUseCase {
             throw new IllegalStateException("a charge is in the currency of its wallet");
         }
         return money;
-    }
-
-    private static String describe(Map<String, Object> data) {
-        String reference = (String) data.get("reference");
-        String text = switch ((String) data.get("source")) {
-            case "USAGE" -> "Usage" + (reference == null ? "" : " (" + reference + ")");
-            case "RESERVATION" -> "Charge from a reservation" + (reference == null ? "" : " (" + reference + ")");
-            default -> reference == null ? "Charge" : reference;
-        };
-        return text.length() > MAX_DESCRIPTION ? text.substring(0, MAX_DESCRIPTION) : text;
     }
 }

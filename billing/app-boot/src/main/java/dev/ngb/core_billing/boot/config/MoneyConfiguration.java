@@ -10,8 +10,10 @@ import dev.ngb.core_billing.money.adapter.persistence.charge.JdbcChargeReadRepos
 import dev.ngb.core_billing.money.adapter.persistence.ledger.JdbcLedgerReadRepository;
 import dev.ngb.core_billing.money.adapter.persistence.reservation.JdbcReservationReadRepository;
 import dev.ngb.core_billing.money.adapter.persistence.wallet.JdbcWalletReadRepository;
+import dev.ngb.core_billing.money.api.charge.ChargeLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
+import dev.ngb.core_billing.money.application.charge.query.ChargeLookupService;
 import dev.ngb.core_billing.money.application.charge.query.ChargeReadRepository;
 import dev.ngb.core_billing.money.application.charge.command.ChargeUseCase;
 import dev.ngb.core_billing.money.application.wallet.command.CreditWalletUseCase;
@@ -150,6 +152,11 @@ class MoneyConfiguration {
     VerifyLedgerUseCase verifyLedgerUseCase(
             UnitOfWork unitOfWork, LedgerVerifier verifier, AuditLog auditLog, TenantContext tenantContext, Clock clock) {
         return new VerifyLedgerUseCase(unitOfWork, verifier, auditLog, tenantContext, clock);
+    }
+
+    @Bean
+    ChargeLookup chargeLookup(UnitOfWork unitOfWork, ChargeReadRepository charges) {
+        return new ChargeLookupService(unitOfWork, charges);
     }
 
     @Bean

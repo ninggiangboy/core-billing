@@ -1,6 +1,7 @@
 package dev.ngb.core_billing.money.adapter.persistence.charge;
 
 import dev.ngb.core_billing.money.api.charge.ChargeId;
+import dev.ngb.core_billing.money.api.charge.ChargeSource;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.application.charge.query.ChargeReadRepository;
@@ -8,6 +9,7 @@ import dev.ngb.core_billing.money.application.charge.query.ChargeView;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.WalletId;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -15,7 +17,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 /** Selects a charge straight into the view; the aggregate is never built. */
 public class JdbcChargeReadRepository implements ChargeReadRepository {
 
-    private static final String COLUMNS = "id, wallet_id, currency, amount, status, failure_reason, reservation_id, usage_ref, reference";
+    private static final String COLUMNS = "id, wallet_id, currency, amount, status, failure_reason, reservation_id, usage_ref, reference, source, created_at";
 
     private record Row(
             UUID id,
@@ -26,7 +28,9 @@ public class JdbcChargeReadRepository implements ChargeReadRepository {
             String failureReason,
             UUID reservationId,
             String usageRef,
-            String reference) {
+            String reference,
+            String source,
+            Instant createdAt) {
 
         ChargeView toView() {
             return new ChargeView(
@@ -37,7 +41,9 @@ public class JdbcChargeReadRepository implements ChargeReadRepository {
                     Money.of(amount, Currency.of(currency.strip())),
                     reservationId == null ? null : new ReservationId(reservationId),
                     usageRef,
-                    reference);
+                    reference,
+                    ChargeSource.valueOf(source),
+                    createdAt);
         }
     }
 

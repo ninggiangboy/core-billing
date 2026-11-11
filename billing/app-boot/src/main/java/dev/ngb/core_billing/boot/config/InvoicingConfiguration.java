@@ -9,7 +9,9 @@ import dev.ngb.core_billing.invoicing.application.cycle.command.CycleSettings;
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
+import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceChargeUseCase;
 import dev.ngb.core_billing.invoicing.application.invoice.command.PayInvoiceUseCase;
+import dev.ngb.core_billing.money.api.charge.ChargeLookup;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePayment;
@@ -72,6 +74,13 @@ class InvoicingConfiguration {
             UnitOfWork unitOfWork, InvoiceRepository invoices, CustomerLookup customers, StartInvoicePayment payments, AuditLog auditLog,
             TenantContext tenantContext, Clock clock) {
         return new PayInvoiceUseCase(unitOfWork, invoices, customers, payments, auditLog, tenantContext, clock);
+    }
+
+    @Bean
+    InvoiceChargeUseCase invoiceChargeUseCase(
+            UnitOfWork unitOfWork, ChargeLookup charges, WalletLookup wallets, CustomerLookup customers, InvoiceRepository invoices,
+            UnbilledLineRepository unbilled, InvoiceIssuer issuer, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new InvoiceChargeUseCase(unitOfWork, charges, wallets, customers, invoices, unbilled, issuer, auditLog, tenantContext, ids, clock);
     }
 
     @Bean

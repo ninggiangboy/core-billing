@@ -11,6 +11,7 @@ import dev.ngb.core_billing.sharedkernel.TenantId;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -48,8 +49,16 @@ public class JdbcInvoiceRepository implements InvoiceRepository {
             throw e;
         }
         for (InvoiceItem item : invoice.items()) {
-            // A line is attached once: an unbilled line becomes this invoice's, a line of another invoice is left alone and reported.
-            int attached = jdbc.sql("""
+            attach(invoice, item);
+        }
+        invoice.payments().forEach(payment -> upsertPayment(invoice, payment));
+    }
+
+    /** A line is attached once: an unbilled line becomes this invoice's, and a charge already billed on another line is reported as a conflict. */
+    private void attach(Invoice invoice, InvoiceItem item) {
+        int attached;
+        try {
+            attached = jdbc.sql("""
                             insert into invoice_items (id, tenant_id, invoice_id, customer_id, wallet_id, currency, source, charge_id, subscription_id,
                                                        description, amount, period_start, period_end, incurred_at)
                             values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -59,11 +68,12 @@ public class JdbcInvoiceRepository implements InvoiceRepository {
                             invoice.currency().code(), item.source().name(), item.chargeId(), item.subscriptionId(), item.description(),
                             item.amount().minorUnits(), timestamp(item.periodStart()), timestamp(item.periodEnd()), timestamp(item.incurredAt()))
                     .update();
-            if (attached != 1) {
-                throw new ConflictException("an invoice line was already billed on another invoice");
-            }
+        } catch (DuplicateKeyException e) {
+            throw new ConflictException("a charge on this invoice was already billed on another invoice");
         }
-        invoice.payments().forEach(payment -> upsertPayment(invoice, payment));
+        if (attached != 1) {
+            throw new ConflictException("an invoice line was already billed on another invoice");
+        }
     }
 
     @Override
@@ -75,6 +85,12 @@ public class JdbcInvoiceRepository implements InvoiceRepository {
     @Override
     public Optional<Invoice> findById(InvoiceId id) {
         return Optional.ofNullable(aggregates.findById(id.value(), InvoiceRow.class)).map(this::load);
+    }
+
+    @Override
+    public Optional<Invoice> findByCharge(UUID chargeId) {
+        return jdbc.sql("select i.* from invoices i join invoice_items l on l.invoice_id = i.id and l.tenant_id = i.tenant_id where l.charge_id = ?")
+                .param(chargeId).query(InvoiceRow.class).optional().map(this::load);
     }
 
     @Override

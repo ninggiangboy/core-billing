@@ -4,6 +4,8 @@ import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface UnbilledLineRepository {
 
@@ -12,6 +14,9 @@ public interface UnbilledLineRepository {
 
     /** @return false when the charge already has a line (collected or billed before), so a repeated event adds nothing */
     boolean add(UnbilledLine line);
+
+    /** The unbilled line of one charge, locked until the transaction ends; empty when the charge has no line yet or is already on an invoice. */
+    Optional<UnbilledLine> lockByCharge(UUID chargeId);
 
     /** True when an invoice for this wallet's period already exists, so a late line must go to a later period. */
     boolean periodInvoiced(WalletId walletId, Instant cycleStart);

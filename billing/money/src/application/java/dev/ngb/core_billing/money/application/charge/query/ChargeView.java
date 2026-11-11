@@ -1,10 +1,13 @@
 package dev.ngb.core_billing.money.application.charge.query;
 
 import dev.ngb.core_billing.money.api.charge.ChargeId;
+import dev.ngb.core_billing.money.api.charge.ChargeSource;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.WalletId;
+
+import java.time.Instant;
 
 /** A charge as the read API shows it. */
 public record ChargeView(
@@ -15,4 +18,6 @@ public record ChargeView(
         Money amount,
         ReservationId reservationId,
         String usageRef,
-        String reference) {}
+        String reference,
+        ChargeSource source,
+        Instant createdAt) {}

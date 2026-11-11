@@ -6,6 +6,7 @@ import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -34,6 +35,12 @@ public class JdbcUnbilledLineRepository implements UnbilledLineRepository {
                         line.item().amount().minorUnits(), timestamp(line.item().periodStart()), timestamp(line.item().periodEnd()),
                         timestamp(line.cycleStart()), timestamp(line.cycleEnd()), timestamp(line.item().incurredAt()))
                 .update() == 1;
+    }
+
+    @Override
+    public Optional<UnbilledLine> lockByCharge(UUID chargeId) {
+        return jdbc.sql("select " + COLUMNS + " from invoice_items where charge_id = ? and invoice_id is null for update").param(chargeId)
+                .query(UnbilledLineRow.class).optional().map(UnbilledLineRow::toDomain);
     }
 
     @Override

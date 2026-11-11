@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation(platform(libs.spring.modulith.bom))
-    implementation(project(":shared-kernel"))
+    implementation(project(":libs:shared-kernel"))
     implementation(project(":contexts:platform"))
     implementation(project(":contexts:customer"))
     implementation(project(":contexts:money"))
@@ -17,7 +17,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")
     implementation("org.springframework.boot:spring-boot-starter-jooq")
-    implementation(project(":jooq-schema"))
+    implementation(project(":libs:jooq-schema"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")

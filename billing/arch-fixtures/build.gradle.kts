@@ -10,5 +10,5 @@ dependencies {
     compileOnly(libs.stripe.java)
     compileOnly("com.google.code.gson:gson")
     compileOnly("org.jooq:jooq")
-    compileOnly(project(":jooq-schema"))
+    compileOnly(project(":libs:jooq-schema"))
 }

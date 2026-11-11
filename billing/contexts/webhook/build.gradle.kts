@@ -8,7 +8,7 @@ dependencies {
     "applicationImplementation"(project(":contexts:platform"))
     "adapterImplementation"(project(":contexts:platform"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jooq")
-    "adapterImplementation"(project(":jooq-schema"))
+    "adapterImplementation"(project(":libs:jooq-schema"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jackson")
     "adapterImplementation"("org.apache.httpcomponents.client5:httpclient5")

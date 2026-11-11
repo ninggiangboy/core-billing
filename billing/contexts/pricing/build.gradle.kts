@@ -14,7 +14,7 @@ dependencies {
     "adapterImplementation"(project(":contexts:usage"))
     "adapterImplementation"(project(":contexts:money"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jooq")
-    "adapterImplementation"(project(":jooq-schema"))
+    "adapterImplementation"(project(":libs:jooq-schema"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jackson")
     testImplementation("org.assertj:assertj-core")

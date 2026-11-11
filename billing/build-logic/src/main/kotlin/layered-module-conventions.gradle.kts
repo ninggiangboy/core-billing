@@ -25,7 +25,7 @@ val layers = listOf(api, domain, application, adapter)
 
 if (project.name != "shared-kernel") {
     dependencies {
-        layers.forEach { add(it.implementationConfigurationName, project(":shared-kernel")) }
+        layers.forEach { add(it.implementationConfigurationName, project(":libs:shared-kernel")) }
     }
 }
 

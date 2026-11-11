@@ -26,7 +26,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
-    testImplementation(project(":arch-fixtures"))
+    testImplementation(project(":testing:arch-fixtures"))
     // Generates the jOOQ schema from the migrations for the drift test.
     testImplementation("org.jooq:jooq-codegen")
     testImplementation("org.jooq:jooq-meta")

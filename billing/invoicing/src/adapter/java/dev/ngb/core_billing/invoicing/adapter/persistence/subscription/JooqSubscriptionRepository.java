@@ -18,6 +18,9 @@ import dev.ngb.core_billing.sharedkernel.WalletId;
 import dev.ngb.core_billing_jooq.tables.records.SubscriptionsRecord;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -100,10 +103,14 @@ public class JooqSubscriptionRepository implements SubscriptionRepository {
     }
 
     @Override
-    public Optional<Subscription> lockNextDue(Instant now) {
+    public Optional<Subscription> lockNextDue(Instant now, Set<UUID> excluding) {
+        Condition due = SUBSCRIPTIONS.STATUS.in("ACTIVE", "PAST_DUE")
+                .and(SUBSCRIPTIONS.NEXT_RENEWAL_AT.le(now));
+        if (!excluding.isEmpty()) {
+            due = due.and(SUBSCRIPTIONS.ID.notIn(excluding));
+        }
         return dsl.selectFrom(SUBSCRIPTIONS)
-                .where(SUBSCRIPTIONS.STATUS.in("ACTIVE", "PAST_DUE"))
-                .and(SUBSCRIPTIONS.NEXT_RENEWAL_AT.le(now))
+                .where(due)
                 .orderBy(SUBSCRIPTIONS.NEXT_RENEWAL_AT, SUBSCRIPTIONS.ID)
                 .limit(1)
                 .forUpdate()

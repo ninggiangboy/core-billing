@@ -11,10 +11,13 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing_jooq.tables.records.OutboxRecord;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,10 @@ public class OutboxRelay {
     private record Row(UUID id, UUID tenantId, String aggregate, String type, String payload, Instant createdAt, int attempts) {}
 
     private enum Outcome { NONE, DELIVERED, RETRY, DEAD, CONTENDED }
+
+    private record Attempt(Outcome outcome, UUID rowId) {
+        static final Attempt NONE = new Attempt(Outcome.NONE, null);
+    }
 
     private static final class DispatchFailure extends RuntimeException {
         private static final long serialVersionUID = 1L;
@@ -82,17 +89,22 @@ public class OutboxRelay {
         int delivered = 0;
         int failed = 0;
         int dead = 0;
+        Set<UUID> contended = new HashSet<>();
         for (int i = 0; i < batchSize; i++) {
-            Outcome outcome = relayNext();
-            if (outcome == Outcome.NONE || outcome == Outcome.CONTENDED) {
-                // A contended row stays due, so another pass in this tick would only find the same row again.
+            Attempt attempt = relayNext(contended);
+            if (attempt.outcome() == Outcome.NONE) {
                 break;
             }
-            switch (outcome) {
+            switch (attempt.outcome()) {
+                case CONTENDED -> {
+                    // The row stays due for the next poll, but passing over it here keeps the rows behind it moving
+                    // instead of letting one busy row block the rest of the batch.
+                    contended.add(attempt.rowId());
+                }
                 case DELIVERED -> delivered++;
                 case RETRY -> failed++;
                 case DEAD -> dead++;
-                default -> throw new IllegalStateException("unexpected outcome " + outcome);
+                default -> throw new IllegalStateException("unexpected outcome " + attempt.outcome());
             }
         }
         if (delivered > 0) {
@@ -104,13 +116,13 @@ public class OutboxRelay {
         return new Result(delivered, failed, dead);
     }
 
-    private Outcome relayNext() {
+    private Attempt relayNext(Set<UUID> excluding) {
         Instant now = clock.now();
         try {
             return unitOfWork.transactional(() -> {
-                Optional<Row> claimed = claim(now);
+                Optional<Row> claimed = claim(now, excluding);
                 if (claimed.isEmpty()) {
-                    return Outcome.NONE;
+                    return Attempt.NONE;
                 }
                 Row row = claimed.get();
                 try {
@@ -123,17 +135,21 @@ public class OutboxRelay {
                         .set(OUTBOX.LAST_ERROR, (String) null)
                         .where(OUTBOX.ID.eq(row.id()))
                         .execute();
-                return Outcome.DELIVERED;
+                return new Attempt(Outcome.DELIVERED, row.id());
             });
         } catch (DispatchFailure failure) {
-            return unitOfWork.transactional(() -> recordFailure(failure.row, (RuntimeException) failure.getCause(), now));
+            Outcome outcome = unitOfWork.transactional(() -> recordFailure(failure.row, (RuntimeException) failure.getCause(), now));
+            return new Attempt(outcome, failure.row.id());
         }
     }
 
-    private Optional<Row> claim(Instant now) {
+    private Optional<Row> claim(Instant now, Set<UUID> excluding) {
+        Condition due = OUTBOX.STATUS.eq("PENDING").and(OUTBOX.NEXT_ATTEMPT_AT.le(now));
+        if (!excluding.isEmpty()) {
+            due = due.and(OUTBOX.ID.notIn(excluding));
+        }
         return dsl.selectFrom(OUTBOX)
-                .where(OUTBOX.STATUS.eq("PENDING"))
-                .and(OUTBOX.NEXT_ATTEMPT_AT.le(now))
+                .where(due)
                 .orderBy(OUTBOX.NEXT_ATTEMPT_AT, OUTBOX.ID)
                 .limit(1)
                 .forUpdate()

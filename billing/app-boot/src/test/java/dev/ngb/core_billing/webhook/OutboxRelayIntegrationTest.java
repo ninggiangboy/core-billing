@@ -140,20 +140,25 @@ class OutboxRelayIntegrationTest {
     }
 
     @Test
-    void aLockTimeoutLeavesTheEventDueWithoutSpendingAnAttempt() {
+    void aLockTimeoutLeavesTheEventDueWithoutBlockingTheRestOfTheBatch() {
         TenantId tenant = scopes.newTenant().id();
-        UUID id = publish(tenant, "test.contended");
+        UUID contended = publish(tenant, "test.contended");
+        UUID fine = publish(tenant, "test.fine");
+        // The contended row is first in the relay's order, so it would block the row behind it if the tick stopped.
+        owner.jdbc().update("update outbox set next_attempt_at = now() - interval '2 minutes' where id = ?", contended);
+        owner.jdbc().update("update outbox set next_attempt_at = now() - interval '1 minute' where id = ?", fine);
         probe.contended.set(true);
         try {
             assertThat(scopes.inTenant(tenant, relay::relayDue))
-                    .as("the tick stops instead of retrying the same row")
-                    .isEqualTo(new OutboxRelay.Result(0, 0, 0));
-            assertThat(row(id)).as("no attempt was spent and the row is still due")
+                    .as("the rest of the batch still goes through")
+                    .isEqualTo(new OutboxRelay.Result(1, 0, 0));
+            assertThat(row(contended)).as("no attempt was spent and the row is still due")
                     .containsEntry("status", "PENDING").containsEntry("attempts", 0).containsEntry("in_future", false);
+            assertThat(row(fine)).containsEntry("status", "DELIVERED");
 
             probe.contended.set(false);
             assertThat(scopes.inTenant(tenant, relay::relayDue).delivered()).as("the next tick delivers it").isEqualTo(1);
-            assertThat(row(id)).containsEntry("status", "DELIVERED");
+            assertThat(row(contended)).containsEntry("status", "DELIVERED");
         } finally {
             probe.contended.set(false);
         }

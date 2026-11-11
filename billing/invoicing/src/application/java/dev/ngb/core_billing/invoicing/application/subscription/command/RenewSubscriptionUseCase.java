@@ -19,7 +19,9 @@ import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.DoubleSupplier;
 
@@ -87,15 +89,18 @@ public class RenewSubscriptionUseCase {
         int renewed = 0;
         int ended = 0;
         int failed = 0;
+        Set<UUID> contended = new HashSet<>();
         for (int i = 0; i < settings.batchSize(); i++) {
             Optional<Outcome> outcome;
             try {
-                outcome = unitOfWork.transactional(() -> subscriptions.lockNextDue(clock.now()).map(this::guarded));
+                outcome = unitOfWork.transactional(() -> subscriptions.lockNextDue(clock.now(), contended).map(this::guarded));
             } catch (Poisoned poisoned) {
                 if (Causes.isRetryableContention(poisoned.getCause())) {
-                    // A lock wait that timed out is not an attempt: nothing was charged, so the period stays due
-                    // and the next tick tries again instead of counting down the retry budget.
-                    break;
+                    // A lock wait that timed out is not an attempt: nothing was charged, so the period stays due and
+                    // the next tick tries again instead of counting down the retry budget. Pass over the row for the
+                    // rest of this tick, or it would sit at the head of the order and starve everything behind it.
+                    contended.add(poisoned.id.value());
+                    continue;
                 }
                 // Count it as a failed attempt so one broken subscription cannot starve the rest behind it.
                 unitOfWork.transactional(() -> subscriptions.lockById(poisoned.id)

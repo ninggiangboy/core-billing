@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
@@ -75,8 +76,11 @@ class RenewSubscriptionUseCaseTest {
         }
 
         @Override
-        public Optional<Subscription> lockNextDue(Instant now) {
-            return store.values().stream().filter(s -> s.dueAt(now)).min(Comparator.comparing(Subscription::nextRenewalAt));
+        public Optional<Subscription> lockNextDue(Instant now, Set<UUID> excluding) {
+            return store.values().stream()
+                    .filter(s -> s.dueAt(now))
+                    .filter(s -> !excluding.contains(s.id().value()))
+                    .min(Comparator.comparing(Subscription::nextRenewalAt));
         }
 
         @Override
@@ -113,9 +117,10 @@ class RenewSubscriptionUseCaseTest {
     };
 
     private boolean walletContended;
+    private UUID contendedWallet;
 
     private final ChargeWallet charging = command -> {
-        if (walletContended) {
+        if (walletContended || (contendedWallet != null && contendedWallet.equals(command.walletId().value()))) {
             throw new IllegalStateException("the wallet lock timed out",
                     new SQLException("canceling statement due to lock timeout", "55P03"));
         }
@@ -169,6 +174,20 @@ class RenewSubscriptionUseCaseTest {
         assertThat(useCase.runDue().renewed()).as("the next tick finds the period still due").isEqualTo(1);
         assertThat(s.periodsCharged()).isEqualTo(1);
         assertThat(s.renewalAttempts()).isZero();
+    }
+
+    @Test
+    void aContendedSubscriptionDoesNotStarveTheOnesBehindIt() {
+        Subscription contended = due(UUID.randomUUID(), NOW.minusSeconds(60));
+        Subscription healthy = due(UUID.randomUUID(), NOW.minusSeconds(30));
+        contendedWallet = contended.walletId().value();
+
+        RenewSubscriptionUseCase.Report report = useCase.runDue();
+
+        assertThat(report).isEqualTo(new RenewSubscriptionUseCase.Report(1, 0, 0));
+        assertThat(healthy.periodsCharged()).as("the subscription behind the busy wallet is still renewed").isEqualTo(1);
+        assertThat(contended.periodsCharged()).isZero();
+        assertThat(contended.renewalAttempts()).as("the busy wallet costs no attempt").isZero();
     }
 
     @Test

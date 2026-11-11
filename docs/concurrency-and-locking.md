@@ -38,8 +38,11 @@ Two consequences:
    inserted at the end of a long transaction.
 4. **The rate limiter runs in the authentication step, alone.** It is one function call that locks one bucket row in
    its own transaction. It never runs inside a business transaction: that would put a rate-limit row in front of the
-   wallet and add a new lock edge to every money path. Expired buckets are removed only by a worker, in small
-   `skip locked` batches.
+   wallet and add a new lock edge to every money path. A request whose key does not authenticate spends one of a
+   fixed 1024 buckets chosen by key id, so a caller inventing key ids cannot create unbounded rows or exhaust a real
+   key's budget. A bucket is expired only once it has been idle long enough that an empty one would have refilled to
+   the full burst; expired buckets are removed only by a worker, in small `skip locked` batches, until a batch comes
+   back short.
 5. **Bootstrap runs under the lease and holds nothing while calling Keycloak.** The seed steps commit on their own;
    the lease is ownership by deadline, not a row lock.
 6. **The invoice counter is the last lock in every flow.** Do not add work after `InvoiceIssuer.issue`.

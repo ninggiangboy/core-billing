@@ -21,6 +21,7 @@ import dev.ngb.core_billing.support.ScopeTestSupport;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -158,5 +159,25 @@ class CredentialLifecycleIntegrationTest {
             assertThat(authenticate(s.tenant(), key)).isPresent();
         }
         assertThatThrownBy(() -> authenticate(s.tenant(), key)).isInstanceOf(RateLimitExceededException.class);
+    }
+
+    @Test
+    void inventedKeyIdsShareABoundedSetOfBuckets() {
+        Setup s = setup();
+
+        for (int i = 0; i < 1_500; i++) {
+            String keyId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            try {
+                authenticate(s.tenant(), "cbk_" + keyId + "_" + "0".repeat(64));
+            } catch (RateLimitExceededException sharedBucketsAreFull) {
+                // Expected once a shared bucket runs out; a caller cannot know or pick which one it lands on.
+            }
+        }
+
+        assertThat(owner.count("select count(*) from rate_limit_buckets where bucket_key like 'unauthenticated:%'"))
+                .as("1500 invented key ids do not create 1500 rows")
+                .isBetween(1L, 1_024L);
+
+        owner.jdbc().update("delete from rate_limit_buckets where bucket_key like 'unauthenticated:%'");
     }
 }

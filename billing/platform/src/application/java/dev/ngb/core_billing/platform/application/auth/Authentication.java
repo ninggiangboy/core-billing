@@ -35,6 +35,15 @@ public class Authentication {
 
     private static final byte[] NO_SECRET = new byte[32];
 
+    /**
+     * How many buckets a request that did not authenticate shares, chosen by key id. A caller can invent key ids
+     * freely, so without this every unknown id would create a rate-limit row of its own; with it the rows stay
+     * bounded and an unknown id cannot exhaust a real key's budget. It must be a power of two.
+     */
+    private static final int ANONYMOUS_BUCKETS = 1024;
+
+    private static final String ANONYMOUS_BUCKET_PREFIX = "unauthenticated:";
+
     private final UnitOfWork unitOfWork;
     private final UserRepository users;
     private final RoleRepository roles;
@@ -94,26 +103,36 @@ public class Authentication {
             return Optional.empty();
         }
         ApiKey.Parsed key = parsed.get();
-        if (!rateLimiter.tryAcquire(key.keyId())) {
+        Optional<Actor> actor = unitOfWork.transactional(() -> resolveApiKey(key));
+        // Only a key that authenticated spends its own bucket. Everything else spends one of a fixed set of shared
+        // buckets, so a wrong or invented key id can neither exhaust a real key's budget nor create a row per try.
+        String bucket = actor.isPresent() ? key.keyId() : ANONYMOUS_BUCKET_PREFIX + anonymousSlot(key.keyId());
+        if (!rateLimiter.tryAcquire(bucket)) {
             throw new RateLimitExceededException();
         }
-        return unitOfWork.transactional(() -> {
-            Optional<ApiCredential> found = credentials.findByKeyId(key.keyId());
-            if (found.isEmpty()) {
-                // Spend the same work as a real comparison so a missing key id is not detectable by timing.
-                MessageDigest.isEqual(ApiKey.hash(key.secret()), NO_SECRET);
-                return Optional.empty();
-            }
-            ApiCredential credential = found.get();
-            Instant now = clock.now();
-            if (!credential.matches(key.secret()) || !credential.isUsable(now)) {
-                return Optional.empty();
-            }
-            Optional<TenantSystem> system = systems.findById(credential.tenantSystemId()).filter(TenantSystem::isActive);
-            return system.map(s -> new Actor(
-                    ActorType.TENANT_SYSTEM, s.id().value(), s.tenantId(), PermissionScope.TENANT, s.name(), s.id(),
-                    credential.scopes()));
-        });
+        return actor;
+    }
+
+    private Optional<Actor> resolveApiKey(ApiKey.Parsed key) {
+        Optional<ApiCredential> found = credentials.findByKeyId(key.keyId());
+        if (found.isEmpty()) {
+            // Spend the same work as a real comparison so a missing key id is not detectable by timing.
+            MessageDigest.isEqual(ApiKey.hash(key.secret()), NO_SECRET);
+            return Optional.empty();
+        }
+        ApiCredential credential = found.get();
+        Instant now = clock.now();
+        if (!credential.matches(key.secret()) || !credential.isUsable(now)) {
+            return Optional.empty();
+        }
+        Optional<TenantSystem> system = systems.findById(credential.tenantSystemId()).filter(TenantSystem::isActive);
+        return system.map(s -> new Actor(
+                ActorType.TENANT_SYSTEM, s.id().value(), s.tenantId(), PermissionScope.TENANT, s.name(), s.id(),
+                credential.scopes()));
+    }
+
+    private static int anonymousSlot(String keyId) {
+        return Integer.parseUnsignedInt(keyId.substring(0, 8), 16) & (ANONYMOUS_BUCKETS - 1);
     }
 
     private Actor toActor(BillingUser user) {

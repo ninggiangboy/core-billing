@@ -73,6 +73,17 @@ class CoordinationStoreIntegrationTest {
     }
 
     @Test
+    void aBucketExpiresOnlyOnceRefillingItReachesTheFullBurst() {
+        String key = "ttl-" + UUID.randomUUID();
+
+        limiter(100, 20).tryAcquire(key);
+
+        Double seconds = jdbc.queryForObject(
+                "select extract(epoch from expires_at - now()) from rate_limit_buckets where bucket_key = ?", Double.class, key);
+        assertThat(seconds).as("burst 100 at 20 a second is full again in 5 seconds").isBetween(30.0, 90.0);
+    }
+
+    @Test
     void cleanupRemovesOnlyExpiredBuckets() {
         String expired = "expired-" + UUID.randomUUID();
         String live = "live-" + UUID.randomUUID();

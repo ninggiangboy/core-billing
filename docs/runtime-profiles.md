@@ -25,8 +25,10 @@ as the unprivileged application role with Flyway switched off, so a rolling star
 - **Skip-locked jobs.** Outbox, webhook delivery, subscription renewal, billing cycle close and reservation expiry
   already claim one row at a time with `for update skip locked`, so they stay multi-worker safe and are deliberately
   not made singleton.
-- **Rate limiting.** API-key limits live in `rate_limit_buckets`, shared by every `api` instance. A worker removes
-  idle buckets in bounded `skip locked` batches.
+- **Rate limiting.** API-key limits live in `rate_limit_buckets`, shared by every `api` instance. A key that
+  authenticates spends its own bucket; a request that does not spends one of 1024 buckets chosen by key id, so
+  invented key ids cannot create unbounded rows or exhaust a real key's budget. A worker removes idle buckets in
+  bounded `skip locked` batches, repeating while a batch comes back full.
 
 ## Settings per profile
 

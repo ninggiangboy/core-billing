@@ -16,12 +16,17 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class PostgresRateLimiter implements RateLimiter {
 
-    private static final Duration BUCKET_TTL = Duration.ofDays(1);
+    /** An idle bucket is only removed once refilling it is guaranteed to reach the full burst again. */
+    private static final Duration MIN_BUCKET_TTL = Duration.ofSeconds(60);
+    private static final long TTL_MARGIN_SECONDS = 30;
+    /** A bucket that never refills must not be reset by expiry, but it still has to disappear eventually. */
+    private static final Duration NO_REFILL_TTL = Duration.ofDays(1);
 
     private final TransactionTemplate transactions;
     private final JdbcTemplate jdbc;
     private final double burst;
     private final double refillPerSecond;
+    private final int bucketTtlSeconds;
 
     public PostgresRateLimiter(
             PlatformTransactionManager transactionManager, JdbcTemplate jdbc, int burst, double refillPerSecond) {
@@ -31,6 +36,7 @@ public class PostgresRateLimiter implements RateLimiter {
         this.jdbc = jdbc;
         this.burst = burst;
         this.refillPerSecond = refillPerSecond;
+        this.bucketTtlSeconds = Math.toIntExact(bucketTtl(burst, refillPerSecond).toSeconds());
     }
 
     @Override
@@ -41,8 +47,20 @@ public class PostgresRateLimiter implements RateLimiter {
                 key,
                 burst,
                 refillPerSecond,
-                Math.toIntExact(BUCKET_TTL.toSeconds())));
+                bucketTtlSeconds));
         return Boolean.TRUE.equals(admitted);
+    }
+
+    /**
+     * How long a bucket may sit untouched. Expiring it is only safe once an empty bucket would have refilled to
+     * the full burst; with no refill a reset would hand out a fresh burst, so the row lives a day instead.
+     */
+    private static Duration bucketTtl(int burst, double refillPerSecond) {
+        if (refillPerSecond <= 0) {
+            return NO_REFILL_TTL;
+        }
+        long secondsToFull = (long) Math.ceil(burst / refillPerSecond) + TTL_MARGIN_SECONDS;
+        return Duration.ofSeconds(Math.max(MIN_BUCKET_TTL.toSeconds(), secondsToFull));
     }
 
     /** Removes buckets that have been idle past their TTL, without waiting on a bucket in use. */

@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Removes rate-limit buckets that have been idle past their TTL. Only a worker does this, in bounded
- * {@code skip locked} batches, so cleanup never waits on a bucket an api instance is spending from.
+ * {@code skip locked} batches, so cleanup never waits on a bucket an api instance is spending from. A full batch is
+ * followed by another, so a burst of rows is drained in one tick instead of falling behind.
  */
 @Profile("!api & !migrate")
 @Component
@@ -32,7 +33,12 @@ public class HousekeepingJobs {
 
     @Scheduled(fixedDelayString = "${billing.rate-limit.cleanup-delay:PT5M}")
     public void removeExpiredRateLimitBuckets() {
-        int removed = rateLimiter.removeExpired(batchSize);
+        int removed = 0;
+        int batch;
+        do {
+            batch = rateLimiter.removeExpired(batchSize);
+            removed += batch;
+        } while (batch == batchSize);
         if (removed > 0) {
             LOG.debug("removed {} expired rate-limit buckets", removed);
         }

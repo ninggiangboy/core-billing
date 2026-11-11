@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.payment.domain.payment;
 
+import dev.ngb.core_billing.payment.api.payment.PaymentEventTypes;
 import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
@@ -32,7 +33,7 @@ public final class PaymentEvents {
 
     /** A top-up was paid and the wallet credited, or an invoice payment was paid (the wallet is then credited by invoicing). */
     public record PaymentSucceeded(UUID eventId, Payment payment, Instant occurredAt) implements DomainEvent {
-        public static final String TYPE = "payment.succeeded";
+        public static final String TYPE = PaymentEventTypes.PAYMENT_SUCCEEDED;
 
         @Override
         public TenantId tenantId() {
@@ -60,7 +61,7 @@ public final class PaymentEvents {
 
     /** A top-up ended without money: Stripe could not collect it. */
     public record PaymentFailed(UUID eventId, Payment payment, Instant occurredAt) implements DomainEvent {
-        public static final String TYPE = "payment.failed";
+        public static final String TYPE = PaymentEventTypes.PAYMENT_FAILED;
 
         @Override
         public TenantId tenantId() {

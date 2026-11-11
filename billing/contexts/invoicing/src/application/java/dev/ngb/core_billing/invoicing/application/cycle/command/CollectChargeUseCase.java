@@ -4,6 +4,7 @@ import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineReposit
 import dev.ngb.core_billing.invoicing.application.invoice.service.ChargeLineFactory;
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
+import dev.ngb.core_billing.money.api.event.MoneyEventTypes;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
@@ -28,7 +29,6 @@ import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
 public class CollectChargeUseCase {
 
     public static final String CONSUMER = "invoicing.cycle";
-    public static final String EVENT_TYPE = "charge.succeeded";
 
     private final UnitOfWork unitOfWork;
     private final EventInbox inbox;
@@ -59,7 +59,7 @@ public class CollectChargeUseCase {
      *     among them), so a consumer that throws on something it cannot read would block delivery to the Tenant.
      */
     public boolean handle(DomainEvent event) {
-        if (!EVENT_TYPE.equals(event.type())) {
+        if (!MoneyEventTypes.CHARGE_SUCCEEDED.equals(event.type())) {
             return false;
         }
         return unitOfWork.transactional(() -> {

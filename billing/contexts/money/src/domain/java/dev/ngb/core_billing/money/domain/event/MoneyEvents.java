@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.money.domain.event;
 
+import dev.ngb.core_billing.money.api.event.MoneyEventTypes;
 import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
@@ -137,7 +138,7 @@ public final class MoneyEvents {
     }
 
     public record ChargeSucceeded(UUID eventId, Charge charge, LedgerEntry entry, Instant occurredAt) implements DomainEvent {
-        public static final String TYPE = "charge.succeeded";
+        public static final String TYPE = MoneyEventTypes.CHARGE_SUCCEEDED;
 
         @Override
         public TenantId tenantId() {

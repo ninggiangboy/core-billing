@@ -7,6 +7,7 @@ import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
 import dev.ngb.core_billing.money.api.ledger.LedgerPostingResult;
 import dev.ngb.core_billing.money.api.wallet.CreditCommand;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
+import dev.ngb.core_billing.payment.api.payment.PaymentEventTypes;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
@@ -33,8 +34,6 @@ import java.util.UUID;
 public class ApplyPaymentUseCase {
 
     public static final String CONSUMER = "invoicing.payment";
-    public static final String SUCCEEDED = "payment.succeeded";
-    public static final String FAILED = "payment.failed";
 
     private static final String ACTOR = "system/invoice-payment";
 
@@ -59,7 +58,7 @@ public class ApplyPaymentUseCase {
 
     /** @return true when the invoice was changed */
     public boolean handle(DomainEvent event) {
-        if (!SUCCEEDED.equals(event.type()) && !FAILED.equals(event.type())) {
+        if (!PaymentEventTypes.PAYMENT_SUCCEEDED.equals(event.type()) && !PaymentEventTypes.PAYMENT_FAILED.equals(event.type())) {
             return false;
         }
         Map<String, Object> data = event.payload();
@@ -74,7 +73,7 @@ public class ApplyPaymentUseCase {
                     .orElseThrow(() -> new NotFoundException("invoice " + data.get("invoiceId") + " of a payment was not found"));
             UUID paymentId = UUID.fromString((String) data.get("paymentId"));
             Instant now = clock.now();
-            if (FAILED.equals(event.type())) {
+            if (PaymentEventTypes.PAYMENT_FAILED.equals(event.type())) {
                 Invoice.Change change = invoice.recordPaymentFailed(paymentId, (String) data.get("reason"), now);
                 if (change != Invoice.Change.UNCHANGED) {
                     invoices.update(invoice);

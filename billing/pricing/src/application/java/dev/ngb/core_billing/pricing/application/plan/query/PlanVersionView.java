@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.pricing.application.plan.query;
 
-import dev.ngb.core_billing.pricing.domain.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
 import java.time.Instant;
 import java.util.UUID;

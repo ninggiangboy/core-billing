@@ -3,7 +3,7 @@ package dev.ngb.core_billing.pricing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.ngb.core_billing.pricing.domain.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.model.EventBased;
 import dev.ngb.core_billing.pricing.domain.model.Hybrid;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;

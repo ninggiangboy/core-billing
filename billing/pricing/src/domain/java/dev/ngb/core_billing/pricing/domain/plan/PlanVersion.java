@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.pricing.domain.plan;
 
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.TenantId;

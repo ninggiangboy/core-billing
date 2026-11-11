@@ -16,7 +16,7 @@ import dev.ngb.core_billing.pricing.application.rating.query.PriceLineView;
 import dev.ngb.core_billing.pricing.application.rating.query.RatingQueries;
 import dev.ngb.core_billing.pricing.application.rating.query.UsageRatingView;
 import dev.ngb.core_billing.pricing.application.rating.command.ReserveFromEstimateUseCase;
-import dev.ngb.core_billing.pricing.domain.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
 import dev.ngb.core_billing.pricing.domain.plan.PlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;

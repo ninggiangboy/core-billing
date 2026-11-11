@@ -4,7 +4,7 @@ import dev.ngb.core_billing.money.MoneyTestWorld;
 import dev.ngb.core_billing.money.MoneyTestWorld.World;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
-import dev.ngb.core_billing.pricing.domain.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.model.EventBased;
 import dev.ngb.core_billing.pricing.domain.model.Hybrid;
 import dev.ngb.core_billing.pricing.domain.model.PriceRule;

@@ -58,7 +58,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import dev.ngb.core_billing.pricing.domain.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.money.api.charge.ChargeCommand;
 import dev.ngb.core_billing.money.api.charge.ChargeWallet;
@@ -240,7 +240,7 @@ class PricingUsageIntegrationTest {
         TenantId tenant = w.tenant().id();
         String storage = worlds.metric();
         String calls = worlds.metric();
-        worlds.plan(tenant, "pkg", worlds.cloudPackage(storage, calls), dev.ngb.core_billing.pricing.domain.plan.BillingCycle.MONTHLY, null, null);
+        worlds.plan(tenant, "pkg", worlds.cloudPackage(storage, calls), dev.ngb.core_billing.pricing.api.plan.BillingCycle.MONTHLY, null, null);
         worlds.record(tenant, w.customerId(), storage, "gb", "10.5", DAY);
         worlds.record(tenant, w.customerId(), storage, "gb", "4.5", DAY.plusSeconds(60));
         worlds.record(tenant, w.customerId(), calls, "call", "100", DAY.plusSeconds(120));
@@ -532,7 +532,7 @@ class PricingUsageIntegrationTest {
                 .hasMessageContaining("before");
         assertThatThrownBy(() -> charge(w, new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), plan.id(), 7, DAY, DAY.plusSeconds(60))))
                 .isInstanceOf(NotFoundException.class);
-        PricingPlan subscription = worlds.plan(tenant, "pro", worlds.pro(), dev.ngb.core_billing.pricing.domain.plan.BillingCycle.MONTHLY, null, null);
+        PricingPlan subscription = worlds.plan(tenant, "pro", worlds.pro(), dev.ngb.core_billing.pricing.api.plan.BillingCycle.MONTHLY, null, null);
         assertThatThrownBy(() -> charge(w, window(w, subscription, null))).hasMessageContaining("no metered usage");
         assertThatThrownBy(() -> charge(other, new ChargeFromUsageUseCase.Command(other.customerId(), other.wallet().id(), plan.id(), null, DAY, DAY.plusSeconds(60))))
                 .isInstanceOf(NotFoundException.class);

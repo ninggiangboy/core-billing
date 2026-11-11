@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.pricing.adapter.persistence;
 
-import dev.ngb.core_billing.pricing.domain.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.plan.PlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.model.PricingModel;

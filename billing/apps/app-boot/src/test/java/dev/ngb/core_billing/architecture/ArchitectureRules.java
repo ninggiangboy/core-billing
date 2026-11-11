@@ -302,8 +302,8 @@ final class ArchitectureRules {
     }
 
     /**
-     * A context's adapters use only the tables it owns. The outbox, inbox, idempotency keys and audit log are
-     * shared infrastructure and belong to boot.
+     * A context's adapters use only the tables it owns. The outbox, inbox and audit log are shared infrastructure
+     * and belong to boot.
      */
     private static ArchRule contextUsesOnlyItsOwnTables(String root) {
         return classes().that().resideInAnyPackage(root + ".*.adapter..", root + ".boot..")

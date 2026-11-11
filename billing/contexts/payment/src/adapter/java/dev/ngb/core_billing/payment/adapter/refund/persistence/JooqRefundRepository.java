@@ -12,12 +12,15 @@ import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.util.Causes;
+import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.tables.records.RefundsRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 public class JooqRefundRepository implements RefundRepository {
+
+    private static final String KEY_CONSTRAINT = Keys.REFUNDS_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName();
 
     private final DSLContext dsl;
 
@@ -31,7 +34,7 @@ public class JooqRefundRepository implements RefundRepository {
             var insert = dsl.insertInto(REFUNDS);
             apply(insert, r).execute();
         } catch (RuntimeException e) {
-            if (Causes.violates(e, "refunds_tenant_id_idempotency_key_key")) {
+            if (Causes.violates(e, KEY_CONSTRAINT)) {
                 throw new IdempotencyConflictException("refund", r.idempotencyKey());
             }
             throw e;

@@ -15,6 +15,7 @@ import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.tables.records.LedgerEntriesRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -23,6 +24,9 @@ import org.springframework.dao.DuplicateKeyException;
 
 /** Insert and read only; the database also refuses anything else. */
 public class JooqLedgerRepository implements LedgerRepository {
+
+    private static final String KEY_CONSTRAINT = Keys.LEDGER_ENTRIES_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName();
+    private static final String SEQUENCE_CONSTRAINT = Keys.LEDGER_ENTRIES_WALLET_ID_SEQ_KEY.getName();
 
     private final DSLContext dsl;
 
@@ -52,14 +56,14 @@ public class JooqLedgerRepository implements LedgerRepository {
                     .set(LEDGER_ENTRIES.CREATED_AT, entry.createdAt())
                     .execute();
         } catch (RuntimeException e) {
-            if (Causes.violates(e, "ledger_entries_tenant_id_idempotency_key_key")) {
+            if (Causes.violates(e, KEY_CONSTRAINT)) {
                 throw new IdempotencyConflictException("ledger", entry.origin().idempotencyKey());
             }
-            if (Causes.violates(e, "ledger_entries_wallet_id_seq_key")) {
+            if (Causes.violates(e, SEQUENCE_CONSTRAINT)) {
                 throw new IllegalStateException("the wallet sequence was assigned without holding the wallet lock", e);
             }
             if (Causes.contains(e, DuplicateKeyException.class)) {
-                throw new ConflictException("this idempotency key or entry was already posted");
+                throw new ConflictException("this ledger entry clashes with one already posted");
             }
             throw e;
         }

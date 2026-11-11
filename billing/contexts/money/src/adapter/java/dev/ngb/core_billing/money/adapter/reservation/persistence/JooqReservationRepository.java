@@ -6,21 +6,22 @@ import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.api.reservation.ReservationStatus;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
-import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.tables.records.ReservationsRecord;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.jooq.DSLContext;
-import org.springframework.dao.DuplicateKeyException;
 
 public class JooqReservationRepository implements ReservationRepository {
+
+    private static final String KEY_CONSTRAINT = Keys.RESERVATIONS_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName();
 
     private final DSLContext dsl;
 
@@ -47,11 +48,8 @@ public class JooqReservationRepository implements ReservationRepository {
                     .set(RESERVATIONS.REQUEST_HASH, r.requestHash())
                     .execute();
         } catch (RuntimeException e) {
-            if (Causes.violates(e, "reservations_tenant_id_idempotency_key_key")) {
+            if (Causes.violates(e, KEY_CONSTRAINT)) {
                 throw new IdempotencyConflictException("reservation", r.idempotencyKey());
-            }
-            if (Causes.contains(e, DuplicateKeyException.class)) {
-                throw new ConflictException("this idempotency key was already used for a reservation");
             }
             throw e;
         }

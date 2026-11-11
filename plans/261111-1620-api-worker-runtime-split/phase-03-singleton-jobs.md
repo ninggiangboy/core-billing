@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Singleton heavy jobs and bootstrap"
-status: pending
+status: done
 ---
 
 # Singleton heavy jobs and bootstrap

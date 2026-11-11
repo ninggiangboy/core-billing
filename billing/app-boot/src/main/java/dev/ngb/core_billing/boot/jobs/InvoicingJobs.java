@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.boot.jobs;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase;
 import dev.ngb.core_billing.invoicing.application.subscription.command.RenewSubscriptionUseCase;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
  * Switching it off with {@code billing.invoicing.jobs-enabled=false} stops both; charges stay collected and subscriptions
  * stay due, and both catch up when it is back on.
  */
+@Profile("!api & !migrate")
 @Component
 @ConditionalOnProperty(name = {"billing.jobs.enabled", "billing.invoicing.jobs-enabled"}, havingValue = "true", matchIfMissing = true)
 public class InvoicingJobs {

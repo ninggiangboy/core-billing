@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.boot.jobs;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
  * security means a job can only see one tenant at a time. A failure in one Tenant is logged and does not stop
  * the others.
  */
+@Profile("!api & !migrate")
 @Component
 public class TenantSweep {
 

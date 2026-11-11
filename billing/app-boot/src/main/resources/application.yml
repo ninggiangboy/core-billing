@@ -49,6 +49,10 @@ billing:
     max-attempts: 10
     backoff-base: PT10S
     backoff-cap: PT1H
+  rate-limit:
+    # A worker removes buckets idle past their TTL in bounded skip-locked batches; api instances only spend them.
+    cleanup-batch: 500
+    cleanup-delay: PT5M
   webhooks:
     # Development only: allows http and loopback or private destinations so a local receiver works.
     allow-insecure-targets: ${BILLING_WEBHOOKS_ALLOW_INSECURE_TARGETS:false}

@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.boot.jobs;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
  * The webhook sender. Switching it off with {@code billing.webhooks.sender-enabled=false} is the rollback:
  * events keep accumulating as queued deliveries and go out when it is switched back on.
  */
+@Profile("!api & !migrate")
 @Component
 @ConditionalOnProperty(name = {"billing.jobs.enabled", "billing.webhooks.sender-enabled"}, havingValue = "true", matchIfMissing = true)
 public class WebhookJobs {

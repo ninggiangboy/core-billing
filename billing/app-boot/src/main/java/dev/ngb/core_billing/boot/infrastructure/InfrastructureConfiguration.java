@@ -6,7 +6,6 @@ import dev.ngb.core_billing.boot.infrastructure.coordination.PostgresRateLimiter
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.platform.application.auth.port.RateLimiter;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventInbox;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
@@ -75,7 +74,7 @@ class InfrastructureConfiguration {
     }
 
     @Bean
-    RateLimiter apiKeyRateLimiter(
+    PostgresRateLimiter apiKeyRateLimiter(
             PlatformTransactionManager transactionManager,
             JdbcTemplate jdbc,
             @Value("${billing.security.api-key-rate-limit.burst:100}") int burst,

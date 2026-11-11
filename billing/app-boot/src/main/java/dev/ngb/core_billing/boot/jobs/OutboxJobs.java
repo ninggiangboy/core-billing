@@ -1,11 +1,13 @@
 package dev.ngb.core_billing.boot.jobs;
 
+import org.springframework.context.annotation.Profile;
 import dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** Relays outbox events to the in-process consumers for every active tenant. */
+@Profile("!api & !migrate")
 @Component
 @ConditionalOnProperty(name = "billing.jobs.enabled", havingValue = "true", matchIfMissing = true)
 public class OutboxJobs {

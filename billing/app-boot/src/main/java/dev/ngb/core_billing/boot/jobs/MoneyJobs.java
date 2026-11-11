@@ -1,32 +1,48 @@
 package dev.ngb.core_billing.boot.jobs;
 
+import org.springframework.context.annotation.Profile;
+import dev.ngb.core_billing.boot.infrastructure.coordination.JobLeases;
+import dev.ngb.core_billing.boot.infrastructure.coordination.JobRuns;
 import dev.ngb.core_billing.money.application.reservation.command.ExpireReservationsUseCase;
 import dev.ngb.core_billing.money.application.ledger.command.LedgerVerifier;
 import dev.ngb.core_billing.money.application.ledger.command.VerifyLedgerUseCase;
+import dev.ngb.core_billing.sharedkernel.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
  * Scheduled money maintenance: releasing expired holds, and checking every wallet's projection against its
  * ledger. A mismatch is counted in {@code billing.ledger.mismatch} and audited; nothing is repaired automatically.
+ *
+ * <p>The verification is a singleton: a lease makes one worker run it, and a per-day run record per tenant makes a
+ * second run the same day a no-op, so the mismatch counter cannot count the same run twice. Neither the lease nor
+ * the run record is held while wallets are read.
  */
+@Profile("!api & !migrate")
 @Component
-@EnableScheduling
 @ConditionalOnProperty(name = "billing.jobs.enabled", havingValue = "true", matchIfMissing = true)
 public class MoneyJobs {
 
     private static final Logger LOG = LoggerFactory.getLogger(MoneyJobs.class);
+    private static final String VERIFY_LEASE = "verify-ledger";
+    private static final String VERIFY_RUN = "verify-ledger";
+    private static final Duration VERIFY_TTL = Duration.ofMinutes(30);
 
     private final TenantSweep sweep;
     private final ExpireReservationsUseCase expireReservations;
     private final VerifyLedgerUseCase verifyLedger;
+    private final JobLeases leases;
+    private final JobRuns runs;
+    private final Clock clock;
     private final MeterRegistry meters;
     private final int batchSize;
 
@@ -34,11 +50,17 @@ public class MoneyJobs {
             TenantSweep sweep,
             ExpireReservationsUseCase expireReservations,
             VerifyLedgerUseCase verifyLedger,
+            JobLeases leases,
+            JobRuns runs,
+            Clock clock,
             MeterRegistry meters,
             @Value("${billing.jobs.expire-reservations-batch:200}") int batchSize) {
         this.sweep = sweep;
         this.expireReservations = expireReservations;
         this.verifyLedger = verifyLedger;
+        this.leases = leases;
+        this.runs = runs;
+        this.clock = clock;
         this.meters = meters;
         this.batchSize = batchSize;
     }
@@ -55,12 +77,28 @@ public class MoneyJobs {
 
     @Scheduled(cron = "${billing.jobs.verify-ledger-cron:0 0 3 * * *}")
     public void verifyLedgers() {
-        sweep.forEachActiveTenant(tenant -> {
-            List<LedgerVerifier.Mismatch> mismatches = verifyLedger.execute();
-            if (!mismatches.isEmpty()) {
-                meters.counter("billing.ledger.mismatch").increment(mismatches.size());
-                LOG.error("ledger mismatch for tenant {}: {} wallets disagree with their entries", tenant, mismatches.size());
-            }
-        });
+        if (!leases.tryAcquire(VERIFY_LEASE, VERIFY_TTL)) {
+            LOG.info("ledger verification is already running on another worker");
+            return;
+        }
+        try {
+            String runKey = LocalDate.ofInstant(clock.now(), ZoneOffset.UTC).toString();
+            sweep.forEachActiveTenant(tenant -> {
+                if (!leases.renew(VERIFY_LEASE, VERIFY_TTL)) {
+                    LOG.warn("ledger verification lost its lease before tenant {}", tenant);
+                    return;
+                }
+                if (!runs.claim(VERIFY_RUN, runKey, tenant.value())) {
+                    return;
+                }
+                List<LedgerVerifier.Mismatch> mismatches = verifyLedger.execute();
+                if (!mismatches.isEmpty()) {
+                    meters.counter("billing.ledger.mismatch").increment(mismatches.size());
+                    LOG.error("ledger mismatch for tenant {}: {} wallets disagree with their entries", tenant, mismatches.size());
+                }
+            });
+        } finally {
+            leases.release(VERIFY_LEASE);
+        }
     }
 }

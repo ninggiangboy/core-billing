@@ -42,8 +42,8 @@ created: 2026-11-11
 |---|-------|--------|
 | 1 | Coordination schema and stores: job leases, run records, shared Postgres rate limiter | done |
 | 2 | Runtime profiles: api, worker, migrate, probes, pools, shutdown, per-profile timeouts | pending |
-| 3 | Singleton heavy jobs and platform bootstrap under a lease | pending |
-| 4 | Lock safety net: retryable SQLSTATEs, 503, lock hierarchy documentation | pending |
+| 3 | Singleton heavy jobs and platform bootstrap under a lease | done |
+| 4 | Lock safety net: retryable SQLSTATEs, 503, lock hierarchy documentation | done |
 | 5 | Concurrency and multi-instance tests: profile separation, lease contention, failover, deadlock stress | pending |
 
 Each phase: regenerate jOOQ when the schema changes, run the narrowest tests then

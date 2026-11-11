@@ -10,7 +10,7 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.application.user.port.UserRepository;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
-import dev.ngb.core_billing.platform.domain.user.UserId;
+import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import dev.ngb.core_billing.platform.domain.user.UserStatus;
 import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.TenantId;
@@ -67,7 +67,7 @@ public class JooqUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<BillingUser> findById(UserId id) {
+    public Optional<BillingUser> findById(BillingUserId id) {
         return dsl.selectFrom(BILLING_USERS)
                 .where(BILLING_USERS.ID.eq(id.value()))
                 .fetchOptional(row -> toDomain(row, roleIds(row.getId()), permissions(row.getId())));
@@ -128,7 +128,7 @@ public class JooqUserRepository implements UserRepository {
 
     private static BillingUser toDomain(BillingUsersRecord row, Set<RoleId> roleIds, Set<Permission> permissions) {
         return BillingUser.restore(
-                new UserId(row.getId()),
+                new BillingUserId(row.getId()),
                 new TenantId(row.getTenantId()),
                 PermissionScope.valueOf(row.getScope()),
                 row.getEmail(),

@@ -6,7 +6,7 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
 import dev.ngb.core_billing.pricing.domain.plan.PricingEvents;
@@ -63,7 +63,7 @@ public class ManagePlanUseCase {
             if (plans.findByCode(code).isPresent()) {
                 throw new ConflictException("a plan with code '" + code + "' already exists");
             }
-            PricingPlan plan = PricingPlan.create(new PlanId(ids.newId()), tenantId, code, name, firstVersion.rule().model(), currency, now);
+            PricingPlan plan = PricingPlan.create(new PricingPlanId(ids.newId()), tenantId, code, name, firstVersion.rule().model(), currency, now);
             PlanVersion version = publish(plan, firstVersion, audit, now);
             plans.add(plan);
             announce(plan, version, audit, now, "pricing-plan.created");
@@ -71,7 +71,7 @@ public class ManagePlanUseCase {
         });
     }
 
-    public PlanVersion publishVersion(Audit audit, PlanId id, Terms terms) {
+    public PlanVersion publishVersion(Audit audit, PricingPlanId id, Terms terms) {
         return unitOfWork.transactional(() -> {
             Instant now = clock.now();
             PricingPlan plan = plans.lockById(id).orElseThrow(() -> new NotFoundException("pricing plan not found"));
@@ -87,7 +87,7 @@ public class ManagePlanUseCase {
         });
     }
 
-    public PricingPlan retire(Audit audit, PlanId id) {
+    public PricingPlan retire(Audit audit, PricingPlanId id) {
         return unitOfWork.transactional(() -> {
             Instant now = clock.now();
             PricingPlan plan = plans.lockById(id).orElseThrow(() -> new NotFoundException("pricing plan not found"));
@@ -103,7 +103,7 @@ public class ManagePlanUseCase {
         });
     }
 
-    public PricingPlan get(PlanId id) {
+    public PricingPlan get(PricingPlanId id) {
         return unitOfWork.transactional(() -> plans.findById(id).orElseThrow(() -> new NotFoundException("pricing plan not found")));
     }
 

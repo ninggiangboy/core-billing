@@ -10,7 +10,7 @@ import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanQueries;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanVersionView;
 import dev.ngb.core_billing.pricing.application.plan.query.PricingPlanView;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
@@ -118,14 +118,14 @@ public class PlanController {
         if (request.rule() == null) {
             throw new IllegalArgumentException("rule is required");
         }
-        PlanId planId = PlanId.of(id);
+        PricingPlanId planId = PricingPlanId.of(id);
         return VersionResponse.of(plans.publishVersion(Audit.of(currentActor.get(), requestId), planId, terms(request, plans.get(planId).model())));
     }
 
     @PostMapping("/pricing-plans/{id}/retire")
     @RequiresPermission(Permission.PRICING_MANAGE)
     public PlanResponse retire(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return PlanResponse.of(plans.retire(Audit.of(currentActor.get(), requestId), PlanId.of(id)));
+        return PlanResponse.of(plans.retire(Audit.of(currentActor.get(), requestId), PricingPlanId.of(id)));
     }
 
     private static ManagePlanUseCase.Terms terms(VersionRequest v, PricingModel model) {

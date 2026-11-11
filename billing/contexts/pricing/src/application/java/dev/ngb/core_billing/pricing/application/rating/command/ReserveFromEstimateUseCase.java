@@ -8,7 +8,7 @@ import dev.ngb.core_billing.money.api.wallet.WalletSummary;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Duration;
@@ -20,10 +20,10 @@ import java.util.UUID;
 public class ReserveFromEstimateUseCase {
 
     public record Command(
-            WalletId walletId, PlanId planId, Integer version, Instant at, Map<String, Measure> usage, Duration ttl, String reference,
+            WalletId walletId, PricingPlanId planId, Integer version, Instant at, Map<String, Measure> usage, Duration ttl, String reference,
             String idempotencyKey, UUID caller) {
         public Command(
-                WalletId walletId, PlanId planId, Integer version, Instant at, Map<String, Measure> usage, Duration ttl, String reference,
+                WalletId walletId, PricingPlanId planId, Integer version, Instant at, Map<String, Measure> usage, Duration ttl, String reference,
                 String idempotencyKey) {
             this(walletId, planId, version, at, usage, ttl, reference, idempotencyKey, null);
         }

@@ -2,7 +2,7 @@ package dev.ngb.core_billing.platform.application.credential.port;
 
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
-import dev.ngb.core_billing.platform.domain.credential.CredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +12,7 @@ public interface CredentialRepository {
 
     void update(ApiCredential credential);
 
-    Optional<ApiCredential> findById(CredentialId id);
+    Optional<ApiCredential> findById(ApiCredentialId id);
 
     /** Finds within the current tenant only; another tenant's key id is invisible. */
     Optional<ApiCredential> findByKeyId(String keyId);

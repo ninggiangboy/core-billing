@@ -11,12 +11,12 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingEvents;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
 import dev.ngb.core_billing.pricing.domain.rating.Quote;
-import dev.ngb.core_billing.pricing.domain.rating.RatingId;
+import dev.ngb.core_billing.pricing.domain.rating.UsageRatingId;
 import dev.ngb.core_billing.pricing.domain.rating.RatingStatus;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
 import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
@@ -61,8 +61,8 @@ public class ChargeFromUsageUseCase {
     public static final int MAX_EVENTS = 10_000;
 
     /** The period is half-open: {@code from} included, {@code to} excluded. {@code version} defaults to the one in force at the end of the period. */
-    public record Command(CustomerId customerId, WalletId walletId, PlanId planId, Integer version, Instant from, Instant to, UUID caller) {
-        public Command(CustomerId customerId, WalletId walletId, PlanId planId, Integer version, Instant from, Instant to) {
+    public record Command(CustomerId customerId, WalletId walletId, PricingPlanId planId, Integer version, Instant from, Instant to, UUID caller) {
+        public Command(CustomerId customerId, WalletId walletId, PricingPlanId planId, Integer version, Instant from, Instant to) {
             this(customerId, walletId, planId, version, from, to, null);
         }
     }
@@ -147,7 +147,7 @@ public class ChargeFromUsageUseCase {
         if (records.isEmpty()) {
             return new Result(Outcome.NO_USAGE, null, false);
         }
-        Map<UUID, RatingId> accounted = ratings.ratedAmong(records.stream().map(r -> r.id().value()).toList());
+        Map<UUID, UsageRatingId> accounted = ratings.ratedAmong(records.stream().map(r -> r.id().value()).toList());
         List<UsageRecord> open = records.stream().filter(r -> !accounted.containsKey(r.id().value())).toList();
         if (open.isEmpty()) {
             UsageRating earlier = ratings.findById(accounted.get(records.get(0).id().value())).orElseThrow(() -> new IllegalStateException("rating vanished"));
@@ -158,7 +158,7 @@ public class ChargeFromUsageUseCase {
         Quote quote = version.quoteUsage(plan.currency(), summarize(open));
         String setKey = setKey(open);
         int attempt = ratings.failedAttempts(setKey) + 1;
-        RatingId ratingId = new RatingId(ids.newId());
+        UsageRatingId ratingId = new UsageRatingId(ids.newId());
         Instant now = clock.now();
         Money amount = quote.amount();
 

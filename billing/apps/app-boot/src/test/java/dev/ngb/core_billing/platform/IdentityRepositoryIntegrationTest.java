@@ -17,11 +17,11 @@ import dev.ngb.core_billing.platform.application.user.query.UserView;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
 import dev.ngb.core_billing.platform.domain.credential.ApiKey;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
-import dev.ngb.core_billing.platform.domain.credential.CredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
 import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystem;
-import dev.ngb.core_billing.platform.domain.user.UserId;
+import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -83,7 +83,7 @@ class IdentityRepositoryIntegrationTest {
     void usersRoundTripWithRolesAndDirectPermissions() {
         Tenant tenant = scopes.newTenant();
         Role role = newRole(tenant, "Support", Set.of(Permission.USER_READ));
-        BillingUser user = BillingUser.create(new UserId(UUID.randomUUID()), tenant.id(), PermissionScope.TENANT,
+        BillingUser user = BillingUser.create(new BillingUserId(UUID.randomUUID()), tenant.id(), PermissionScope.TENANT,
                 "Zoe@Example.com", "Zoe", "sub-" + UUID.randomUUID(), clock.now());
         user.assign(role.id());
         user.grant(Permission.ROLE_READ);
@@ -110,12 +110,12 @@ class IdentityRepositoryIntegrationTest {
     void emailIsUniquePerTenantAndUsersAreInvisibleAcrossTenants() {
         Tenant a = scopes.newTenant();
         Tenant b = scopes.newTenant();
-        BillingUser inA = BillingUser.create(new UserId(UUID.randomUUID()), a.id(), PermissionScope.TENANT, "same@example.com", "A", "sub-" + UUID.randomUUID(), clock.now());
-        BillingUser inB = BillingUser.create(new UserId(UUID.randomUUID()), b.id(), PermissionScope.TENANT, "same@example.com", "B", "sub-" + UUID.randomUUID(), clock.now());
+        BillingUser inA = BillingUser.create(new BillingUserId(UUID.randomUUID()), a.id(), PermissionScope.TENANT, "same@example.com", "A", "sub-" + UUID.randomUUID(), clock.now());
+        BillingUser inB = BillingUser.create(new BillingUserId(UUID.randomUUID()), b.id(), PermissionScope.TENANT, "same@example.com", "B", "sub-" + UUID.randomUUID(), clock.now());
         scopes.runInTenant(a.id(), () -> unitOfWork.transactional(() -> users.add(inA)));
         scopes.runInTenant(b.id(), () -> unitOfWork.transactional(() -> users.add(inB)));
 
-        BillingUser duplicate = BillingUser.create(new UserId(UUID.randomUUID()), a.id(), PermissionScope.TENANT, "same@example.com", "A2", "sub-" + UUID.randomUUID(), clock.now());
+        BillingUser duplicate = BillingUser.create(new BillingUserId(UUID.randomUUID()), a.id(), PermissionScope.TENANT, "same@example.com", "A2", "sub-" + UUID.randomUUID(), clock.now());
         assertThatThrownBy(() -> scopes.runInTenant(a.id(), () -> unitOfWork.transactional(() -> users.add(duplicate))))
                 .isInstanceOf(ConflictException.class);
 
@@ -129,7 +129,7 @@ class IdentityRepositoryIntegrationTest {
         Tenant b = scopes.newTenant();
         Role roleOfB = newRole(b, "Support", Set.of());
         scopes.runInTenant(b.id(), () -> unitOfWork.transactional(() -> roles.add(roleOfB)));
-        BillingUser user = BillingUser.create(new UserId(UUID.randomUUID()), a.id(), PermissionScope.TENANT, "x@example.com", "X", "sub-" + UUID.randomUUID(), clock.now());
+        BillingUser user = BillingUser.create(new BillingUserId(UUID.randomUUID()), a.id(), PermissionScope.TENANT, "x@example.com", "X", "sub-" + UUID.randomUUID(), clock.now());
         user.assign(roleOfB.id());
 
         assertThatThrownBy(() -> scopes.runInTenant(a.id(), () -> unitOfWork.transactional(() -> users.add(user))))
@@ -141,7 +141,7 @@ class IdentityRepositoryIntegrationTest {
         Tenant tenant = scopes.newTenant();
         TenantSystem system = TenantSystem.create(new TenantSystemId(UUID.randomUUID()), tenant.id(), "Sample", clock.now());
         ApiKey.Generated key = ApiKey.generate(new SecureRandom());
-        ApiCredential credential = ApiCredential.issue(new CredentialId(UUID.randomUUID()), tenant.id(), system.id(), key,
+        ApiCredential credential = ApiCredential.issue(new ApiCredentialId(UUID.randomUUID()), tenant.id(), system.id(), key,
                 Set.of(Permission.CUSTOMER_READ, Permission.CUSTOMER_WRITE), "ci", clock.now());
         scopes.runInTenant(tenant.id(), () -> unitOfWork.transactional(() -> {
             systems.add(system);
@@ -167,7 +167,7 @@ class IdentityRepositoryIntegrationTest {
         Tenant b = scopes.newTenant();
         TenantSystem systemOfA = TenantSystem.create(new TenantSystemId(UUID.randomUUID()), a.id(), "Sample", clock.now());
         ApiKey.Generated key = ApiKey.generate(new SecureRandom());
-        ApiCredential credential = ApiCredential.issue(new CredentialId(UUID.randomUUID()), a.id(), systemOfA.id(), key, Set.of(), "x", clock.now());
+        ApiCredential credential = ApiCredential.issue(new ApiCredentialId(UUID.randomUUID()), a.id(), systemOfA.id(), key, Set.of(), "x", clock.now());
         scopes.runInTenant(a.id(), () -> unitOfWork.transactional(() -> {
             systems.add(systemOfA);
             credentials.add(credential);
@@ -175,7 +175,7 @@ class IdentityRepositoryIntegrationTest {
 
         assertThat(scopes.inTenant(b.id(), () -> unitOfWork.transactional(() -> credentials.findByKeyId(key.keyId())))).isEmpty();
 
-        ApiCredential foreign = ApiCredential.issue(new CredentialId(UUID.randomUUID()), b.id(), systemOfA.id(),
+        ApiCredential foreign = ApiCredential.issue(new ApiCredentialId(UUID.randomUUID()), b.id(), systemOfA.id(),
                 ApiKey.generate(new SecureRandom()), Set.of(), "x", clock.now());
         assertThatThrownBy(() -> scopes.runInTenant(b.id(), () -> unitOfWork.transactional(() -> credentials.add(foreign))))
                 .hasMessageContaining("foreign key");

@@ -10,7 +10,7 @@ import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
-import dev.ngb.core_billing.platform.domain.user.UserId;
+import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.TenantId;
@@ -87,7 +87,7 @@ public class ManageUserUseCase {
         try {
             return unitOfWork.transactional(() -> {
                 BillingUser user = BillingUser.create(
-                        new UserId(ids.newId()), prepared.tenantId(), prepared.scope(), email, command.displayName(),
+                        new BillingUserId(ids.newId()), prepared.tenantId(), prepared.scope(), email, command.displayName(),
                         subject, clock.now());
                 command.roleIds().forEach(user::assign);
                 users.add(user);
@@ -106,7 +106,7 @@ public class ManageUserUseCase {
     }
 
 
-    public BillingUser assignRole(Audit caller, UserId userId, RoleId roleId) {
+    public BillingUser assignRole(Audit caller, BillingUserId userId, RoleId roleId) {
         return unitOfWork.transactional(() -> {
             BillingUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
             Role role = roles.findById(roleId).orElseThrow(() -> new NotFoundException("role not found"));
@@ -118,7 +118,7 @@ public class ManageUserUseCase {
         });
     }
 
-    public BillingUser unassignRole(Audit caller, UserId userId, RoleId roleId) {
+    public BillingUser unassignRole(Audit caller, BillingUserId userId, RoleId roleId) {
         return unitOfWork.transactional(() -> {
             BillingUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
             user.unassign(roleId);

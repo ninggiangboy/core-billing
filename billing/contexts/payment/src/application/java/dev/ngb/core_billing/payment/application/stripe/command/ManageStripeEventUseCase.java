@@ -3,7 +3,7 @@ package dev.ngb.core_billing.payment.application.stripe.command;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
@@ -39,7 +39,7 @@ public class ManageStripeEventUseCase {
     }
 
     /** Puts a failed or dead event back in line and tries it now. */
-    public void retry(Audit audit, StoredEventId id) {
+    public void retry(Audit audit, StripeEventId id) {
         unitOfWork.transactional(() -> {
             StripeEvent event = events.lockById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
             Instant now = clock.now();

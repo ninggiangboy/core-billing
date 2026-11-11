@@ -6,7 +6,7 @@ import static dev.ngb.core_billing_jooq.Tables.PRICING_PLAN_VERSIONS;
 import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
@@ -83,7 +83,7 @@ public class JooqPlanRepository implements PlanRepository {
     }
 
     @Override
-    public Optional<PricingPlan> findById(PlanId id) {
+    public Optional<PricingPlan> findById(PricingPlanId id) {
         return dsl.selectFrom(PRICING_PLANS)
                 .where(PRICING_PLANS.ID.eq(id.value()))
                 .fetchOptional()
@@ -91,7 +91,7 @@ public class JooqPlanRepository implements PlanRepository {
     }
 
     @Override
-    public Optional<PricingPlan> lockById(PlanId id) {
+    public Optional<PricingPlan> lockById(PricingPlanId id) {
         return dsl.selectFrom(PRICING_PLANS)
                 .where(PRICING_PLANS.ID.eq(id.value()))
                 .forUpdate()
@@ -124,7 +124,7 @@ public class JooqPlanRepository implements PlanRepository {
 
     private static PricingPlan toDomain(PricingPlansRecord row, List<PlanVersion> versions) {
         return PricingPlan.restore(
-                new PlanId(row.getId()),
+                new PricingPlanId(row.getId()),
                 new TenantId(row.getTenantId()),
                 row.getCode(),
                 row.getName(),
@@ -138,7 +138,7 @@ public class JooqPlanRepository implements PlanRepository {
 
     private PlanVersion toDomain(PricingPlanVersionsRecord row, PricingModel model) {
         return new PlanVersion(
-                new PlanId(row.getPlanId()),
+                new PricingPlanId(row.getPlanId()),
                 new TenantId(row.getTenantId()),
                 row.getVersion(),
                 json.readValue(row.getRule().data(), RuleDto.class).toRule(model),

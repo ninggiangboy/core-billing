@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.payment.application.stripe.port;
 
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
 import java.time.Instant;
 import java.util.List;
@@ -14,15 +14,15 @@ public interface StripeEventRepository {
 
     void update(StripeEvent event);
 
-    Optional<StripeEvent> findById(StoredEventId id);
+    Optional<StripeEvent> findById(StripeEventId id);
 
-    Optional<StripeEvent> lockById(StoredEventId id);
+    Optional<StripeEvent> lockById(StripeEventId id);
 
     /**
      * Events to try now, oldest first: failed ones whose retry time has come, and ones stored but never processed
      * since {@code receivedBefore} (the process stopped between storing and processing).
      */
-    List<StoredEventId> due(Instant now, Instant receivedBefore, int limit);
+    List<StripeEventId> due(Instant now, Instant receivedBefore, int limit);
 
     void addAttempt(StripeEvent event, int number, String outcome, String detail, Instant at);
 }

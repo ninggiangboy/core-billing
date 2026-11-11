@@ -123,7 +123,8 @@ final class ArchitectureRules {
                 new NamedRule("repository-pair-shares-a-package", repositoryPairSharesAPackage(root)),
                 new NamedRule("api-implementations-are-services", apiImplementationsAreServices(root)),
                 new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)),
-                new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)));
+                new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)),
+                new NamedRule("domain-id-names-its-aggregate", domainIdNamesItsAggregate(root)));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -527,6 +528,25 @@ final class ArchitectureRules {
                 .should().dependOnClassesThat().resideInAnyPackage(root + ".*.adapter..persistence..")
                 .because("web and persistence are separate technologies; a shape both use belongs in its own package, such as json")
                 .allowEmptyShould(true);
+    }
+
+    /** A typed id in the domain is named after the aggregate it identifies: {@code InvoiceId} beside {@code Invoice}. */
+    private static ArchRule domainIdNamesItsAggregate(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.domain..")
+                .and().haveSimpleNameEndingWith("Id")
+                .and(areTopLevel())
+                .should(new ArchCondition<>("have an aggregate of the same name without Id in its package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String aggregate = item.getSimpleName().substring(0, item.getSimpleName().length() - "Id".length());
+                        boolean found = item.getPackage().getClasses().stream().anyMatch(other -> other.getSimpleName().equals(aggregate));
+                        if (!found) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " identifies no aggregate named " + aggregate + " in its package"));
+                        }
+                    }
+                })
+                .because("an id is named after the aggregate it identifies, so the pair is found by name");
     }
 
     private static boolean isApiPackage(String root, String packageName) {

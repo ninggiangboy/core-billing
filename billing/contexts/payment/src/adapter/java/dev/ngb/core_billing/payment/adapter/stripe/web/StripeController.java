@@ -11,7 +11,7 @@ import dev.ngb.core_billing.payment.application.stripe.query.StripeEventView;
 import dev.ngb.core_billing.payment.application.stripe.service.StripeConfigurationService;
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
@@ -171,7 +171,7 @@ public class StripeController {
     @PostMapping("/stripe/events/{id}/retry")
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public EventDetailResponse retry(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        eventAdmin.retry(Audit.of(currentActor.get(), requestId), StoredEventId.of(id));
+        eventAdmin.retry(Audit.of(currentActor.get(), requestId), StripeEventId.of(id));
         return eventDetail(eventQueries.get(UUID.fromString(id)));
     }
 

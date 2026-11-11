@@ -26,7 +26,7 @@ import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
  */
 public final class PlanVersion {
 
-    private final PlanId planId;
+    private final PricingPlanId planId;
     private final TenantId tenantId;
     private final int number;
     private final PriceRule rule;
@@ -40,7 +40,7 @@ public final class PlanVersion {
     private final String createdBy;
 
     public PlanVersion(
-            PlanId planId, TenantId tenantId, int number, PriceRule rule, BillingCycle billingCycle, Long minCharge, Long maxCharge, RoundingPolicy rounding,
+            PricingPlanId planId, TenantId tenantId, int number, PriceRule rule, BillingCycle billingCycle, Long minCharge, Long maxCharge, RoundingPolicy rounding,
             Instant validFrom, Instant validUntil, Instant createdAt, String createdBy) {
         this.planId = Objects.requireNonNull(planId, "planId");
         this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
@@ -127,7 +127,7 @@ public final class PlanVersion {
         return !at.isBefore(validFrom) && (validUntil == null || at.isBefore(validUntil));
     }
 
-    public PlanId planId() {
+    public PricingPlanId planId() {
         return planId;
     }
 

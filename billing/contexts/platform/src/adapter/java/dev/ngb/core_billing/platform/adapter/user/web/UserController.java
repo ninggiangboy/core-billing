@@ -8,7 +8,7 @@ import dev.ngb.core_billing.platform.application.user.query.UserQueries;
 import dev.ngb.core_billing.platform.application.user.query.UserView;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
-import dev.ngb.core_billing.platform.domain.user.UserId;
+import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -93,18 +93,18 @@ public class UserController {
     @GetMapping("/{id}")
     @RequiresPermission(Permission.USER_READ)
     public UserResponse get(@PathVariable String id) {
-        return UserResponse.ofView(userQueries.get(UserId.of(id).value()));
+        return UserResponse.ofView(userQueries.get(BillingUserId.of(id).value()));
     }
 
     @PutMapping("/{id}/roles/{roleId}")
     @RequiresPermission(Permission.USER_MANAGE)
     public UserResponse assignRole(@PathVariable String id, @PathVariable String roleId) {
-        return UserResponse.of(users.assignRole(callers.current(), UserId.of(id), RoleId.of(roleId)));
+        return UserResponse.of(users.assignRole(callers.current(), BillingUserId.of(id), RoleId.of(roleId)));
     }
 
     @DeleteMapping("/{id}/roles/{roleId}")
     @RequiresPermission(Permission.USER_MANAGE)
     public UserResponse unassignRole(@PathVariable String id, @PathVariable String roleId) {
-        return UserResponse.of(users.unassignRole(callers.current(), UserId.of(id), RoleId.of(roleId)));
+        return UserResponse.of(users.unassignRole(callers.current(), BillingUserId.of(id), RoleId.of(roleId)));
     }
 }

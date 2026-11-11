@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.pricing.application.plan.port;
 
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
 import java.util.Optional;
@@ -17,10 +17,10 @@ public interface PlanRepository {
     /** Writes the plan's own status (retirement). */
     void update(PricingPlan plan);
 
-    Optional<PricingPlan> findById(PlanId id);
+    Optional<PricingPlan> findById(PricingPlanId id);
 
     /** Same as {@link #findById} but holds the plan's row until the transaction ends, so versions are numbered one at a time. */
-    Optional<PricingPlan> lockById(PlanId id);
+    Optional<PricingPlan> lockById(PricingPlanId id);
 
     Optional<PricingPlan> findByCode(String code);
 }

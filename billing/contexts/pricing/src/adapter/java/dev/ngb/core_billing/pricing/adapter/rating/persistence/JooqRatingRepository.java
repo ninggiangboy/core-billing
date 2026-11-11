@@ -4,9 +4,9 @@ import static dev.ngb.core_billing_jooq.Tables.USAGE_CHARGES;
 import static dev.ngb.core_billing_jooq.Tables.USAGE_RATINGS;
 
 import dev.ngb.core_billing.pricing.application.rating.port.RatingRepository;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
-import dev.ngb.core_billing.pricing.domain.rating.RatingId;
+import dev.ngb.core_billing.pricing.domain.rating.UsageRatingId;
 import dev.ngb.core_billing.pricing.domain.rating.RatingStatus;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
 import dev.ngb.core_billing.sharedkernel.Currency;
@@ -80,7 +80,7 @@ public class JooqRatingRepository implements RatingRepository {
     }
 
     @Override
-    public int link(RatingId ratingId, Collection<UUID> usageEventIds) {
+    public int link(UsageRatingId ratingId, Collection<UUID> usageEventIds) {
         if (usageEventIds.isEmpty()) {
             return 0;
         }
@@ -93,15 +93,15 @@ public class JooqRatingRepository implements RatingRepository {
     }
 
     @Override
-    public Map<UUID, RatingId> ratedAmong(Collection<UUID> usageEventIds) {
+    public Map<UUID, UsageRatingId> ratedAmong(Collection<UUID> usageEventIds) {
         if (usageEventIds.isEmpty()) {
             return Map.of();
         }
-        Map<UUID, RatingId> found = new HashMap<>();
+        Map<UUID, UsageRatingId> found = new HashMap<>();
         dsl.select(USAGE_CHARGES.USAGE_EVENT_ID, USAGE_CHARGES.RATING_ID)
                 .from(USAGE_CHARGES)
                 .where(USAGE_CHARGES.USAGE_EVENT_ID.in(usageEventIds))
-                .forEach(row -> found.put(row.value1(), new RatingId(row.value2())));
+                .forEach(row -> found.put(row.value1(), new UsageRatingId(row.value2())));
         return found;
     }
 
@@ -111,7 +111,7 @@ public class JooqRatingRepository implements RatingRepository {
     }
 
     @Override
-    public Optional<UsageRating> findById(RatingId id) {
+    public Optional<UsageRating> findById(UsageRatingId id) {
         return dsl.selectFrom(USAGE_RATINGS)
                 .where(USAGE_RATINGS.ID.eq(id.value()))
                 .fetchOptional(row -> toDomain(row));
@@ -119,11 +119,11 @@ public class JooqRatingRepository implements RatingRepository {
 
     private UsageRating toDomain(UsageRatingsRecord row) {
         return new UsageRating(
-                new RatingId(row.getId()),
+                new UsageRatingId(row.getId()),
                 new TenantId(row.getTenantId()),
                 new CustomerId(row.getCustomerId()),
                 new WalletId(row.getWalletId()),
-                new PlanId(row.getPlanId()),
+                new PricingPlanId(row.getPlanId()),
                 row.getPlanVersion(),
                 row.getSetKey(),
                 row.getAttempt(),

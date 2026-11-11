@@ -6,7 +6,7 @@ import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.application.credential.port.CredentialRepository;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
-import dev.ngb.core_billing.platform.domain.credential.CredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.credential.CredentialStatus;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.ApiCredentialsRecord;
@@ -57,7 +57,7 @@ public class JooqCredentialRepository implements CredentialRepository {
     }
 
     @Override
-    public Optional<ApiCredential> findById(CredentialId id) {
+    public Optional<ApiCredential> findById(ApiCredentialId id) {
         return dsl.selectFrom(API_CREDENTIALS)
                 .where(API_CREDENTIALS.ID.eq(id.value()))
                 .fetchOptional(JooqCredentialRepository::toDomain);
@@ -87,7 +87,7 @@ public class JooqCredentialRepository implements CredentialRepository {
                 .map(code -> Permission.fromCode(code).orElseThrow())
                 .collect(Collectors.toSet());
         return ApiCredential.restore(
-                new CredentialId(row.getId()),
+                new ApiCredentialId(row.getId()),
                 new TenantId(row.getTenantId()),
                 new TenantSystemId(row.getTenantSystemId()),
                 row.getKeyId(),

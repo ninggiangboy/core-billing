@@ -3,14 +3,14 @@ package dev.ngb.core_billing.platform.domain.credential;
 import java.util.Objects;
 import java.util.UUID;
 
-public record CredentialId(UUID value) {
+public record ApiCredentialId(UUID value) {
 
-    public CredentialId {
+    public ApiCredentialId {
         Objects.requireNonNull(value, "value");
     }
 
-    public static CredentialId of(String text) {
-        return new CredentialId(UUID.fromString(text));
+    public static ApiCredentialId of(String text) {
+        return new ApiCredentialId(UUID.fromString(text));
     }
 
     @Override

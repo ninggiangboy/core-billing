@@ -24,7 +24,7 @@ class PlanVersionsTest {
     private static final TenantId TENANT = new TenantId(UUID.randomUUID());
 
     private static PricingPlan calls() {
-        return PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "api-calls", "API calls", PricingModel.EVENT_BASED, Currency.of("USD"), NOW);
+        return PricingPlan.create(new PricingPlanId(UUID.randomUUID()), TENANT, "api-calls", "API calls", PricingModel.EVENT_BASED, Currency.of("USD"), NOW);
     }
 
     private static EventBased price(String unitPrice) {
@@ -93,7 +93,7 @@ class PlanVersionsTest {
 
     @Test
     void versionRules() {
-        PricingPlan plan = PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "pro", "Pro", PricingModel.SUBSCRIPTION, Currency.of("USD"), NOW);
+        PricingPlan plan = PricingPlan.create(new PricingPlanId(UUID.randomUUID()), TENANT, "pro", "Pro", PricingModel.SUBSCRIPTION, Currency.of("USD"), NOW);
         assertThatThrownBy(() -> plan.publish(new FixedPrice(BigDecimal.TEN), null, null, null, null, null, null, "u", NOW)).hasMessageContaining("billing cycle");
         assertThat(plan.publish(new FixedPrice(BigDecimal.TEN), BillingCycle.MONTHLY, null, null, null, null, null, "u", NOW).billingCycle())
                 .isEqualTo(BillingCycle.MONTHLY);
@@ -106,15 +106,15 @@ class PlanVersionsTest {
 
     @Test
     void planIdentity() {
-        assertThatThrownBy(() -> PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "Bad Code", "x", PricingModel.EVENT_BASED, Currency.of("USD"), NOW))
+        assertThatThrownBy(() -> PricingPlan.create(new PricingPlanId(UUID.randomUUID()), TENANT, "Bad Code", "x", PricingModel.EVENT_BASED, Currency.of("USD"), NOW))
                 .hasMessageContaining("plan code");
-        assertThatThrownBy(() -> PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "ok", " ", PricingModel.EVENT_BASED, Currency.of("USD"), NOW))
+        assertThatThrownBy(() -> PricingPlan.create(new PricingPlanId(UUID.randomUUID()), TENANT, "ok", " ", PricingModel.EVENT_BASED, Currency.of("USD"), NOW))
                 .hasMessageContaining("name");
     }
 
     @Test
     void aSubscriptionVersionHasItsFixedPriceAsTheRecurringAmountWithTheLimitsApplied() {
-        PricingPlan plan = PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "pro", "Pro", PricingModel.SUBSCRIPTION, Currency.of("USD"), NOW);
+        PricingPlan plan = PricingPlan.create(new PricingPlanId(UUID.randomUUID()), TENANT, "pro", "Pro", PricingModel.SUBSCRIPTION, Currency.of("USD"), NOW);
         PlanVersion plain = plan.publish(new FixedPrice(new BigDecimal("1999.6")), BillingCycle.MONTHLY, null, null, null, null, null, "user/a", NOW);
         PlanVersion capped = plan.publish(new FixedPrice(new BigDecimal("1999.6")), BillingCycle.MONTHLY, null, 1_500L, null, NOW.plusSeconds(60), null, "user/a",
                 NOW.plusSeconds(1));
@@ -125,7 +125,7 @@ class PlanVersionsTest {
 
     @Test
     void aHybridVersionRecurringAmountIsItsBaseOnlyAndPureUsagePlansHaveNone() {
-        PricingPlan hybrid = PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "cloud", "Cloud", PricingModel.HYBRID, Currency.of("USD"), NOW);
+        PricingPlan hybrid = PricingPlan.create(new PricingPlanId(UUID.randomUUID()), TENANT, "cloud", "Cloud", PricingModel.HYBRID, Currency.of("USD"), NOW);
         PlanVersion version = hybrid.publish(new Hybrid(new BigDecimal("500"), List.of(price("1"))), BillingCycle.MONTHLY, null, 100L, null, null, null, "user/a", NOW);
         assertThat(version.recurringAmount(Currency.of("USD"))).as("the usage limits do not cut the base").contains(Money.of(500, Currency.of("USD")));
 

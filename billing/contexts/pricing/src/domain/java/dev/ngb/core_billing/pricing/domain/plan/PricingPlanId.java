@@ -3,14 +3,14 @@ package dev.ngb.core_billing.pricing.domain.plan;
 import java.util.Objects;
 import java.util.UUID;
 
-public record PlanId(UUID value) {
+public record PricingPlanId(UUID value) {
 
-    public PlanId {
+    public PricingPlanId {
         Objects.requireNonNull(value, "value");
     }
 
-    public static PlanId of(String text) {
-        return new PlanId(UUID.fromString(text));
+    public static PricingPlanId of(String text) {
+        return new PricingPlanId(UUID.fromString(text));
     }
 
     @Override

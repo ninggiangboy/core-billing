@@ -11,7 +11,7 @@ import dev.ngb.core_billing.pricing.application.rating.query.PriceLineView;
 import dev.ngb.core_billing.pricing.application.rating.query.RatingQueries;
 import dev.ngb.core_billing.pricing.application.rating.query.UsageRatingView;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.rating.RatingStatus;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
 import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
@@ -129,7 +129,7 @@ public class RatingController {
     @PostMapping("/pricing/estimates")
     @RequiresPermission(Permission.PRICING_READ)
     public EstimateResponse estimate(@RequestBody EstimateRequest request) {
-        return EstimateResponse.of(estimates.estimate(new EstimateCostUseCase.Request(PlanId.of(required(request.planId(), "planId")), request.version(), request.at(), measures(request.usage()))));
+        return EstimateResponse.of(estimates.estimate(new EstimateCostUseCase.Request(PricingPlanId.of(required(request.planId(), "planId")), request.version(), request.at(), measures(request.usage()))));
     }
 
     /** Holds the estimated cost on the wallet. 201 on success, 402 when the wallet cannot cover it. */
@@ -138,7 +138,7 @@ public class RatingController {
     @RequiresPermission(Permission.RESERVATION_MANAGE)
     public ReserveResponse reserveEstimate(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
         ReserveFromEstimateUseCase.Result result = reserve.reserve(new ReserveFromEstimateUseCase.Command(
-                WalletId.of(required(request.walletId(), "walletId")), PlanId.of(required(request.planId(), "planId")), request.version(), request.at(),
+                WalletId.of(required(request.walletId(), "walletId")), PricingPlanId.of(required(request.planId(), "planId")), request.version(), request.at(),
                 measures(request.usage()),
                 Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, currentActor.caller()));
         return new ReserveResponse(EstimateResponse.of(result.estimate()), ReservationDto.of(result.reservation()));
@@ -157,7 +157,7 @@ public class RatingController {
         }
         ChargeFromUsageUseCase.Result result = chargeUsage.execute(new ChargeFromUsageUseCase.Command(
                 CustomerId.of(required(request.customerId(), "customerId")), WalletId.of(required(request.walletId(), "walletId")),
-                PlanId.of(required(request.planId(), "planId")), request.version(), request.from(), request.to(), currentActor.caller()));
+                PricingPlanId.of(required(request.planId(), "planId")), request.version(), request.from(), request.to(), currentActor.caller()));
         HttpStatus status = switch (result.outcome()) {
             case CHARGED -> result.replayed() ? HttpStatus.OK : HttpStatus.CREATED;
             case FAILED -> HttpStatus.PAYMENT_REQUIRED;

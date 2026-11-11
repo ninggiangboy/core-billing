@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.rating.Quote;
 import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
@@ -26,7 +26,7 @@ class PriceRulesTest {
 
     private static final Currency USD = Currency.of("USD");
     private static final Instant T0 = Instant.parse("2026-11-10T00:00:00Z");
-    private static final PlanId PLAN = new PlanId(UUID.randomUUID());
+    private static final PricingPlanId PLAN = new PricingPlanId(UUID.randomUUID());
     private static final TenantId TENANT = new TenantId(UUID.randomUUID());
 
     private static BigDecimal d(String text) {

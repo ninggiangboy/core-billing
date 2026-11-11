@@ -2,7 +2,7 @@ package dev.ngb.core_billing.platform.application.user.port;
 
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
-import dev.ngb.core_billing.platform.domain.user.UserId;
+import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +14,7 @@ public interface UserRepository {
 
     void update(BillingUser user);
 
-    Optional<BillingUser> findById(UserId id);
+    Optional<BillingUser> findById(BillingUserId id);
 
     Optional<BillingUser> findByKeycloakSubject(String subject);
 

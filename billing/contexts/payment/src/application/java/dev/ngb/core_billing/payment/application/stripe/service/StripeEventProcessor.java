@@ -3,7 +3,7 @@ package dev.ngb.core_billing.payment.application.stripe.service;
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
 import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
@@ -64,7 +64,7 @@ public class StripeEventProcessor {
     }
 
     /** Makes one attempt at the event and returns where it stands afterwards. Never throws for a processing failure. */
-    public Outcome attempt(StoredEventId id) {
+    public Outcome attempt(StripeEventId id) {
         try {
             Prefetch fetched = prefetch(id);
             return unitOfWork.transactional(() -> process(id, fetched));
@@ -78,7 +78,7 @@ public class StripeEventProcessor {
         }
     }
 
-    private Outcome currentStatus(StoredEventId id, String detail) {
+    private Outcome currentStatus(StripeEventId id, String detail) {
         return unitOfWork.transactional(() -> events.findById(id)
                 .map(event -> new Outcome(event.status(), detail))
                 .orElseThrow(() -> new NotFoundException("stripe event not found")));
@@ -88,7 +88,7 @@ public class StripeEventProcessor {
      * Reads from Stripe what applying the event will need: the payment intent of a completed session that is not
      * yet paid (a delayed payment method), and the state of a connected account. Everything else is in the event.
      */
-    private Prefetch prefetch(StoredEventId id) {
+    private Prefetch prefetch(StripeEventId id) {
         StripeEvent event = unitOfWork.transactional(() -> events.findById(id)).orElseThrow(() -> new NotFoundException("stripe event not found"));
         if (event.status().isFinal()) {
             return Prefetch.NONE;
@@ -115,7 +115,7 @@ public class StripeEventProcessor {
         return "checkout.session.async_payment_failed".equals(observed.type());
     }
 
-    private Outcome process(StoredEventId id, Prefetch fetched) {
+    private Outcome process(StripeEventId id, Prefetch fetched) {
         StripeEvent event = events.lockById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
         if (event.status().isFinal()) {
             return new Outcome(event.status(), "already " + event.status());
@@ -191,7 +191,7 @@ public class StripeEventProcessor {
         return new PaymentSettlement.Result(PaymentSettlement.Kind.APPLIED, "account is " + configuration.status());
     }
 
-    private Outcome recordFailure(StoredEventId id, RuntimeException failure) {
+    private Outcome recordFailure(StripeEventId id, RuntimeException failure) {
         StripeEvent event = events.lockById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
         if (event.status().isFinal()) {
             return new Outcome(event.status(), "already " + event.status());

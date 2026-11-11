@@ -6,7 +6,7 @@ import static dev.ngb.core_billing_jooq.Tables.STRIPE_EVENT_ATTEMPTS;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
 import dev.ngb.core_billing.payment.domain.stripe.EventAttempt;
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
 import dev.ngb.core_billing.sharedkernel.TenantId;
@@ -72,14 +72,14 @@ public class JooqStripeEventRepository implements StripeEventRepository {
     }
 
     @Override
-    public Optional<StripeEvent> findById(StoredEventId id) {
+    public Optional<StripeEvent> findById(StripeEventId id) {
         return dsl.selectFrom(STRIPE_EVENTS)
                 .where(STRIPE_EVENTS.ID.eq(id.value()))
                 .fetchOptional(JooqStripeEventRepository::toDomain);
     }
 
     @Override
-    public Optional<StripeEvent> lockById(StoredEventId id) {
+    public Optional<StripeEvent> lockById(StripeEventId id) {
         return dsl.selectFrom(STRIPE_EVENTS)
                 .where(STRIPE_EVENTS.ID.eq(id.value()))
                 .forUpdate()
@@ -87,7 +87,7 @@ public class JooqStripeEventRepository implements StripeEventRepository {
     }
 
     @Override
-    public List<StoredEventId> due(Instant now, Instant receivedBefore, int limit) {
+    public List<StripeEventId> due(Instant now, Instant receivedBefore, int limit) {
         return dsl.select(STRIPE_EVENTS.ID)
                 .from(STRIPE_EVENTS)
                 .where(STRIPE_EVENTS.STATUS.eq("FAILED").and(STRIPE_EVENTS.NEXT_ATTEMPT_AT.le(now))
@@ -96,7 +96,7 @@ public class JooqStripeEventRepository implements StripeEventRepository {
                 .limit(limit)
                 .fetch(STRIPE_EVENTS.ID)
                 .stream()
-                .map(StoredEventId::new)
+                .map(StripeEventId::new)
                 .toList();
     }
 
@@ -115,7 +115,7 @@ public class JooqStripeEventRepository implements StripeEventRepository {
 
     private static StripeEvent toDomain(StripeEventsRecord row) {
         return StripeEvent.restore(
-                new StoredEventId(row.getId()),
+                new StripeEventId(row.getId()),
                 new TenantId(row.getTenantId()),
                 new StripeConfigurationId(row.getConfigurationId()),
                 row.getStripeAccount(),

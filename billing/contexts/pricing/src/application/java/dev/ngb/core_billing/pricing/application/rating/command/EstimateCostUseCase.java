@@ -3,7 +3,7 @@ package dev.ngb.core_billing.pricing.application.rating.command;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
@@ -25,7 +25,7 @@ import dev.ngb.core_billing.pricing.application.rating.service.PlanSelection;
 public class EstimateCostUseCase {
 
     /** {@code version} and {@code at} are optional: by default the version in force now. {@code usage} maps metric to the expected measure. */
-    public record Request(PlanId planId, Integer version, Instant at, Map<String, Measure> usage) {}
+    public record Request(PricingPlanId planId, Integer version, Instant at, Map<String, Measure> usage) {}
 
     public record Estimate(PricingPlan plan, PlanVersion version, Quote quote) {}
 

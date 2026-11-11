@@ -397,7 +397,7 @@ class PaymentIntegrationTest {
 
         worlds.openPayment(w, late, 2000);
         scopes.inTenant(w.money().tenant().id(), () -> {
-            eventAdmin.retry(AUDIT, new dev.ngb.core_billing.payment.domain.stripe.StoredEventId(dead.get(0).id()));
+            eventAdmin.retry(AUDIT, new dev.ngb.core_billing.payment.domain.stripe.StripeEventId(dead.get(0).id()));
             return null;
         });
         var detail = scopes.inTenant(w.money().tenant().id(), () -> eventQueries.get(dead.get(0).id()));

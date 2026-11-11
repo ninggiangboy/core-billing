@@ -16,7 +16,7 @@ import dev.ngb.core_billing.platform.domain.role.RoleId;
  */
 public final class BillingUser {
 
-    private final UserId id;
+    private final BillingUserId id;
     private final TenantId tenantId;
     private final PermissionScope scope;
     private final String email;
@@ -28,7 +28,7 @@ public final class BillingUser {
     private final Set<Permission> directPermissions;
 
     private BillingUser(
-            UserId id,
+            BillingUserId id,
             TenantId tenantId,
             PermissionScope scope,
             String email,
@@ -52,7 +52,7 @@ public final class BillingUser {
     }
 
     public static BillingUser create(
-            UserId id,
+            BillingUserId id,
             TenantId tenantId,
             PermissionScope scope,
             String email,
@@ -64,7 +64,7 @@ public final class BillingUser {
     }
 
     public static BillingUser restore(
-            UserId id,
+            BillingUserId id,
             TenantId tenantId,
             PermissionScope scope,
             String email,
@@ -103,7 +103,7 @@ public final class BillingUser {
         return status == UserStatus.ACTIVE;
     }
 
-    public UserId id() {
+    public BillingUserId id() {
         return id;
     }
 

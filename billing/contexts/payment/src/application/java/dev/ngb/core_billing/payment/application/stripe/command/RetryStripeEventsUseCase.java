@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.application.stripe.command;
 
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.List;
@@ -33,11 +33,11 @@ public class RetryStripeEventsUseCase {
     }
 
     public Round runOnce() {
-        List<StoredEventId> due = unitOfWork.transactional(() -> events.due(clock.now(), clock.now().minus(UNPROCESSED_AFTER), settings.eventBatchSize()));
+        List<StripeEventId> due = unitOfWork.transactional(() -> events.due(clock.now(), clock.now().minus(UNPROCESSED_AFTER), settings.eventBatchSize()));
         int processed = 0;
         int failing = 0;
         int dead = 0;
-        for (StoredEventId id : due) {
+        for (StripeEventId id : due) {
             EventStatus status = processor.attempt(id).status();
             if (status == EventStatus.PROCESSED || status == EventStatus.IGNORED) {
                 processed++;

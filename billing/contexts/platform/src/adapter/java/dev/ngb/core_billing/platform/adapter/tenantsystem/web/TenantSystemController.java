@@ -12,7 +12,7 @@ import dev.ngb.core_billing.platform.application.tenantsystem.command.CreateTena
 import dev.ngb.core_billing.platform.application.tenantsystem.query.TenantSystemQueries;
 import dev.ngb.core_billing.platform.application.tenantsystem.query.TenantSystemView;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
-import dev.ngb.core_billing.platform.domain.credential.CredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystem;
 import java.time.Duration;
 import java.time.Instant;
@@ -142,11 +142,11 @@ public class TenantSystemController {
     @RequiresPermission(Permission.CREDENTIAL_MANAGE)
     public CredentialResponse revoke(@PathVariable String systemId, @PathVariable String credentialId) {
         TenantSystemId expected = TenantSystemId.of(systemId);
-        boolean belongs = credentialQueries.list(expected).stream().anyMatch(c -> c.id().equals(CredentialId.of(credentialId).value()));
+        boolean belongs = credentialQueries.list(expected).stream().anyMatch(c -> c.id().equals(ApiCredentialId.of(credentialId).value()));
         if (!belongs) {
             throw new NotFoundException("credential not found");
         }
-        return CredentialResponse.of(credentials.revoke(callers.current(), CredentialId.of(credentialId)));
+        return CredentialResponse.of(credentials.revoke(callers.current(), ApiCredentialId.of(credentialId)));
     }
 
     private static IssuedCredentialResponse issued(ManageCredentialUseCase.Issued issued) {

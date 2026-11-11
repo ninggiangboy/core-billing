@@ -13,7 +13,7 @@ public final class StripeEvent {
 
     private static final int MAX_ERROR = 1000;
 
-    private final StoredEventId id;
+    private final StripeEventId id;
     private final TenantId tenantId;
     private final StripeConfigurationId configurationId;
     private final String stripeAccount;
@@ -29,7 +29,7 @@ public final class StripeEvent {
     private Instant processedAt;
 
     private StripeEvent(
-            StoredEventId id, TenantId tenantId, StripeConfigurationId configurationId, String stripeAccount, String eventId, String type,
+            StripeEventId id, TenantId tenantId, StripeConfigurationId configurationId, String stripeAccount, String eventId, String type,
             boolean livemode, String payload, EventStatus status, int attempts, Instant nextAttemptAt, String lastError, Instant receivedAt,
             Instant processedAt) {
         this.id = Objects.requireNonNull(id, "id");
@@ -49,14 +49,14 @@ public final class StripeEvent {
     }
 
     public static StripeEvent received(
-            StoredEventId id, TenantId tenantId, StripeConfigurationId configurationId, String stripeAccount, String eventId, String type,
+            StripeEventId id, TenantId tenantId, StripeConfigurationId configurationId, String stripeAccount, String eventId, String type,
             boolean livemode, String payload, Instant now) {
         return new StripeEvent(id, tenantId, configurationId, stripeAccount, eventId, type, livemode, payload, EventStatus.RECEIVED, 0, null, null,
                 now, null);
     }
 
     public static StripeEvent restore(
-            StoredEventId id, TenantId tenantId, StripeConfigurationId configurationId, String stripeAccount, String eventId, String type,
+            StripeEventId id, TenantId tenantId, StripeConfigurationId configurationId, String stripeAccount, String eventId, String type,
             boolean livemode, String payload, EventStatus status, int attempts, Instant nextAttemptAt, String lastError, Instant receivedAt,
             Instant processedAt) {
         return new StripeEvent(id, tenantId, configurationId, stripeAccount, eventId, type, livemode, payload, status, attempts, nextAttemptAt,
@@ -108,7 +108,7 @@ public final class StripeEvent {
         this.processedAt = now;
     }
 
-    public StoredEventId id() {
+    public StripeEventId id() {
         return id;
     }
 

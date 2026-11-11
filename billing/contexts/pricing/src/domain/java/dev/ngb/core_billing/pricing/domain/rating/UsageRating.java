@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
 
 /**
@@ -16,11 +16,11 @@ import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
  * It keeps the breakdown, so the amount can be explained later without recomputing it under newer terms.
  */
 public record UsageRating(
-        RatingId id,
+        UsageRatingId id,
         TenantId tenantId,
         CustomerId customerId,
         WalletId walletId,
-        PlanId planId,
+        PricingPlanId planId,
         int planVersion,
         String setKey,
         int attempt,

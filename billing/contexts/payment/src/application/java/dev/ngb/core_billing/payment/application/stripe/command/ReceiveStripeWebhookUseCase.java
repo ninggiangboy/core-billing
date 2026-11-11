@@ -2,7 +2,7 @@ package dev.ngb.core_billing.payment.application.stripe.command;
 
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
-import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
@@ -147,7 +147,7 @@ public class ReceiveStripeWebhookUseCase {
                     "An event for account " + event.account() + " arrived for configuration account " + configuration.accountId() + " (latest: " + event.id() + ")");
             return new Receipt(Disposition.IGNORED, "account mismatch");
         }
-        StoredEventId id = new StoredEventId(ids.newId());
+        StripeEventId id = new StripeEventId(ids.newId());
         boolean fresh = unitOfWork.transactional(() -> events.insertIfAbsent(StripeEvent.received(id, configuration.tenantId(), configuration.id(),
                 configuration.accountId(), event.id(), event.type(), event.livemode(), payload, clock.now())));
         if (!fresh) {

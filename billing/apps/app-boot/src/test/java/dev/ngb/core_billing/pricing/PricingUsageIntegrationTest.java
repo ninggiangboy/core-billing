@@ -26,7 +26,7 @@ import dev.ngb.core_billing.pricing.application.rating.query.UsageRatingView;
 import dev.ngb.core_billing.pricing.application.rating.command.ReserveFromEstimateUseCase;
 import dev.ngb.core_billing.pricing.domain.rule.EventBased;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
@@ -526,7 +526,7 @@ class PricingUsageIntegrationTest {
         PricingPlan plan = worlds.plan(tenant, "calls", worlds.calls(worlds.metric()));
         assertThatThrownBy(() -> charge(w, new ChargeFromUsageUseCase.Command(other.customerId(), w.wallet().id(), plan.id(), null, DAY, DAY.plusSeconds(60))))
                 .hasMessageContaining("another customer");
-        assertThatThrownBy(() -> charge(w, new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), new PlanId(UUID.randomUUID()), null, DAY, DAY.plusSeconds(60))))
+        assertThatThrownBy(() -> charge(w, new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), new PricingPlanId(UUID.randomUUID()), null, DAY, DAY.plusSeconds(60))))
                 .isInstanceOf(NotFoundException.class);
         assertThatThrownBy(() -> charge(w, new ChargeFromUsageUseCase.Command(w.customerId(), w.wallet().id(), plan.id(), null, DAY.plusSeconds(60), DAY)))
                 .hasMessageContaining("before");

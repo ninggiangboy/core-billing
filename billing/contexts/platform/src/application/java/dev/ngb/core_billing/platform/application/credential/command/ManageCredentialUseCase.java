@@ -9,7 +9,7 @@ import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
 import dev.ngb.core_billing.platform.domain.credential.ApiKey;
-import dev.ngb.core_billing.platform.domain.credential.CredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystem;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
@@ -109,7 +109,7 @@ public class ManageCredentialUseCase {
         });
     }
 
-    public ApiCredential revoke(Audit caller, CredentialId id) {
+    public ApiCredential revoke(Audit caller, ApiCredentialId id) {
         return unitOfWork.transactional(() -> {
             ApiCredential credential = credentials.findById(id).orElseThrow(() -> new NotFoundException("credential not found"));
             credential.revoke(clock.now());
@@ -122,7 +122,7 @@ public class ManageCredentialUseCase {
     private Issued issue(TenantId tenantId, TenantSystemId systemId, String label, Set<Permission> scopes) {
         ApiKey.Generated key = ApiKey.generate(random);
         ApiCredential credential = ApiCredential.issue(
-                new CredentialId(ids.newId()), tenantId, systemId, key, scopes, label == null ? "" : label, clock.now());
+                new ApiCredentialId(ids.newId()), tenantId, systemId, key, scopes, label == null ? "" : label, clock.now());
         credentials.add(credential);
         return new Issued(credential, key.plaintext());
     }

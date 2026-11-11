@@ -4,7 +4,7 @@ import dev.ngb.core_billing.pricing.api.plan.PeriodPrice;
 import dev.ngb.core_billing.pricing.api.plan.PlanPricing;
 import dev.ngb.core_billing.pricing.api.plan.SubscriptionTerms;
 import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
-import dev.ngb.core_billing.pricing.domain.plan.PlanId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
@@ -26,7 +26,7 @@ public class PlanPricingService implements PlanPricing {
 
     @Override
     public Optional<SubscriptionTerms> subscriptionTerms(UUID planId, Instant at) {
-        return unitOfWork.transactional(() -> plans.findById(new PlanId(planId))
+        return unitOfWork.transactional(() -> plans.findById(new PricingPlanId(planId))
                 .filter(plan -> plan.status() == PlanStatus.ACTIVE)
                 .flatMap(plan -> plan.effectiveAt(at)
                         .filter(version -> version.recurringAmount(plan.currency()).isPresent())
@@ -35,7 +35,7 @@ public class PlanPricingService implements PlanPricing {
 
     @Override
     public Optional<PeriodPrice> periodPrice(UUID planId, Instant at) {
-        return unitOfWork.transactional(() -> plans.findById(new PlanId(planId)).flatMap(plan -> price(plan, at)));
+        return unitOfWork.transactional(() -> plans.findById(new PricingPlanId(planId)).flatMap(plan -> price(plan, at)));
     }
 
     private static Optional<PeriodPrice> price(PricingPlan plan, Instant at) {

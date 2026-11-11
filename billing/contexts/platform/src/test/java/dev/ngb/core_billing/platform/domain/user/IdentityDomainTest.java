@@ -9,7 +9,7 @@ import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
 import dev.ngb.core_billing.platform.domain.credential.ApiKey;
 import dev.ngb.core_billing.platform.domain.role.AuthorizationPolicy;
-import dev.ngb.core_billing.platform.domain.credential.CredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.credential.CredentialStatus;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
@@ -76,7 +76,7 @@ class IdentityDomainTest {
     @Test
     void credentialScopesMustBeGrantableToTenantSystems() {
         ApiKey.Generated key = ApiKey.generate(new SecureRandom());
-        assertThatThrownBy(() -> ApiCredential.issue(new CredentialId(UUID.randomUUID()), TENANT,
+        assertThatThrownBy(() -> ApiCredential.issue(new ApiCredentialId(UUID.randomUUID()), TENANT,
                         new TenantSystemId(UUID.randomUUID()), key, Set.of(Permission.USER_MANAGE), "x", NOW))
                 .isInstanceOf(IllegalArgumentException.class);
     }
@@ -108,7 +108,7 @@ class IdentityDomainTest {
 
     @Test
     void usersNormaliseEmailAndRejectForeignPermissions() {
-        BillingUser user = BillingUser.create(new UserId(UUID.randomUUID()), TENANT, PermissionScope.TENANT,
+        BillingUser user = BillingUser.create(new BillingUserId(UUID.randomUUID()), TENANT, PermissionScope.TENANT,
                 "  Alice@Example.COM ", "Alice", "sub-1", NOW);
         assertThat(user.email()).isEqualTo("alice@example.com");
 
@@ -119,13 +119,13 @@ class IdentityDomainTest {
         assertThatThrownBy(() -> user.grant(Permission.TENANT_CREATE)).isInstanceOf(IllegalArgumentException.class);
 
         for (String bad : new String[] {"", "no-at", "@x.com", "a@", "a b@x.com", "a@@x.com"}) {
-            assertThatThrownBy(() -> BillingUser.create(new UserId(UUID.randomUUID()), TENANT, PermissionScope.TENANT, bad, "A", "s", NOW))
+            assertThatThrownBy(() -> BillingUser.create(new BillingUserId(UUID.randomUUID()), TENANT, PermissionScope.TENANT, bad, "A", "s", NOW))
                     .as(bad).isInstanceOf(IllegalArgumentException.class);
         }
     }
 
     private static ApiCredential issue(ApiKey.Generated key) {
-        return ApiCredential.issue(new CredentialId(UUID.randomUUID()), TENANT, new TenantSystemId(UUID.randomUUID()),
+        return ApiCredential.issue(new ApiCredentialId(UUID.randomUUID()), TENANT, new TenantSystemId(UUID.randomUUID()),
                 key, Set.of(Permission.CUSTOMER_READ), "ci", NOW);
     }
 }

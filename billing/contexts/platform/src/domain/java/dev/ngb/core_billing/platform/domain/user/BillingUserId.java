@@ -3,14 +3,14 @@ package dev.ngb.core_billing.platform.domain.user;
 import java.util.Objects;
 import java.util.UUID;
 
-public record UserId(UUID value) {
+public record BillingUserId(UUID value) {
 
-    public UserId {
+    public BillingUserId {
         Objects.requireNonNull(value, "value");
     }
 
-    public static UserId of(String text) {
-        return new UserId(UUID.fromString(text));
+    public static BillingUserId of(String text) {
+        return new BillingUserId(UUID.fromString(text));
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.Set;
 /** A Billing-issued secret that lets one Tenant System call the API with a bounded set of permissions. */
 public final class ApiCredential {
 
-    private final CredentialId id;
+    private final ApiCredentialId id;
     private final TenantId tenantId;
     private final TenantSystemId tenantSystemId;
     private final String keyId;
@@ -25,7 +25,7 @@ public final class ApiCredential {
     private Instant revokedAt;
 
     private ApiCredential(
-            CredentialId id,
+            ApiCredentialId id,
             TenantId tenantId,
             TenantSystemId tenantSystemId,
             String keyId,
@@ -59,7 +59,7 @@ public final class ApiCredential {
     }
 
     public static ApiCredential issue(
-            CredentialId id,
+            ApiCredentialId id,
             TenantId tenantId,
             TenantSystemId tenantSystemId,
             ApiKey.Generated key,
@@ -72,7 +72,7 @@ public final class ApiCredential {
     }
 
     public static ApiCredential restore(
-            CredentialId id,
+            ApiCredentialId id,
             TenantId tenantId,
             TenantSystemId tenantSystemId,
             String keyId,
@@ -111,7 +111,7 @@ public final class ApiCredential {
         }
     }
 
-    public CredentialId id() {
+    public ApiCredentialId id() {
         return id;
     }
 

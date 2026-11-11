@@ -21,7 +21,7 @@ public final class PricingPlan {
 
     private static final Pattern CODE = Pattern.compile("[a-z0-9][a-z0-9._-]{0,63}");
 
-    private final PlanId id;
+    private final PricingPlanId id;
     private final TenantId tenantId;
     private final String code;
     private final String name;
@@ -33,7 +33,7 @@ public final class PricingPlan {
     private final List<PlanVersion> versions;
 
     private PricingPlan(
-            PlanId id, TenantId tenantId, String code, String name, PricingModel model, Currency currency, PlanStatus status, Instant createdAt,
+            PricingPlanId id, TenantId tenantId, String code, String name, PricingModel model, Currency currency, PlanStatus status, Instant createdAt,
             Instant retiredAt, List<PlanVersion> versions) {
         this.id = Objects.requireNonNull(id, "id");
         this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
@@ -47,7 +47,7 @@ public final class PricingPlan {
         this.versions = new ArrayList<>(versions);
     }
 
-    public static PricingPlan create(PlanId id, TenantId tenantId, String code, String name, PricingModel model, Currency currency, Instant now) {
+    public static PricingPlan create(PricingPlanId id, TenantId tenantId, String code, String name, PricingModel model, Currency currency, Instant now) {
         if (code == null || !CODE.matcher(code).matches()) {
             throw new IllegalArgumentException("a plan code is 1-64 characters: a lowercase letter or digit, then lowercase letters, digits, '.', '_' or '-'");
         }
@@ -58,7 +58,7 @@ public final class PricingPlan {
     }
 
     public static PricingPlan restore(
-            PlanId id, TenantId tenantId, String code, String name, PricingModel model, Currency currency, PlanStatus status, Instant createdAt,
+            PricingPlanId id, TenantId tenantId, String code, String name, PricingModel model, Currency currency, PlanStatus status, Instant createdAt,
             Instant retiredAt, List<PlanVersion> versions) {
         return new PricingPlan(id, tenantId, code, name, model, currency, status, createdAt, retiredAt, versions);
     }
@@ -113,7 +113,7 @@ public final class PricingPlan {
         return versions.get(versions.size() - 1);
     }
 
-    public PlanId id() {
+    public PricingPlanId id() {
         return id;
     }
 

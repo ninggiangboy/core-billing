@@ -3,14 +3,14 @@ package dev.ngb.core_billing.payment.domain.stripe;
 import java.util.Objects;
 import java.util.UUID;
 
-public record StoredEventId(UUID value) {
+public record StripeEventId(UUID value) {
 
-    public StoredEventId {
+    public StripeEventId {
         Objects.requireNonNull(value, "value");
     }
 
-    public static StoredEventId of(String text) {
-        return new StoredEventId(UUID.fromString(text));
+    public static StripeEventId of(String text) {
+        return new StripeEventId(UUID.fromString(text));
     }
 
     @Override

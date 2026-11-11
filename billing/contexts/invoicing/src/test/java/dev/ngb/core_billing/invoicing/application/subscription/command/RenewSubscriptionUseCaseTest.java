@@ -55,8 +55,8 @@ class RenewSubscriptionUseCaseTest {
 
     private final SubscriptionRepository repository = new SubscriptionRepository() {
         @Override
-        public void add(Subscription subscription) {
-            store.put(subscription.id(), subscription);
+        public boolean addIfAbsent(Subscription subscription) {
+            return store.put(subscription.id(), subscription) == null;
         }
 
         @Override

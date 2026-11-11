@@ -33,9 +33,9 @@ public class JooqSubscriptionRepository implements SubscriptionRepository {
     }
 
     @Override
-    public void add(Subscription subscription) {
+    public boolean addIfAbsent(Subscription subscription) {
         try {
-            dsl.insertInto(SUBSCRIPTIONS)
+            int inserted = dsl.insertInto(SUBSCRIPTIONS)
                     .set(SUBSCRIPTIONS.ID, subscription.id().value())
                     .set(SUBSCRIPTIONS.TENANT_ID, subscription.tenantId().value())
                     .set(SUBSCRIPTIONS.CUSTOMER_ID, subscription.customerId().value())
@@ -55,10 +55,13 @@ public class JooqSubscriptionRepository implements SubscriptionRepository {
                     .set(SUBSCRIPTIONS.UPDATED_AT, subscription.updatedAt())
                     .set(SUBSCRIPTIONS.IDEMPOTENCY_KEY, subscription.idempotencyKey())
                     .set(SUBSCRIPTIONS.REQUEST_HASH, subscription.requestHash())
+                    .onConflict(SUBSCRIPTIONS.TENANT_ID, SUBSCRIPTIONS.IDEMPOTENCY_KEY)
+                    .doNothing()
                     .execute();
+            return inserted == 1;
         } catch (RuntimeException e) {
             if (Causes.contains(e, DuplicateKeyException.class)) {
-                throw new ConflictException("this idempotency key was already used for a subscription");
+                throw new ConflictException("a subscription cannot be created with these values");
             }
             throw e;
         }

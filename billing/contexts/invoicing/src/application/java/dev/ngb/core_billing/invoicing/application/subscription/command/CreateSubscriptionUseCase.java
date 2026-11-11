@@ -81,7 +81,12 @@ public class CreateSubscriptionUseCase {
             }
             Subscription subscription = Subscription.create(new SubscriptionId(ids.newId()), tenantContext.requireTenant(), wallet.customerId(), wallet.id(),
                     wallet.currency(), terms.planId(), terms.planCode(), terms.cycle(), key, hash, now);
-            subscriptions.add(subscription);
+            if (!subscriptions.addIfAbsent(subscription)) {
+                Subscription winner = subscriptions.findByIdempotencyKey(key)
+                        .orElseThrow(() -> new IllegalStateException("a subscription vanished after a key conflict"));
+                Fingerprint.requireSameRequest("subscription", key, winner.requestHash(), hash);
+                return new Result(winner, true);
+            }
             subscriptions.appendEvent(SubscriptionHistoryEntry.created(ids.newId(), subscription, now));
             auditLog.record(AuditEntry.tenant(subscription.tenantId(), command.audit().actor(), "subscription.created", "subscription/" + subscription.id(),
                     command.audit().requestId(), now));

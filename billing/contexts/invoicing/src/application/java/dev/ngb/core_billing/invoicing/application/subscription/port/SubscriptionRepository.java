@@ -10,7 +10,12 @@ import java.util.UUID;
 
 public interface SubscriptionRepository {
 
-    void add(Subscription subscription);
+    /**
+     * Inserts the subscription unless this tenant already has one with its idempotency key.
+     *
+     * @return true when the row was inserted, false when the key already existed
+     */
+    boolean addIfAbsent(Subscription subscription);
 
     void update(Subscription subscription);
 

@@ -23,7 +23,14 @@ import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -82,6 +89,40 @@ class SubscriptionIntegrationTest {
         assertThat(again.subscription().id()).isEqualTo(first.subscription().id());
         assertThat(owner.count("select count(*) from subscriptions where tenant_id = ?", world.tenant().id().value())).isEqualTo(1);
         assertThatThrownBy(() -> subscribe(world, proPlan(world), "sub-1")).isInstanceOf(IdempotencyConflictException.class);
+    }
+
+    @Test
+    void concurrentCreatesWithOneKeyGiveOneSubscriptionAndOneFirstPeriodCharge() throws Exception {
+        World world = worlds.prepaid(100_000);
+        UUID plan = proPlan(world);
+        ExecutorService pool = Executors.newFixedThreadPool(8);
+        try {
+            var futures = IntStream.range(0, 8)
+                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> subscribe(world, plan, "parallel-sub"), pool))
+                    .toList();
+            Set<UUID> ids = new HashSet<>();
+            long firsts = 0;
+            long replays = 0;
+            for (var future : futures) {
+                var result = future.get(30, TimeUnit.SECONDS);
+                ids.add(result.subscription().id().value());
+                if (result.replayed()) {
+                    replays++;
+                } else {
+                    firsts++;
+                }
+            }
+            assertThat(ids).hasSize(1);
+            assertThat(firsts).isEqualTo(1);
+            assertThat(replays).isEqualTo(7);
+            UUID id = ids.iterator().next();
+            assertThat(owner.count("select count(*) from subscriptions where tenant_id = ?", world.tenant().id().value())).isEqualTo(1);
+            assertThat(owner.count("select count(*) from charges where reference = ?", "subscription:" + id + ":0")).isEqualTo(1);
+            assertThat(owner.count("select count(*) from subscription_events where subscription_id = ? and type = 'CREATED'", id)).isEqualTo(1);
+            assertThat(owner.count("select count(*) from subscription_events where subscription_id = ? and type = 'RENEWED'", id)).isEqualTo(1);
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     @Test

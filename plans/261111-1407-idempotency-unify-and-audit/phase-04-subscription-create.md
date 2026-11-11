@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Subscription create"
-status: pending
+status: completed
 priority: P2
 effort: "1.5h"
 dependencies: [1]
@@ -30,11 +30,11 @@ for a subscription". The first-period renewal runs in its own transaction after 
 
 ## Tasks & Steps
 
-- [ ] 1. `addIfAbsent` with `on conflict (tenant_id, idempotency_key) do nothing`. Keep the `DuplicateKeyException`
+- [x] 1. `addIfAbsent` with `on conflict (tenant_id, idempotency_key) do nothing`. Keep the `DuplicateKeyException`
       mapping for any other unique constraint on the table, with a message that no longer mentions the key.
-- [ ] 2. Use case: insert-first. On `false`, read by key, call `requireSameRequest` and take the existing replay
+- [x] 2. Use case: insert-first. On `false`, read by key, call `requireSameRequest` and take the existing replay
       path, which skips the first-period renewal. Write the audit entry only on a real insert.
-- [ ] 3. Tests: 8 parallel creates with one key give one subscription, one first-period charge, one 201 and seven 200s.
+- [x] 3. Tests: 8 parallel creates with one key give one subscription, one first-period charge, one 201 and seven 200s.
       The same key with a different plan gives 409.
 
 ## Verification

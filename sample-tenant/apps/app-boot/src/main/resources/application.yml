@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: sample-tenant
+  datasource:
+    url: ${SAMPLE_TENANT_DB_URL:jdbc:postgresql://localhost:5433/sampletenant}
+    username: ${SAMPLE_TENANT_DB_USER:sampletenant}
+    password: ${SAMPLE_TENANT_DB_PASSWORD:sampletenant}
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${SAMPLE_TENANT_PORT:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+sampletenant:
+  billing:
+    # The Billing deployment this tenant integrates with. Every financial call goes here.
+    base-url: ${SAMPLE_TENANT_BILLING_URL:http://localhost:8080}
+    api-key: ${SAMPLE_TENANT_BILLING_API_KEY:}
+    tenant-system-id: ${SAMPLE_TENANT_BILLING_SYSTEM_ID:}
+    connect-timeout: PT3S
+    read-timeout: PT10S
+    max-attempts: 3
+    retry-backoff: PT200MS
+  webhooks:
+    # The signing secret Billing returned once for this tenant's webhook endpoint.
+    signing-secret: ${SAMPLE_TENANT_WEBHOOK_SECRET:}
+    tolerance: PT5M
+  execution:
+    poll-delay: PT2S
+    batch-size: 10
+  identity:
+    session-ttl: PT12H

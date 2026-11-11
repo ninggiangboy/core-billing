@@ -8,8 +8,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Objects;
 import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
+import dev.ngb.core_billing.pricing.domain.model.Hybrid;
+import dev.ngb.core_billing.pricing.domain.model.Subscription;
 import dev.ngb.core_billing.pricing.domain.rating.Quote;
 import dev.ngb.core_billing.pricing.domain.model.PriceRule;
 import dev.ngb.core_billing.pricing.domain.model.PricingModel;
@@ -85,6 +89,22 @@ public final class PlanVersion {
             adjustment = Quote.Adjustment.MAXIMUM_CHARGE;
         }
         return new Quote(Money.of(amount, currency), exact, lines, adjustment);
+    }
+
+    /**
+     * What one billing cycle costs under this version before any usage: the whole price of a Subscription plan, the
+     * base amount of a Hybrid plan. Empty for models that are priced only by what is used. The Subscription amount
+     * goes through the same single rounding and limits as any quote; a Hybrid base is rounded only, because the
+     * limits bound the usage part it is billed next to.
+     */
+    public Optional<Money> recurringAmount(Currency currency) {
+        if (rule instanceof Subscription) {
+            return Optional.of(quote(currency, new UsageSummary(Map.of())).amount());
+        }
+        if (rule instanceof Hybrid hybrid) {
+            return Optional.of(Money.of(rounding.toMinorUnits(hybrid.fixedPrice()), currency));
+        }
+        return Optional.empty();
     }
 
     public boolean isValidAt(Instant at) {

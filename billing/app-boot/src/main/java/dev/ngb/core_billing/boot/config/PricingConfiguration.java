@@ -13,6 +13,8 @@ import dev.ngb.core_billing.pricing.adapter.persistence.metric.JdbcMetricReadRep
 import dev.ngb.core_billing.pricing.adapter.persistence.plan.JdbcPlanReadRepository;
 import dev.ngb.core_billing.pricing.adapter.persistence.rating.JdbcRatingReadRepository;
 import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
+import dev.ngb.core_billing.pricing.api.plan.PlanPricing;
+import dev.ngb.core_billing.pricing.application.plan.command.PlanPricingService;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.EstimateCostUseCase;
 import dev.ngb.core_billing.pricing.application.metric.query.MetricCatalogService;
@@ -109,5 +111,10 @@ class PricingConfiguration {
     @Bean
     RatingQueries ratingQueries(UnitOfWork unitOfWork, RatingReadRepository ratings, CustomerLookup customers) {
         return new RatingQueries(unitOfWork, ratings, customers);
+    }
+
+    @Bean
+    PlanPricing planPricing(UnitOfWork unitOfWork, PlanRepository plans) {
+        return new PlanPricingService(unitOfWork, plans);
     }
 }

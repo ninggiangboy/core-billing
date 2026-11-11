@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.model.EventBased;
+import dev.ngb.core_billing.pricing.domain.model.Hybrid;
 import dev.ngb.core_billing.pricing.domain.plan.PlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
@@ -14,9 +15,11 @@ import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
 import dev.ngb.core_billing.pricing.domain.model.Subscription;
 import dev.ngb.core_billing.pricing.domain.model.TimeBased;
 import dev.ngb.core_billing.sharedkernel.Currency;
+import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -112,5 +115,26 @@ class PlanVersionsTest {
                 .hasMessageContaining("plan code");
         assertThatThrownBy(() -> PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "ok", " ", PricingModel.EVENT_BASED, Currency.of("USD"), NOW))
                 .hasMessageContaining("name");
+    }
+
+    @Test
+    void aSubscriptionVersionHasItsFixedPriceAsTheRecurringAmountWithTheLimitsApplied() {
+        PricingPlan plan = PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "pro", "Pro", PricingModel.SUBSCRIPTION, Currency.of("USD"), NOW);
+        PlanVersion plain = plan.publish(new Subscription(new BigDecimal("1999.6")), BillingCycle.MONTHLY, null, null, null, null, null, "user/a", NOW);
+        PlanVersion capped = plan.publish(new Subscription(new BigDecimal("1999.6")), BillingCycle.MONTHLY, null, 1_500L, null, NOW.plusSeconds(60), null, "user/a",
+                NOW.plusSeconds(1));
+
+        assertThat(plain.recurringAmount(Currency.of("USD"))).contains(Money.of(2_000, Currency.of("USD")));
+        assertThat(capped.recurringAmount(Currency.of("USD"))).contains(Money.of(1_500, Currency.of("USD")));
+    }
+
+    @Test
+    void aHybridVersionRecurringAmountIsItsBaseOnlyAndPureUsagePlansHaveNone() {
+        PricingPlan hybrid = PricingPlan.create(new PlanId(UUID.randomUUID()), TENANT, "cloud", "Cloud", PricingModel.HYBRID, Currency.of("USD"), NOW);
+        PlanVersion version = hybrid.publish(new Hybrid(new BigDecimal("500"), List.of(price("1"))), BillingCycle.MONTHLY, null, 100L, null, null, null, "user/a", NOW);
+        assertThat(version.recurringAmount(Currency.of("USD"))).as("the usage limits do not cut the base").contains(Money.of(500, Currency.of("USD")));
+
+        PlanVersion usageOnly = calls().publish(price("1"), null, null, null, null, null, null, "user/a", NOW);
+        assertThat(usageOnly.recurringAmount(Currency.of("USD"))).isEmpty();
     }
 }

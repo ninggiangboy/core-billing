@@ -9,7 +9,12 @@ import dev.ngb.core_billing.invoicing.application.cycle.command.CycleSettings;
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
+import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JdbcSubscriptionRepository;
 import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceChargeUseCase;
+import dev.ngb.core_billing.invoicing.application.subscription.command.CancelSubscriptionUseCase;
+import dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase;
+import dev.ngb.core_billing.invoicing.application.subscription.port.SubscriptionRepository;
+import dev.ngb.core_billing.pricing.api.plan.PlanPricing;
 import dev.ngb.core_billing.invoicing.application.invoice.command.PayInvoiceUseCase;
 import dev.ngb.core_billing.money.api.charge.ChargeLookup;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
@@ -92,5 +97,23 @@ class InvoicingConfiguration {
     @Bean
     InvoicingEventListener invoicingEventListener(CollectChargeUseCase collectCharge, ApplyPaymentUseCase applyPayment) {
         return new InvoicingEventListener(collectCharge, applyPayment);
+    }
+
+    @Bean
+    SubscriptionRepository subscriptionRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
+        return new JdbcSubscriptionRepository(aggregates, jdbc);
+    }
+
+    @Bean
+    CreateSubscriptionUseCase createSubscriptionUseCase(
+            UnitOfWork unitOfWork, SubscriptionRepository subscriptions, WalletLookup wallets, CustomerLookup customers, PlanPricing plans, AuditLog auditLog,
+            TenantContext tenantContext, IdGenerator ids, Clock clock) {
+        return new CreateSubscriptionUseCase(unitOfWork, subscriptions, wallets, customers, plans, auditLog, tenantContext, ids, clock);
+    }
+
+    @Bean
+    CancelSubscriptionUseCase cancelSubscriptionUseCase(
+            UnitOfWork unitOfWork, SubscriptionRepository subscriptions, CustomerLookup customers, AuditLog auditLog, IdGenerator ids, Clock clock) {
+        return new CancelSubscriptionUseCase(unitOfWork, subscriptions, customers, auditLog, ids, clock);
     }
 }

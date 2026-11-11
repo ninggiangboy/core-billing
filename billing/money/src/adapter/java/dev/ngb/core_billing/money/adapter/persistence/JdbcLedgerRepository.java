@@ -5,6 +5,8 @@ import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import org.springframework.dao.DuplicateKeyException;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.WalletId;
@@ -39,7 +41,7 @@ public class JdbcLedgerRepository implements LedgerRepository {
                             Timestamp.from(row.createdAt()))
                     .update();
         } catch (RuntimeException e) {
-            if (Rows.duplicate(e)) {
+            if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this idempotency key or entry was already posted");
             }
             throw e;

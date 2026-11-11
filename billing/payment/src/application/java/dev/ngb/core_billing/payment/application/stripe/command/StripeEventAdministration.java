@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.application.stripe.command;
 
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
-import dev.ngb.core_billing.payment.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
 import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;

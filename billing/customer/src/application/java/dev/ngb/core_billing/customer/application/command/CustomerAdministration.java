@@ -1,6 +1,7 @@
 package dev.ngb.core_billing.customer.application.command;
 
 import dev.ngb.core_billing.customer.domain.customer.Customer;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
@@ -30,11 +31,11 @@ public class CustomerAdministration {
         this.clock = clock;
     }
 
-    public Customer update(AuditContext audit, CustomerId id, String displayName, String email) {
+    public Customer update(Audit audit, CustomerId id, String displayName, String email) {
         return update(audit, id, displayName, email, null);
     }
 
-    public Customer update(AuditContext audit, CustomerId id, String displayName, String email, TenantSystemId caller) {
+    public Customer update(Audit audit, CustomerId id, String displayName, String email, TenantSystemId caller) {
         return unitOfWork.transactional(() -> {
             Customer customer = requireVisible(id, caller);
             try {
@@ -48,11 +49,11 @@ public class CustomerAdministration {
         });
     }
 
-    public Customer deactivate(AuditContext audit, CustomerId id) {
+    public Customer deactivate(Audit audit, CustomerId id) {
         return deactivate(audit, id, null);
     }
 
-    public Customer deactivate(AuditContext audit, CustomerId id, TenantSystemId caller) {
+    public Customer deactivate(Audit audit, CustomerId id, TenantSystemId caller) {
         return unitOfWork.transactional(() -> {
             Customer customer = requireVisible(id, caller);
             customer.deactivate();
@@ -70,7 +71,7 @@ public class CustomerAdministration {
         return customers.findById(id).orElseThrow(() -> new NotFoundException("customer not found"));
     }
 
-    private void record(AuditContext audit, String action, Customer customer) {
+    private void record(Audit audit, String action, Customer customer) {
         auditLog.record(AuditEntry.tenant(
                 tenantContext.requireTenant(), audit.actor(), action, "customer/" + customer.id(), audit.requestId(), clock.now()));
     }

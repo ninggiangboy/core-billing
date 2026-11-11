@@ -205,7 +205,9 @@ class MoneyHttpIntegrationTest {
         assertThat(secondPage.get(0).get("sequence").asLong()).isEqualTo(4);
         assertThat(secondPage.get(0).get("type").asString()).isEqualTo("CREDIT");
         assertThat(secondPage.get(0).get("amount").get("amount").asLong()).isEqualTo(10);
-        assertThat(world.status(HttpMethod.GET, acme.host(), key, "/api/v1/wallets/" + wallet + "/ledger?limit=0", null)).isEqualTo(400);
+        assertThat(world.body(world.call(HttpMethod.GET, acme.host(), key, "/api/v1/wallets/" + wallet + "/ledger?limit=0", null)))
+                .as("a page size below one is raised to one")
+                .hasSize(1);
     }
 
     @Test

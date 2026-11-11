@@ -6,6 +6,7 @@ import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository
 import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.Text;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -27,7 +28,7 @@ public class JdbcIncidentRepository implements IncidentRepository {
                         on conflict (tenant_id, kind, subject) where resolved_at is null
                         do update set occurrences = stripe_incidents.occurrences + 1, last_seen_at = excluded.last_seen_at, detail = excluded.detail
                         """)
-                .params(id, tenantId.value(), configurationId == null ? null : configurationId.value(), kind.name(), clip(subject, 300), clip(detail, 1000),
+                .params(id, tenantId.value(), configurationId == null ? null : configurationId.value(), kind.name(), Text.clip(subject, 300), Text.clip(detail, 1000),
                         Rows.timestamp(now), Rows.timestamp(now))
                 .update();
     }
@@ -35,9 +36,5 @@ public class JdbcIncidentRepository implements IncidentRepository {
     @Override
     public boolean resolve(UUID id, Instant now) {
         return jdbc.sql("update stripe_incidents set resolved_at = ? where id = ? and resolved_at is null").params(Rows.timestamp(now), id).update() == 1;
-    }
-
-    private static String clip(String text, int max) {
-        return text.length() <= max ? text : text.substring(0, max);
     }
 }

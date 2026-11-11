@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.credential.port.CredentialRepository;
 import dev.ngb.core_billing.platform.application.tenantsystem.port.TenantSystemRepository;
 
@@ -69,7 +69,7 @@ public class CredentialAdministration {
         this.random = random;
     }
 
-    public Issued create(Caller caller, TenantSystemId systemId, String label, Set<Permission> scopes) {
+    public Issued create(Audit caller, TenantSystemId systemId, String label, Set<Permission> scopes) {
         return unitOfWork.transactional(() -> {
             TenantId tenantId = tenantContext.requireTenant();
             requireActiveSystem(systemId);
@@ -83,7 +83,7 @@ public class CredentialAdministration {
      * Issues a replacement and lets the current credential live on for {@code overlap}, so the Tenant
      * System can switch without downtime. At most two credentials may be live at once.
      */
-    public Issued rotate(Caller caller, TenantSystemId systemId, Duration overlap) {
+    public Issued rotate(Audit caller, TenantSystemId systemId, Duration overlap) {
         if (overlap.compareTo(MIN_OVERLAP) < 0 || overlap.compareTo(MAX_OVERLAP) > 0) {
             throw new IllegalArgumentException("overlap must be between 1 minute and 7 days");
         }
@@ -109,7 +109,7 @@ public class CredentialAdministration {
         });
     }
 
-    public ApiCredential revoke(Caller caller, CredentialId id) {
+    public ApiCredential revoke(Audit caller, CredentialId id) {
         return unitOfWork.transactional(() -> {
             ApiCredential credential = credentials.findById(id).orElseThrow(() -> new NotFoundException("credential not found"));
             credential.revoke(clock.now());
@@ -139,7 +139,7 @@ public class CredentialAdministration {
         systems.findById(systemId).orElseThrow(() -> new NotFoundException("tenant system not found"));
     }
 
-    private void audit(Caller caller, TenantId tenantId, String action, ApiCredential credential) {
+    private void audit(Audit caller, TenantId tenantId, String action, ApiCredential credential) {
         auditLog.record(AuditEntry.tenant(
                 tenantId,
                 caller.actor(),

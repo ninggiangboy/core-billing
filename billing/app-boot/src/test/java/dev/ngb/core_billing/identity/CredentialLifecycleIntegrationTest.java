@@ -9,7 +9,7 @@ import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.ActorType;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.application.auth.Authentication;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.credential.command.CredentialAdministration;
 import dev.ngb.core_billing.platform.application.auth.RateLimitExceededException;
 import dev.ngb.core_billing.platform.application.tenantsystem.command.TenantSystemAdministration;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Import;
 @Import(PostgresContainerConfig.class)
 class CredentialLifecycleIntegrationTest {
 
-    private static final Caller CALLER = new Caller("user/admin", "req-1");
+    private static final Audit CALLER = new Audit("user/admin", "req-1");
 
     @Autowired TenantSystemAdministration systems;
     @Autowired CredentialAdministration credentials;

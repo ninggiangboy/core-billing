@@ -2,6 +2,7 @@ package dev.ngb.core_billing.usage.application.command;
 
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.api.lookup.CustomerSummary;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
@@ -15,13 +16,9 @@ import dev.ngb.core_billing.usage.api.usage.UsageEventId;
 import dev.ngb.core_billing.usage.domain.usage.UsageEvent;
 import dev.ngb.core_billing.usage.domain.usage.UsageTrace;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import dev.ngb.core_billing.usage.application.port.MetricUnits;
@@ -102,7 +99,7 @@ public class RecordUsageUseCase {
     }
 
     private UsageEvent prepare(Item item, TenantId tenantId, java.util.UUID caller, Map<CustomerId, CustomerSummary> knownCustomers, Instant now) {
-        RecordKey.require(item.idempotencyKey());
+        Fingerprint.requireKey(item.idempotencyKey());
         if (item.customerId() == null) {
             throw new IllegalArgumentException("customerId is required");
         }
@@ -119,7 +116,7 @@ public class RecordUsageUseCase {
         if (!customer.active()) {
             throw new ConflictException("the customer is deactivated");
         }
-        String hash = fingerprint(item.customerId(), item.metric(), quantity.toPlainString(), item.unit(), item.occurredAt(),
+        String hash = Fingerprint.of(item.customerId(), item.metric(), quantity.toPlainString(), item.unit(), item.occurredAt(),
                 item.trace().tenantSystemId(), item.trace().resourceRef(), item.trace().sourceEventId());
         return UsageEvent.record(new UsageEventId(ids.newId()), tenantId, item.customerId(), item.metric(), quantity, item.unit(), item.occurredAt(),
                 item.idempotencyKey(), hash, item.trace(), now);
@@ -137,15 +134,4 @@ public class RecordUsageUseCase {
         return new Recorded(existing, true);
     }
 
-    private static String fingerprint(Object... parts) {
-        StringBuilder canonical = new StringBuilder();
-        for (Object part : parts) {
-            canonical.append(part == null ? "" : part).append('\u0000');
-        }
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is required by the Java platform", e);
-        }
-    }
 }

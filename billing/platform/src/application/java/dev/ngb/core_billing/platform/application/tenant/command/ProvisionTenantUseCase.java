@@ -6,7 +6,7 @@ import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.Set;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.role.command.SeedDefaultRolesUseCase;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 import dev.ngb.core_billing.platform.application.user.command.UserAdministration;
@@ -53,7 +53,7 @@ public class ProvisionTenantUseCase {
                 Role admin = unitOfWork.transactional(() -> roles.findByName(SeedDefaultRolesUseCase.TENANT_ADMIN)
                         .orElseThrow(() -> new IllegalStateException("default roles were not created")));
                 users.create(
-                        new Caller(command.actor(), command.requestId()),
+                        new Audit(command.actor(), command.requestId()),
                         new UserAdministration.CreateUser(
                                 command.adminEmail(), command.adminDisplayName(), command.adminTemporaryPassword(),
                                 Set.of(admin.id())));

@@ -5,7 +5,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.pricing.adapter.persistence.RuleDto;
-import dev.ngb.core_billing.pricing.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.pricing.application.rating.command.ChargeFromUsageUseCase;
 import dev.ngb.core_billing.pricing.application.rating.command.EstimateCostUseCase;
 import dev.ngb.core_billing.pricing.application.plan.command.PlanAdministration;
@@ -30,6 +30,7 @@ import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.MoneyDto;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -92,12 +93,6 @@ public class PricingController {
         }
     }
 
-    public record AmountDto(long amount, String currency) {
-        static AmountDto of(Money money) {
-            return new AmountDto(money.minorUnits(), money.currency().code());
-        }
-    }
-
     /** Expected usage of one metric; {@code events} defaults to 1 and only matters to workload prices. */
     public record UsageInput(String metric, String quantity, Long events) {}
 
@@ -116,9 +111,9 @@ public class PricingController {
     }
 
     public record EstimateResponse(
-            String planId, String planCode, int planVersion, AmountDto amount, String exactAmount, String adjustment, List<LineResponse> lines) {
+            String planId, String planCode, int planVersion, MoneyDto amount, String exactAmount, String adjustment, List<LineResponse> lines) {
         static EstimateResponse of(EstimateCostUseCase.Estimate e) {
-            return new EstimateResponse(e.plan().id().toString(), e.plan().code(), e.version().number(), AmountDto.of(e.quote().amount()),
+            return new EstimateResponse(e.plan().id().toString(), e.plan().code(), e.version().number(), MoneyDto.of(e.quote().amount()),
                     e.quote().exactAmount().stripTrailingZeros().toPlainString(), e.quote().adjustment().name(),
                     e.quote().lines().stream().map(LineResponse::of).toList());
         }
@@ -126,9 +121,9 @@ public class PricingController {
 
     public record ReserveRequest(String walletId, String planId, Integer version, Instant at, List<UsageInput> usage, Long ttlSeconds, String reference) {}
 
-    public record ReservationDto(String id, String status, AmountDto amount, Instant expiresAt, boolean replayed) {
+    public record ReservationDto(String id, String status, MoneyDto amount, Instant expiresAt, boolean replayed) {
         static ReservationDto of(ReservationResult r) {
-            return new ReservationDto(r.id().toString(), r.status().name(), AmountDto.of(r.amount()), r.expiresAt(), r.replayed());
+            return new ReservationDto(r.id().toString(), r.status().name(), MoneyDto.of(r.amount()), r.expiresAt(), r.replayed());
         }
     }
 
@@ -137,20 +132,20 @@ public class PricingController {
     public record ChargeUsageRequest(String customerId, String walletId, String planId, Integer version, Instant from, Instant to) {}
 
     public record RatingResponse(
-            String outcome, String id, String planId, Integer planVersion, AmountDto amount, String chargeId, String failureReason, Integer usageCount,
+            String outcome, String id, String planId, Integer planVersion, MoneyDto amount, String chargeId, String failureReason, Integer usageCount,
             Instant periodStart, Instant periodEnd, List<LineResponse> lines, boolean replayed) {
         static RatingResponse of(ChargeFromUsageUseCase.Result result) {
             UsageRating r = result.rating();
             if (r == null) {
                 return new RatingResponse(result.outcome().name(), null, null, null, null, null, null, 0, null, null, List.of(), false);
             }
-            return new RatingResponse(result.outcome().name(), r.id().toString(), r.planId().toString(), r.planVersion(), AmountDto.of(r.amount()),
+            return new RatingResponse(result.outcome().name(), r.id().toString(), r.planId().toString(), r.planVersion(), MoneyDto.of(r.amount()),
                     r.chargeId() == null ? null : r.chargeId().toString(), r.failureReason(), r.usageCount(), r.periodStart(), r.periodEnd(),
                     r.breakdown().stream().map(LineResponse::of).toList(), result.replayed());
         }
 
         static RatingResponse ofView(UsageRatingView r) {
-            return new RatingResponse(outcome(r.status()), r.id().toString(), r.planId().toString(), r.planVersion(), AmountDto.of(r.amount()),
+            return new RatingResponse(outcome(r.status()), r.id().toString(), r.planId().toString(), r.planVersion(), MoneyDto.of(r.amount()),
                     r.chargeId() == null ? null : r.chargeId().toString(), r.failureReason(), r.usageCount(), r.periodStart(), r.periodEnd(),
                     r.breakdown().stream().map(LineResponse::ofView).toList(), false);
         }
@@ -194,7 +189,7 @@ public class PricingController {
             throw new IllegalArgumentException("model and version.rule are required");
         }
         PricingModel model = PricingModel.valueOf(request.model());
-        return PlanResponse.of(plans.create(audit(requestId), request.code(), request.name(), Currency.of(required(request.currency(), "currency")),
+        return PlanResponse.of(plans.create(Audit.of(currentActor.get(), requestId), request.code(), request.name(), Currency.of(required(request.currency(), "currency")),
                 terms(request.version(), model)));
     }
 
@@ -221,13 +216,13 @@ public class PricingController {
             throw new IllegalArgumentException("rule is required");
         }
         PlanId planId = PlanId.of(id);
-        return VersionResponse.of(plans.publishVersion(audit(requestId), planId, terms(request, plans.get(planId).model())));
+        return VersionResponse.of(plans.publishVersion(Audit.of(currentActor.get(), requestId), planId, terms(request, plans.get(planId).model())));
     }
 
     @PostMapping("/pricing-plans/{id}/retire")
     @RequiresPermission(Permission.PRICING_MANAGE)
     public PlanResponse retire(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return PlanResponse.of(plans.retire(audit(requestId), PlanId.of(id)));
+        return PlanResponse.of(plans.retire(Audit.of(currentActor.get(), requestId), PlanId.of(id)));
     }
 
     /** A pure calculation: nothing is stored, and the same input is priced exactly as the real charge would be. */
@@ -245,7 +240,7 @@ public class PricingController {
         ReserveFromEstimateUseCase.Result result = reserve.reserve(new ReserveFromEstimateUseCase.Command(
                 WalletId.of(required(request.walletId(), "walletId")), PlanId.of(required(request.planId(), "planId")), request.version(), request.at(),
                 measures(request.usage()),
-                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, caller()));
+                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, currentActor.caller()));
         return new ReserveResponse(EstimateResponse.of(result.estimate()), ReservationDto.of(result.reservation()));
     }
 
@@ -262,7 +257,7 @@ public class PricingController {
         }
         ChargeFromUsageUseCase.Result result = chargeUsage.execute(new ChargeFromUsageUseCase.Command(
                 CustomerId.of(required(request.customerId(), "customerId")), WalletId.of(required(request.walletId(), "walletId")),
-                PlanId.of(required(request.planId(), "planId")), request.version(), request.from(), request.to(), caller()));
+                PlanId.of(required(request.planId(), "planId")), request.version(), request.from(), request.to(), currentActor.caller()));
         HttpStatus status = switch (result.outcome()) {
             case CHARGED -> result.replayed() ? HttpStatus.OK : HttpStatus.CREATED;
             case FAILED -> HttpStatus.PAYMENT_REQUIRED;
@@ -274,12 +269,7 @@ public class PricingController {
     @GetMapping("/pricing/usage-charges/{id}")
     @RequiresPermission(Permission.PRICING_READ)
     public RatingResponse getRating(@PathVariable String id) {
-        return RatingResponse.ofView(ratings.get(UUID.fromString(id), caller()));
-    }
-
-    private java.util.UUID caller() {
-        var system = currentActor.get().tenantSystemId();
-        return system == null ? null : system.value();
+        return RatingResponse.ofView(ratings.get(UUID.fromString(id), currentActor.caller()));
     }
 
     private static PlanAdministration.Terms terms(VersionRequest v, PricingModel model) {
@@ -309,10 +299,5 @@ public class PricingController {
             result.merge(input.metric(), added, (a, b) -> new Measure(a.quantity().add(b.quantity()), a.events() + b.events()));
         }
         return result;
-    }
-
-    private Audit audit(String requestId) {
-        boolean usable = requestId != null && !requestId.isBlank() && requestId.length() <= 64 && requestId.chars().allMatch(c -> c > 32 && c < 127);
-        return new Audit(currentActor.get().auditName(), usable ? requestId : UUID.randomUUID().toString());
     }
 }

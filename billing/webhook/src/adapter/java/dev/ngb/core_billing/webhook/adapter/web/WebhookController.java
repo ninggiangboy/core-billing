@@ -11,7 +11,7 @@ import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointU
 import dev.ngb.core_billing.webhook.application.endpoint.command.EndpointAdministration;
 import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
 import dev.ngb.core_billing.webhook.application.endpoint.query.WebhookEndpointView;
-import dev.ngb.core_billing.webhook.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryStatus;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
@@ -110,20 +110,20 @@ public class WebhookController {
     public EndpointWithSecretResponse createEndpoint(
             @RequestHeader(value = "X-Request-Id", required = false) String requestId, @RequestBody CreateEndpointRequest request) {
         CreateEndpointUseCase.Result result = create.execute(
-                new CreateEndpointUseCase.Command(request.url(), request.description(), request.eventTypes(), audit(requestId), caller()));
+                new CreateEndpointUseCase.Command(request.url(), request.description(), request.eventTypes(), Audit.of(currentActor.get(), requestId), currentActor.caller()));
         return new EndpointWithSecretResponse(EndpointResponse.of(result.endpoint()), result.signingSecret());
     }
 
     @GetMapping("/webhook-endpoints")
     @RequiresPermission(Permission.WEBHOOK_READ)
     public List<EndpointResponse> listEndpoints() {
-        return endpointQueries.list(caller()).stream().map(EndpointResponse::ofView).toList();
+        return endpointQueries.list(currentActor.caller()).stream().map(EndpointResponse::ofView).toList();
     }
 
     @GetMapping("/webhook-endpoints/{id}")
     @RequiresPermission(Permission.WEBHOOK_READ)
     public EndpointResponse getEndpoint(@PathVariable String id) {
-        return EndpointResponse.ofView(endpointQueries.get(UUID.fromString(id), caller()));
+        return EndpointResponse.ofView(endpointQueries.get(UUID.fromString(id), currentActor.caller()));
     }
 
     /** Changes only the fields that are present. Setting {@code status} to {@code DISABLED} pauses delivery without losing queued events. */
@@ -133,14 +133,14 @@ public class WebhookController {
             @PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId,
             @RequestBody UpdateEndpointRequest request) {
         EndpointStatus status = request.status() == null ? null : EndpointStatus.valueOf(request.status());
-        return EndpointResponse.of(endpoints.update(audit(requestId), WebhookEndpointId.of(id),
-                new EndpointAdministration.Change(request.url(), request.description(), request.eventTypes(), status), caller()));
+        return EndpointResponse.of(endpoints.update(Audit.of(currentActor.get(), requestId), WebhookEndpointId.of(id),
+                new EndpointAdministration.Change(request.url(), request.description(), request.eventTypes(), status), currentActor.caller()));
     }
 
     @PostMapping("/webhook-endpoints/{id}/rotate-secret")
     @RequiresPermission(Permission.WEBHOOK_MANAGE)
     public EndpointWithSecretResponse rotateSecret(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        EndpointAdministration.Rotated rotated = endpoints.rotateSecret(audit(requestId), WebhookEndpointId.of(id), caller());
+        EndpointAdministration.Rotated rotated = endpoints.rotateSecret(Audit.of(currentActor.get(), requestId), WebhookEndpointId.of(id), currentActor.caller());
         return new EndpointWithSecretResponse(EndpointResponse.of(rotated.endpoint()), rotated.signingSecret());
     }
 
@@ -155,14 +155,14 @@ public class WebhookController {
                         endpointId == null ? null : UUID.fromString(endpointId),
                         before == null ? null : UUID.fromString(before),
                         limit,
-                        caller())
+                        currentActor.caller())
                 .stream().map(DeliveryResponse::ofView).toList();
     }
 
     @GetMapping("/webhook-deliveries/{id}")
     @RequiresPermission(Permission.WEBHOOK_READ)
     public DeliveryDetailResponse getDelivery(@PathVariable String id) {
-        DeliveryQueries.Detail detail = deliveryQueries.get(UUID.fromString(id), caller());
+        DeliveryQueries.Detail detail = deliveryQueries.get(UUID.fromString(id), currentActor.caller());
         return new DeliveryDetailResponse(DeliveryResponse.ofView(detail.delivery()), detail.delivery().body(),
                 detail.attempts().stream().map(AttemptResponse::ofView).toList());
     }
@@ -172,16 +172,7 @@ public class WebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @RequiresPermission(Permission.WEBHOOK_MANAGE)
     public DeliveryResponse resend(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return DeliveryResponse.of(deliveries.resend(audit(requestId), WebhookDeliveryId.of(id), caller()));
+        return DeliveryResponse.of(deliveries.resend(Audit.of(currentActor.get(), requestId), WebhookDeliveryId.of(id), currentActor.caller()));
     }
 
-    private UUID caller() {
-        var system = currentActor.get().tenantSystemId();
-        return system == null ? null : system.value();
-    }
-
-    private Audit audit(String requestId) {
-        boolean usable = requestId != null && !requestId.isBlank() && requestId.length() <= 64 && requestId.chars().allMatch(c -> c > 32 && c < 127);
-        return new Audit(currentActor.get().auditName(), usable ? requestId : UUID.randomUUID().toString());
-    }
 }

@@ -15,7 +15,7 @@ import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.TestEvent;
 import dev.ngb.core_billing.support.TestReceiver;
 import dev.ngb.core_billing.webhook.adapter.messaging.WebhookEventListener;
-import dev.ngb.core_billing.webhook.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliveryAdministration;

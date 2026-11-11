@@ -4,6 +4,7 @@ import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.api.lookup.CustomerSummary;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
@@ -26,9 +27,9 @@ import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
  */
 public class OpenWalletUseCase {
 
-    public record Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, String actor, String requestId, UUID caller) {
-        public Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, String actor, String requestId) {
-            this(customerId, currency, mode, creditLimit, actor, requestId, null);
+    public record Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, Audit audit, UUID caller) {
+        public Command(CustomerId customerId, Currency currency, WalletMode mode, Money creditLimit, Audit audit) {
+            this(customerId, currency, mode, creditLimit, audit, null);
         }
     }
 
@@ -74,7 +75,7 @@ public class OpenWalletUseCase {
             }
             Wallet wallet = Wallet.open(new WalletId(ids.newId()), tenantId, command.customerId(), command.currency(), command.mode(), limit, clock.now());
             wallets.add(wallet);
-            auditLog.record(AuditEntry.tenant(tenantId, command.actor(), "wallet.opened", "wallet/" + wallet.id(), command.requestId(), clock.now()));
+            auditLog.record(AuditEntry.tenant(tenantId, command.audit().actor(), "wallet.opened", "wallet/" + wallet.id(), command.audit().requestId(), clock.now()));
             return new Result(wallet, true);
         });
     }

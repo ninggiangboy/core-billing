@@ -6,6 +6,7 @@ import dev.ngb.core_billing.payment.application.refund.query.RefundView;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.PageSize;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.util.List;
@@ -43,7 +44,7 @@ public class PaymentQueries {
                 }
                 visible = mapped.stream().map(CustomerId::value).toList();
             }
-            return payments.list(walletId, status, before, Math.max(1, Math.min(limit, 200)), visible);
+            return payments.list(walletId, status, before, PageSize.of(limit), visible);
         });
     }
 

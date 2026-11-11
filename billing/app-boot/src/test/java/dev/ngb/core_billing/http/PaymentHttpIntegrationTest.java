@@ -250,6 +250,20 @@ class PaymentHttpIntegrationTest {
                 HttpWorld.Map2.of("walletId", walletId, "amount", 300, "currency", "USD")).getResponse().getStatus()).isEqualTo(201);
     }
 
+    /** The same key limit applies here as in every other context that takes an {@code Idempotency-Key}. */
+    @Test
+    void aKeyOfUpTo255CharactersIsAccepted() {
+        String accepted = "k" + "x".repeat(219);
+        String tooLong = "k" + "x".repeat(255);
+
+        assertThat(call(HttpMethod.POST, acme, systemKey, "/api/v1/payments/top-ups", accepted,
+                HttpWorld.Map2.of("walletId", walletId, "amount", 100, "currency", "USD")).getResponse().getStatus())
+                .as("220 characters is within the limit").isEqualTo(201);
+        assertThat(call(HttpMethod.POST, acme, systemKey, "/api/v1/payments/top-ups", tooLong,
+                HttpWorld.Map2.of("walletId", walletId, "amount", 100, "currency", "USD")).getResponse().getStatus())
+                .as("256 characters is over the limit").isEqualTo(400);
+    }
+
     @Test
     void aVerifiedPaymentCreditsTheWalletAndCanBeRefundedThroughTheApi() throws Exception {
         long before = world.body(call(HttpMethod.GET, acme, systemKey, "/api/v1/wallets/" + walletId, null, null)).get("balance").get("amount").asLong();

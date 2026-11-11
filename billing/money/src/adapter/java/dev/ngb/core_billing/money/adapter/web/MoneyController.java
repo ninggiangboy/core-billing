@@ -26,9 +26,11 @@ import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.MoneyDto;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Duration;
 import java.time.Instant;
@@ -52,19 +54,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 public class MoneyController {
-
-    public record MoneyDto(long amount, String currency) {
-        static MoneyDto of(Money money) {
-            return new MoneyDto(money.minorUnits(), money.currency().code());
-        }
-
-        Money toMoney() {
-            if (currency == null) {
-                throw new IllegalArgumentException("currency is required");
-            }
-            return Money.of(amount, Currency.of(currency));
-        }
-    }
 
     public record OpenWalletRequest(String customerId, String currency, String mode, Long creditLimit) {}
 
@@ -166,27 +155,27 @@ public class MoneyController {
         WalletMode mode = WalletMode.valueOf(request.mode());
         Money limit = request.creditLimit() == null ? null : Money.of(request.creditLimit(), currency);
         OpenWalletUseCase.Result result = openWallet.execute(new OpenWalletUseCase.Command(
-                CustomerId.of(request.customerId()), currency, mode, limit, currentActor.get().auditName(), requestId(requestId), caller()));
+                CustomerId.of(request.customerId()), currency, mode, limit, Audit.of(currentActor.get(), requestId), currentActor.caller()));
         return ResponseEntity.status(result.created() ? HttpStatus.CREATED : HttpStatus.OK).body(WalletResponse.of(result.wallet()));
     }
 
     @GetMapping("/wallets")
     @RequiresPermission(Permission.WALLET_READ)
     public List<WalletResponse> wallets(@RequestParam String customerId) {
-        return queries.walletsOf(CustomerId.of(customerId), caller()).stream().map(WalletResponse::ofView).toList();
+        return queries.walletsOf(CustomerId.of(customerId), currentActor.caller()).stream().map(WalletResponse::ofView).toList();
     }
 
     @GetMapping("/wallets/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public WalletResponse wallet(@PathVariable String id) {
-        return WalletResponse.ofView(queries.wallet(WalletId.of(id), caller()));
+        return WalletResponse.ofView(queries.wallet(WalletId.of(id), currentActor.caller()));
     }
 
     @GetMapping("/wallets/{id}/ledger")
     @RequiresPermission(Permission.WALLET_READ)
     public List<LedgerEntryResponse> ledger(
             @PathVariable String id, @RequestParam(defaultValue = "0") long afterSequence, @RequestParam(defaultValue = "50") int limit) {
-        return queries.ledger(WalletId.of(id), afterSequence, limit, caller()).stream().map(LedgerEntryResponse::ofView).toList();
+        return queries.ledger(WalletId.of(id), afterSequence, limit, currentActor.caller()).stream().map(LedgerEntryResponse::ofView).toList();
     }
 
     @PostMapping("/reservations")
@@ -194,21 +183,21 @@ public class MoneyController {
     public ResponseEntity<ReservationResponse> reserve(@RequestHeader("Idempotency-Key") String key, @RequestBody ReserveRequest request) {
         ReservationResult result = reserve.reserve(new ReserveBudgetCommand(
                 WalletId.of(request.walletId()), new MoneyDto(request.amount(), request.currency()).toMoney(),
-                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, caller()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.ofView(queries.reservation(result.id(), caller())));
+                Duration.ofSeconds(request.ttlSeconds() == null ? 900 : request.ttlSeconds()), request.reference(), key, currentActor.caller()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResponse.ofView(queries.reservation(result.id(), currentActor.caller())));
     }
 
     @GetMapping("/reservations/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public ReservationResponse reservation(@PathVariable String id) {
-        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id), caller()));
+        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id), currentActor.caller()));
     }
 
     @PostMapping("/reservations/{id}/release")
     @RequiresPermission(Permission.RESERVATION_MANAGE)
     public ReservationResponse release(@PathVariable String id) {
-        release.execute(ReservationId.of(id), caller());
-        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id), caller()));
+        release.execute(ReservationId.of(id), currentActor.caller());
+        return ReservationResponse.ofView(queries.reservation(ReservationId.of(id), currentActor.caller()));
     }
 
     /** Charges the actual cost against the reservation and releases whatever was not used. */
@@ -217,8 +206,8 @@ public class MoneyController {
     public ResponseEntity<ChargeResponse> capture(
             @PathVariable String id, @RequestHeader("Idempotency-Key") String key, @RequestBody CaptureRequest request) {
         ChargeResult result = charge.charge(new ChargeCommand(
-                null, ReservationId.of(id), new MoneyDto(request.amount(), request.currency()).toMoney(), null, request.reference(), key, caller()));
-        return chargeResponse(result, caller());
+                null, ReservationId.of(id), new MoneyDto(request.amount(), request.currency()).toMoney(), null, request.reference(), key, currentActor.caller()));
+        return chargeResponse(result, currentActor.caller());
     }
 
     @PostMapping("/charges")
@@ -226,14 +215,14 @@ public class MoneyController {
     public ResponseEntity<ChargeResponse> charge(@RequestHeader("Idempotency-Key") String key, @RequestBody ChargeRequest request) {
         ChargeResult result = charge.charge(new ChargeCommand(
                 WalletId.of(request.walletId()), null, new MoneyDto(request.amount(), request.currency()).toMoney(), request.usageRef(),
-                request.reference(), key, caller()));
-        return chargeResponse(result, caller());
+                request.reference(), key, currentActor.caller()));
+        return chargeResponse(result, currentActor.caller());
     }
 
     @GetMapping("/charges/{id}")
     @RequiresPermission(Permission.WALLET_READ)
     public ChargeResponse getCharge(@PathVariable String id) {
-        ChargeView found = queries.charge(ChargeId.of(id), caller());
+        ChargeView found = queries.charge(ChargeId.of(id), currentActor.caller());
         return ChargeResponse.ofView(new ChargeResult(found.id(), found.status(), found.failureReason(), found.amount(), null, false), found);
     }
 
@@ -258,15 +247,5 @@ public class MoneyController {
         ChargeView stored = queries.charge(result.id(), caller);
         HttpStatus status = result.status() == ChargeStatus.FAILED ? HttpStatus.PAYMENT_REQUIRED : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(ChargeResponse.ofView(result, stored));
-    }
-
-    private UUID caller() {
-        var system = currentActor.get().tenantSystemId();
-        return system == null ? null : system.value();
-    }
-
-    private static String requestId(String supplied) {
-        boolean usable = supplied != null && !supplied.isBlank() && supplied.length() <= 64 && supplied.chars().allMatch(c -> c > 32 && c < 127);
-        return usable ? supplied : UUID.randomUUID().toString();
     }
 }

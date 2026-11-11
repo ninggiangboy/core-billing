@@ -4,6 +4,9 @@ import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.sharedkernel.Causes;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.DuplicateKeyException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -30,7 +33,7 @@ public class JdbcReservationRepository implements ReservationRepository {
         try {
             aggregates.insert(ReservationRow.from(r));
         } catch (RuntimeException e) {
-            if (Rows.duplicate(e)) {
+            if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this idempotency key was already used for a reservation");
             }
             throw e;

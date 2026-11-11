@@ -22,7 +22,7 @@ import java.time.Instant;
 import java.util.Map;
 import dev.ngb.core_billing.pricing.application.metric.port.MetricRegistry;
 import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
-import dev.ngb.core_billing.pricing.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 
 /**
  * Creates, versions, retires and reads plans. A plan and its versions commit together with the event that

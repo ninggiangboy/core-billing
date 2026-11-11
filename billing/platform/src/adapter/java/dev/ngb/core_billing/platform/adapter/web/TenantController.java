@@ -3,7 +3,7 @@ package dev.ngb.core_billing.platform.adapter.web;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.application.tenant.command.AddTenantDomainUseCase;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.tenant.command.DeactivateTenantUseCase;
 import dev.ngb.core_billing.platform.application.tenant.command.ProvisionTenantUseCase;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantDomainView;
@@ -80,7 +80,7 @@ public class TenantController {
     @ResponseStatus(HttpStatus.CREATED)
     @RequiresPermission(Permission.TENANT_CREATE)
     public TenantResponse create(@RequestBody CreateTenantRequest request) {
-        Caller caller = callers.current();
+        Audit caller = callers.current();
         return TenantResponse.of(provision.execute(new ProvisionTenantUseCase.Command(
                 request.code(), request.name(), request.adminEmail(), request.adminDisplayName(),
                 request.adminTemporaryPassword(), caller.actor(), caller.requestId())));
@@ -101,7 +101,7 @@ public class TenantController {
     @PostMapping("/{id}/deactivate")
     @RequiresPermission(Permission.TENANT_DEACTIVATE)
     public TenantResponse deactivate(@PathVariable String id) {
-        Caller caller = callers.current();
+        Audit caller = callers.current();
         queries.get(TenantId.of(id).value());
         return TenantResponse.of(deactivate.execute(new DeactivateTenantUseCase.Command(TenantId.of(id), caller.actor(), caller.requestId())));
     }
@@ -116,7 +116,7 @@ public class TenantController {
     @ResponseStatus(HttpStatus.CREATED)
     @RequiresPermission(Permission.TENANT_DOMAIN_MANAGE)
     public DomainResponse addDomain(@PathVariable String id, @RequestBody AddDomainRequest request) {
-        Caller caller = callers.current();
+        Audit caller = callers.current();
         queries.get(TenantId.of(id).value());
         return DomainResponse.of(addDomain.execute(
                 new AddTenantDomainUseCase.Command(TenantId.of(id), request.hostname(), caller.actor(), caller.requestId())));

@@ -6,6 +6,7 @@ import dev.ngb.core_billing.money.api.ledger.LedgerPostingResult;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
 import dev.ngb.core_billing.money.domain.event.MoneyEvents;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
@@ -41,7 +42,7 @@ public class DebitWalletUseCase implements DebitWallet {
 
     @Override
     public LedgerPostingResult debit(DebitCommand command) {
-        RequestFingerprint.requireKey(command.idempotencyKey());
+        Fingerprint.requireKey(command.idempotencyKey());
         if (!command.amount().isPositive()) {
             throw new IllegalArgumentException("a debit must be positive");
         }

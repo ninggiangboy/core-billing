@@ -14,7 +14,7 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.Set;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 
 /** Roles of the current scope. Roles live in the database and can be changed through the UI. */
@@ -37,7 +37,7 @@ public class RoleAdministration {
         this.clock = clock;
     }
 
-    public Role create(Caller caller, String name, Set<Permission> permissions) {
+    public Role create(Audit caller, String name, Set<Permission> permissions) {
         return unitOfWork.transactional(() -> {
             RequestScope current = tenantContext.current();
             PermissionScope scope = current instanceof RequestScope.Platform ? PermissionScope.PLATFORM : PermissionScope.TENANT;
@@ -51,7 +51,7 @@ public class RoleAdministration {
         });
     }
 
-    public Role replacePermissions(Caller caller, RoleId id, Set<Permission> permissions) {
+    public Role replacePermissions(Audit caller, RoleId id, Set<Permission> permissions) {
         return unitOfWork.transactional(() -> {
             Role role = roles.findById(id).orElseThrow(() -> new NotFoundException("role not found"));
             try {

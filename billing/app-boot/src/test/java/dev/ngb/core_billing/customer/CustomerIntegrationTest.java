@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
-import dev.ngb.core_billing.customer.application.command.AuditContext;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.customer.application.command.CustomerAdministration;
 import dev.ngb.core_billing.customer.application.query.CustomerQueries;
@@ -16,7 +16,7 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.tenantsystem.command.TenantSystemAdministration;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.sharedkernel.Clock;
@@ -40,7 +40,7 @@ import org.springframework.context.annotation.Import;
 @Import(PostgresContainerConfig.class)
 class CustomerIntegrationTest {
 
-    private static final AuditContext AUDIT = new AuditContext("user/tester", "req-1");
+    private static final Audit AUDIT = new Audit("user/tester", "req-1");
 
     @Autowired UnitOfWork unitOfWork;
     @Autowired CustomerRepository customers;
@@ -55,7 +55,7 @@ class CustomerIntegrationTest {
     @Autowired ScopeTestSupport scopes;
 
     private TenantSystemId newSystem(Tenant tenant) {
-        return scopes.inTenant(tenant.id(), () -> systems.create(new Caller("user/tester", "req"), "Sample " + UUID.randomUUID())).id();
+        return scopes.inTenant(tenant.id(), () -> systems.create(new Audit("user/tester", "req"), "Sample " + UUID.randomUUID())).id();
     }
 
     private CreateCustomerUseCase.Command command(TenantSystemId system, String externalUserId, String name, String key) {

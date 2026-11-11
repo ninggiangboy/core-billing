@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.Locale;
 import java.util.Set;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.role.command.SeedDefaultRolesUseCase;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 import dev.ngb.core_billing.platform.application.user.port.UserRepository;
@@ -15,7 +15,7 @@ import dev.ngb.core_billing.platform.application.user.port.UserRepository;
  */
 public class BootstrapPlatformAdminUseCase {
 
-    private static final Caller BOOTSTRAP = new Caller("system/bootstrap", "bootstrap");
+    private static final Audit BOOTSTRAP = new Audit("system/bootstrap", "bootstrap");
 
     private final UnitOfWork unitOfWork;
     private final UserRepository users;

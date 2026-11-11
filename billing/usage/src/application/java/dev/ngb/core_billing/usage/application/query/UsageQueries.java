@@ -3,6 +3,7 @@ package dev.ngb.core_billing.usage.application.query;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.PageSize;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.usage.api.usage.UsageEventId;
 import dev.ngb.core_billing.usage.api.usage.UsageLookup;
@@ -15,7 +16,6 @@ import java.util.Set;
 /** Reads usage of the current tenant: history for the API, and the {@link UsageLookup} other contexts use. */
 public class UsageQueries implements UsageLookup {
 
-    public static final int MAX_PAGE = 200;
 
     private final UnitOfWork unitOfWork;
     private final UsageEventReadRepository events;
@@ -40,7 +40,7 @@ public class UsageQueries implements UsageLookup {
         requireWindow(from, to);
         return unitOfWork.transactional(() -> {
             requireCustomer(customerId, caller);
-            return events.page(customerId, metric, from, to, before, Math.min(limit, MAX_PAGE));
+            return events.page(customerId, metric, from, to, before, PageSize.of(limit));
         });
     }
 

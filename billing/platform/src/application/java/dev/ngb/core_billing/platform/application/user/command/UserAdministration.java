@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import dev.ngb.core_billing.platform.application.auth.port.IdentityProviderPort;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 import dev.ngb.core_billing.platform.application.tenant.TenantNotFoundException;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
@@ -77,7 +77,7 @@ public class UserAdministration {
      * storing the user fails, so no half-created user is left behind. No database transaction is held
      * open while Keycloak is called.
      */
-    public BillingUser create(Caller caller, CreateUser command) {
+    public BillingUser create(Audit caller, CreateUser command) {
         String email = command.email() == null ? "" : command.email().strip().toLowerCase(Locale.ROOT);
         Prepared prepared = unitOfWork.transactional(() -> prepare(email, command.roleIds()));
 
@@ -106,7 +106,7 @@ public class UserAdministration {
     }
 
 
-    public BillingUser assignRole(Caller caller, UserId userId, RoleId roleId) {
+    public BillingUser assignRole(Audit caller, UserId userId, RoleId roleId) {
         return unitOfWork.transactional(() -> {
             BillingUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
             Role role = roles.findById(roleId).orElseThrow(() -> new NotFoundException("role not found"));
@@ -118,7 +118,7 @@ public class UserAdministration {
         });
     }
 
-    public BillingUser unassignRole(Caller caller, UserId userId, RoleId roleId) {
+    public BillingUser unassignRole(Audit caller, UserId userId, RoleId roleId) {
         return unitOfWork.transactional(() -> {
             BillingUser user = users.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
             user.unassign(roleId);
@@ -157,7 +157,7 @@ public class UserAdministration {
         }
     }
 
-    private void audit(Caller caller, BillingUser user, String action, String subject) {
+    private void audit(Audit caller, BillingUser user, String action, String subject) {
         auditLog.record(AuditEntry.tenant(user.tenantId(), caller.actor(), action, subject, caller.requestId(), clock.now()));
     }
 }

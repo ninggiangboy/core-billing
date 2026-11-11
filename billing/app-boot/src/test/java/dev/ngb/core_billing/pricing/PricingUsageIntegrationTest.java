@@ -198,7 +198,7 @@ class PricingUsageIntegrationTest {
         assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "-3", DAY)).hasMessageContaining("greater than zero");
         assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "0.1234567", DAY)).hasMessageContaining("decimal places");
         assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "1", Instant.now().plus(1, ChronoUnit.HOURS))).hasMessageContaining("future");
-        assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "1", DAY, " ")).hasMessageContaining("idempotency key");
+        assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "1", DAY, " ")).hasMessageContaining("Idempotency-Key must be 1-255");
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> recordUsage.record(new RecordUsageUseCase.Item(
                 new dev.ngb.core_billing.sharedkernel.CustomerId(UUID.randomUUID()), metric, d("1"), "call", DAY, "k", new UsageTrace(null, null, null)))))
                 .isInstanceOf(NotFoundException.class);

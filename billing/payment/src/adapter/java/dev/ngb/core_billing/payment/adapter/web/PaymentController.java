@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.payment.adapter.web;
 
-import dev.ngb.core_billing.payment.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentQueries;
 import dev.ngb.core_billing.payment.application.payment.command.PaymentSettings;
@@ -33,6 +33,7 @@ import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.MoneyDto;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.time.Instant;
 import java.util.List;
@@ -83,12 +84,6 @@ public class PaymentController {
 
     /** {@code onboardingUrl} is a Stripe-hosted page; it is only present while the Tenant still has onboarding to finish. */
     public record ConnectionResponse(ConfigurationResponse configuration, String onboardingUrl) {}
-
-    public record MoneyDto(long amount, String currency) {
-        static MoneyDto of(Money money) {
-            return new MoneyDto(money.minorUnits(), money.currency().code());
-        }
-    }
 
     public record TopUpRequest(String walletId, long amount, String currency) {}
 
@@ -198,21 +193,21 @@ public class PaymentController {
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public ConfigurationResponse connectDirect(
             @RequestHeader(value = "X-Request-Id", required = false) String requestId, @RequestBody DirectRequest request) {
-        return configurationResponse(configuration.connectDirect(audit(requestId), request.secretKey(), request.publishableKey(), request.webhookSecret()));
+        return configurationResponse(configuration.connectDirect(Audit.of(currentActor.get(), requestId), request.secretKey(), request.publishableKey(), request.webhookSecret()));
     }
 
     @PutMapping("/stripe/configuration/webhook-secret")
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public ConfigurationResponse setWebhookSecret(
             @RequestHeader(value = "X-Request-Id", required = false) String requestId, @RequestBody WebhookSecretRequest request) {
-        return configurationResponse(configuration.setWebhookSecret(audit(requestId), request.webhookSecret()));
+        return configurationResponse(configuration.setWebhookSecret(Audit.of(currentActor.get(), requestId), request.webhookSecret()));
     }
 
     @PostMapping("/stripe/configuration/connect")
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public ConnectionResponse startConnect(
             @RequestHeader(value = "X-Request-Id", required = false) String requestId, @RequestBody ConnectRequest request) {
-        return connectionResponse(configuration.startConnect(audit(requestId), request.displayName(), request.contactEmail()));
+        return connectionResponse(configuration.startConnect(Audit.of(currentActor.get(), requestId), request.displayName(), request.contactEmail()));
     }
 
     /** A new onboarding link, for when the earlier one has expired. */
@@ -226,7 +221,7 @@ public class PaymentController {
     @PostMapping("/stripe/configuration/refresh")
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public ConfigurationResponse refresh(@RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        return configurationResponse(configuration.refresh(audit(requestId)));
+        return configurationResponse(configuration.refresh(Audit.of(currentActor.get(), requestId)));
     }
 
     @GetMapping("/stripe/configuration")
@@ -239,7 +234,7 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public void disconnect(@RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        configuration.disconnect(audit(requestId));
+        configuration.disconnect(Audit.of(currentActor.get(), requestId));
     }
 
     /**
@@ -255,7 +250,7 @@ public class PaymentController {
             throw new IllegalArgumentException("walletId and currency are required");
         }
         CreateTopUpUseCase.Result result = topUp.execute(new CreateTopUpUseCase.Command(WalletId.of(request.walletId()),
-                Money.of(request.amount(), Currency.of(request.currency())), key, audit(requestId), caller()));
+                Money.of(request.amount(), Currency.of(request.currency())), key, Audit.of(currentActor.get(), requestId), currentActor.caller()));
         return ResponseEntity.status(result.replayed() ? HttpStatus.OK : HttpStatus.CREATED).body(PaymentResponse.of(result.payment()));
     }
 
@@ -265,13 +260,13 @@ public class PaymentController {
             @RequestParam(required = false) String walletId, @RequestParam(required = false) String status, @RequestParam(required = false) String before,
             @RequestParam(defaultValue = "50") int limit) {
         return queries.list(walletId == null ? null : WalletId.of(walletId), status == null ? null : PaymentStatus.valueOf(status),
-                before == null ? null : UUID.fromString(before), limit, caller()).stream().map(PaymentResponse::ofView).toList();
+                before == null ? null : UUID.fromString(before), limit, currentActor.caller()).stream().map(PaymentResponse::ofView).toList();
     }
 
     @GetMapping("/payments/{id}")
     @RequiresPermission(Permission.PAYMENT_READ)
     public PaymentDetailResponse payment(@PathVariable String id) {
-        PaymentQueries.PaymentDetail detail = queries.payment(UUID.fromString(id), caller());
+        PaymentQueries.PaymentDetail detail = queries.payment(UUID.fromString(id), currentActor.caller());
         return new PaymentDetailResponse(PaymentResponse.ofView(detail.payment()), detail.refunds().stream().map(RefundResponse::ofView).toList(),
                 detail.attempts().stream().map(AttemptResponse::ofView).toList());
     }
@@ -293,14 +288,14 @@ public class PaymentController {
             }
             amount = Money.of(request.amount(), Currency.of(request.currency()));
         }
-        RequestRefundUseCase.Result result = refund.execute(new RequestRefundUseCase.Command(PaymentId.of(id), amount, request.reason(), key, audit(requestId)));
+        RequestRefundUseCase.Result result = refund.execute(new RequestRefundUseCase.Command(PaymentId.of(id), amount, request.reason(), key, Audit.of(currentActor.get(), requestId)));
         return ResponseEntity.status(result.replayed() ? HttpStatus.OK : HttpStatus.CREATED).body(RefundResponse.of(result.refund()));
     }
 
     @GetMapping("/refunds/{id}")
     @RequiresPermission(Permission.PAYMENT_READ)
     public RefundResponse getRefund(@PathVariable String id) {
-        return RefundResponse.ofView(refundQueries.get(UUID.fromString(id), caller()));
+        return RefundResponse.ofView(refundQueries.get(UUID.fromString(id), currentActor.caller()));
     }
 
     /** Newest first. Pass the last {@code id} of a page as {@code before} for the next one. */
@@ -322,7 +317,7 @@ public class PaymentController {
     @PostMapping("/stripe/events/{id}/retry")
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public EventDetailResponse retry(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        eventAdmin.retry(audit(requestId), StoredEventId.of(id));
+        eventAdmin.retry(Audit.of(currentActor.get(), requestId), StoredEventId.of(id));
         return eventDetail(eventQueries.get(UUID.fromString(id)));
     }
 
@@ -336,7 +331,7 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @RequiresPermission(Permission.STRIPE_MANAGE)
     public void resolveIncident(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
-        eventAdmin.resolveIncident(audit(requestId), UUID.fromString(id));
+        eventAdmin.resolveIncident(Audit.of(currentActor.get(), requestId), UUID.fromString(id));
     }
 
     /** Compares recent payments and refunds with Stripe now, instead of waiting for the scheduled run. */
@@ -367,13 +362,4 @@ public class PaymentController {
         return new EventDetailResponse(EventResponse.ofView(detail.event()), detail.attempts().stream().map(EventAttemptResponse::ofView).toList());
     }
 
-    private Audit audit(String requestId) {
-        boolean usable = requestId != null && !requestId.isBlank() && requestId.length() <= 64 && requestId.chars().allMatch(c -> c > 32 && c < 127);
-        return new Audit(currentActor.get().auditName(), usable ? requestId : UUID.randomUUID().toString());
-    }
-
-    private UUID caller() {
-        var system = currentActor.get().tenantSystemId();
-        return system == null ? null : system.value();
-    }
 }

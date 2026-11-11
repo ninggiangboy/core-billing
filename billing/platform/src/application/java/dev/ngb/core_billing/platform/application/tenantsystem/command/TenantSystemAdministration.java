@@ -10,7 +10,7 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.tenantsystem.port.TenantSystemRepository;
 
 /** Tenant Systems (the Tenant's integrated applications) of the current Tenant. */
@@ -33,7 +33,7 @@ public class TenantSystemAdministration {
         this.clock = clock;
     }
 
-    public TenantSystem create(Caller caller, String name) {
+    public TenantSystem create(Audit caller, String name) {
         return unitOfWork.transactional(() -> {
             TenantId tenantId = tenantContext.requireTenant();
             TenantSystem system = TenantSystem.create(new TenantSystemId(ids.newId()), tenantId, name, clock.now());

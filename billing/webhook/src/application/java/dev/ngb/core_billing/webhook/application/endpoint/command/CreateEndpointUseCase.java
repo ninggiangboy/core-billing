@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
-import dev.ngb.core_billing.webhook.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.application.shared.port.EventTypeCatalog;
 import dev.ngb.core_billing.webhook.application.shared.port.SecretCipher;
 import dev.ngb.core_billing.webhook.application.shared.port.SigningKeys;

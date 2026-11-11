@@ -8,6 +8,7 @@ import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.domain.event.MoneyEvents;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.Clock;
@@ -17,7 +18,7 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.time.Duration;
 import java.time.Instant;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
-import dev.ngb.core_billing.money.application.wallet.command.RequestFingerprint;
+
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 
 /**
@@ -51,11 +52,11 @@ public class ReserveBudgetUseCase implements ReserveBudget {
 
     @Override
     public ReservationResult reserve(ReserveBudgetCommand command) {
-        RequestFingerprint.requireKey(command.idempotencyKey());
+        Fingerprint.requireKey(command.idempotencyKey());
         if (command.ttl().compareTo(MIN_TTL) < 0 || command.ttl().compareTo(MAX_TTL) > 0) {
             throw new IllegalArgumentException("a reservation must last between 1 second and 7 days");
         }
-        String hash = RequestFingerprint.of(command.walletId(), command.amount(), command.ttl().toSeconds(), command.reference());
+        String hash = Fingerprint.of(command.walletId(), command.amount(), command.ttl().toSeconds(), command.reference());
         return unitOfWork.transactional(() -> {
             Wallet wallet = wallets.lockById(command.walletId()).orElseThrow(() -> new NotFoundException("wallet not found"));
             requireVisible(wallet, command.caller());

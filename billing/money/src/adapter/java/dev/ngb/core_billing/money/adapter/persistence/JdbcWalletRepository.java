@@ -3,6 +3,8 @@ package dev.ngb.core_billing.money.adapter.persistence;
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import org.springframework.dao.DuplicateKeyException;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.WalletId;
@@ -28,7 +30,7 @@ public class JdbcWalletRepository implements WalletRepository {
         try {
             aggregates.insert(WalletRow.from(wallet));
         } catch (RuntimeException e) {
-            if (Rows.duplicate(e)) {
+            if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("the customer already has a wallet in this currency");
             }
             throw e;

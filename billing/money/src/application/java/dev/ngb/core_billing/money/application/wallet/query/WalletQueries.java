@@ -11,6 +11,7 @@ import dev.ngb.core_billing.money.application.reservation.query.ReservationReadR
 import dev.ngb.core_billing.money.application.reservation.query.ReservationView;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.PageSize;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
 import java.util.List;
@@ -19,7 +20,6 @@ import java.util.UUID;
 /** Read side of the money module, within the current tenant. */
 public class WalletQueries {
 
-    public static final int MAX_PAGE = 200;
 
     private final UnitOfWork unitOfWork;
     private final WalletReadRepository wallets;
@@ -58,18 +58,18 @@ public class WalletQueries {
         });
     }
 
-    /** Entries after {@code afterSequence}, oldest first, at most {@link #MAX_PAGE}. */
+    /** Entries after {@code afterSequence}, oldest first, at most {@link PageSize#MAX}. */
     public List<LedgerEntryView> ledger(WalletId walletId, long afterSequence, int limit) {
         return ledger(walletId, afterSequence, limit, null);
     }
 
     public List<LedgerEntryView> ledger(WalletId walletId, long afterSequence, int limit, UUID caller) {
-        if (afterSequence < 0 || limit < 1) {
-            throw new IllegalArgumentException("afterSequence must not be negative and limit must be at least 1");
+        if (afterSequence < 0) {
+            throw new IllegalArgumentException("afterSequence must not be negative");
         }
         return unitOfWork.transactional(() -> {
             requireVisibleWallet(walletId, caller);
-            return ledger.page(walletId, afterSequence, Math.min(limit, MAX_PAGE));
+            return ledger.page(walletId, afterSequence, PageSize.of(limit));
         });
     }
 

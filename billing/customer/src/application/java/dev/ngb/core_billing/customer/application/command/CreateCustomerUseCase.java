@@ -3,8 +3,10 @@ package dev.ngb.core_billing.customer.application.command;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
 import dev.ngb.core_billing.customer.domain.customer.CustomerCreated;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.idempotency.StoredResponse;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
@@ -15,11 +17,7 @@ import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.HexFormat;
 import dev.ngb.core_billing.customer.application.port.CustomerRepository;
 
 /**
@@ -32,7 +30,7 @@ public class CreateCustomerUseCase {
 
     /** {@code tenantSystemId} and {@code externalUserId} are both present (a mapped customer) or both absent. */
     public record Command(
-            TenantSystemId tenantSystemId, String externalUserId, String displayName, String email, String idempotencyKey, AuditContext audit) {}
+            TenantSystemId tenantSystemId, String externalUserId, String displayName, String email, String idempotencyKey, Audit audit) {}
 
     /** {@code replayed} is true when the key had already been used and the original customer is returned. */
     public record Result(Customer customer, boolean replayed) {}
@@ -66,7 +64,7 @@ public class CreateCustomerUseCase {
     }
 
     public Result execute(Command command) {
-        requireKey(command.idempotencyKey());
+        Fingerprint.requireKey(command.idempotencyKey());
         if ((command.tenantSystemId() == null) != (command.externalUserId() == null)) {
             throw new IllegalArgumentException("a tenant system and an external user id must be given together");
         }
@@ -91,21 +89,10 @@ public class CreateCustomerUseCase {
         });
     }
 
-    private static void requireKey(String key) {
-        if (key == null || key.isBlank() || key.length() > 255 || key.chars().anyMatch(c -> c < 33 || c > 126)) {
-            throw new IllegalArgumentException("Idempotency-Key must be 1-255 printable characters");
-        }
-    }
-
     /** A digest of the request, so reusing a key for a different request is detected instead of replayed. */
     private static String fingerprint(Command c) {
-        String canonical = String.join("\u0000",
+        return Fingerprint.sha256(String.join("\u0000",
                 String.valueOf(c.tenantSystemId()), String.valueOf(c.externalUserId()), c.displayName() == null ? "" : c.displayName().strip(),
-                c.email() == null ? "" : c.email().strip());
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is required by the Java platform", e);
-        }
+                c.email() == null ? "" : c.email().strip()));
     }
 }

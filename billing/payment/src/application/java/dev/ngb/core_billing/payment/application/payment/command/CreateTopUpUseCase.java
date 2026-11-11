@@ -24,11 +24,11 @@ import java.util.Optional;
 import java.util.UUID;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
-import dev.ngb.core_billing.payment.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.stripe.command.ProviderRejectedException;
 import dev.ngb.core_billing.payment.application.stripe.port.ProviderAccess;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
-import dev.ngb.core_billing.payment.application.shared.command.Fingerprint;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 
 /**
  * Starts a wallet top-up through the Tenant's Stripe configuration. The payment is stored first, in

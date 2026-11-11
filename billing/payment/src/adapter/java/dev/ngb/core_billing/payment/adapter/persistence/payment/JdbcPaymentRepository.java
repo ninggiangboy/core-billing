@@ -5,6 +5,7 @@ import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentAttempt;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
+import dev.ngb.core_billing.sharedkernel.Text;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,8 @@ import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class JdbcPaymentRepository implements PaymentRepository {
+
+    private static final int MAX_FAILURE = 500;
 
     private static final String COLUMNS = "id, tenant_id, configuration_id, wallet_id, customer_id, currency, amount, refunded_amount, status, "
             + "checkout_session_id, payment_intent_id, checkout_url, failure_reason, ledger_entry_id, idempotency_key, request_hash, created_at, "
@@ -75,7 +78,7 @@ public class JdbcPaymentRepository implements PaymentRepository {
                         select ?, tenant_id, id, ?, ?, ?, ? from payments where id = ?
                         on conflict (payment_id, stripe_event_id) do nothing
                         """)
-                .params(UUID.randomUUID(), attempt.stripeEventId(), attempt.failureCode(), clip(attempt.failureMessage()), Timestamp.from(attempt.occurredAt()),
+                .params(UUID.randomUUID(), attempt.stripeEventId(), attempt.failureCode(), Text.clip(attempt.failureMessage(), MAX_FAILURE), Timestamp.from(attempt.occurredAt()),
                         id.value())
                 .update();
     }
@@ -90,9 +93,5 @@ public class JdbcPaymentRepository implements PaymentRepository {
                 .stream()
                 .map(PaymentAttemptRow::toDomain)
                 .toList();
-    }
-
-    private static String clip(String text) {
-        return text == null || text.length() <= 500 ? text : text.substring(0, 500);
     }
 }

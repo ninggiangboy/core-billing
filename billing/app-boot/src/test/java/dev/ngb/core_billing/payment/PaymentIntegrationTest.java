@@ -9,7 +9,7 @@ import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.application.wallet.query.WalletQueries;
 import dev.ngb.core_billing.payment.PaymentTestWorld.PayWorld;
-import dev.ngb.core_billing.payment.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;

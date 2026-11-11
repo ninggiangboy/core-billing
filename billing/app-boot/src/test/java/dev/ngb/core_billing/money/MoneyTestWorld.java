@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.money;
 
-import dev.ngb.core_billing.customer.application.command.AuditContext;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.money.api.wallet.CreditCommand;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
@@ -48,9 +48,9 @@ public class MoneyTestWorld {
     private World world(WalletMode mode, long limit, long initialBalance) {
         Tenant tenant = scopes.newTenant();
         CustomerId customerId = scopes.inTenant(tenant.id(), () -> createCustomer.execute(new CreateCustomerUseCase.Command(
-                null, null, "Customer " + UUID.randomUUID(), null, UUID.randomUUID().toString(), new AuditContext("user/test", "req"))).customer().id());
+                null, null, "Customer " + UUID.randomUUID(), null, UUID.randomUUID().toString(), new Audit("user/test", "req"))).customer().id());
         Wallet wallet = scopes.inTenant(tenant.id(), () -> openWallet.execute(new OpenWalletUseCase.Command(
-                customerId, USD, mode, mode == WalletMode.POSTPAID ? Money.of(limit, USD) : null, "user/test", "req")).wallet());
+                customerId, USD, mode, mode == WalletMode.POSTPAID ? Money.of(limit, USD) : null, new Audit("user/test", "req"))).wallet());
         if (initialBalance > 0) {
             credit(tenant, wallet, initialBalance);
         }

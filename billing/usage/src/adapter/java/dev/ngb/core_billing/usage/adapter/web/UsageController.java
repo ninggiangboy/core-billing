@@ -85,7 +85,7 @@ public class UsageController {
     @PostMapping("/usage-events")
     @RequiresPermission(Permission.USAGE_RECORD)
     public ResponseEntity<RecordedResponse> recordOne(@RequestBody UsageEventRequest request) {
-        RecordUsageUseCase.Recorded recorded = record.record(toItem(request, currentActor.get()), caller());
+        RecordUsageUseCase.Recorded recorded = record.record(toItem(request, currentActor.get()), currentActor.caller());
         return ResponseEntity.status(recorded.replayed() ? HttpStatus.OK : HttpStatus.CREATED).body(RecordedResponse.of(recorded));
     }
 
@@ -97,7 +97,7 @@ public class UsageController {
             throw new IllegalArgumentException("events is required");
         }
         Actor actor = currentActor.get();
-        return new BatchResponse(record.record(request.events().stream().map(e -> toItem(e, actor)).toList(), caller()).stream()
+        return new BatchResponse(record.record(request.events().stream().map(e -> toItem(e, actor)).toList(), currentActor.caller()).stream()
                 .map(RecordedResponse::of).toList());
     }
 
@@ -107,7 +107,7 @@ public class UsageController {
     public List<UsageEventResponse> history(
             @RequestParam String customerId, @RequestParam(required = false) String metric, @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to, @RequestParam(required = false) String before, @RequestParam(defaultValue = "50") int limit) {
-        return queries.history(CustomerId.of(customerId), metric, from, to, before == null ? null : UsageEventId.of(before), limit, caller()).stream()
+        return queries.history(CustomerId.of(customerId), metric, from, to, before == null ? null : UsageEventId.of(before), limit, currentActor.caller()).stream()
                 .map(UsageEventResponse::ofView).toList();
     }
 
@@ -117,12 +117,7 @@ public class UsageController {
     public List<TotalResponse> aggregates(
             @RequestParam String customerId, @RequestParam(required = false) List<String> metric, @RequestParam Instant from, @RequestParam Instant to) {
         Set<String> metrics = metric == null ? Set.of() : new HashSet<>(metric);
-        return queries.totals(CustomerId.of(customerId), metrics, from, to, caller()).stream().map(TotalResponse::of).toList();
-    }
-
-    private java.util.UUID caller() {
-        var system = currentActor.get().tenantSystemId();
-        return system == null ? null : system.value();
+        return queries.totals(CustomerId.of(customerId), metrics, from, to, currentActor.caller()).stream().map(TotalResponse::of).toList();
     }
 
     private static RecordUsageUseCase.Item toItem(UsageEventRequest r, Actor actor) {

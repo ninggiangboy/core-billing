@@ -10,6 +10,7 @@ import dev.ngb.core_billing.money.domain.charge.ChargeService;
 import dev.ngb.core_billing.money.domain.event.MoneyEvents;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
@@ -23,7 +24,7 @@ import java.util.UUID;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
 import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.application.reservation.port.ReservationRepository;
-import dev.ngb.core_billing.money.application.wallet.command.RequestFingerprint;
+
 import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 
 /**
@@ -71,8 +72,8 @@ public class ChargeUseCase implements ChargeWallet {
 
     @Override
     public ChargeResult charge(ChargeCommand command) {
-        RequestFingerprint.requireKey(command.idempotencyKey());
-        String hash = RequestFingerprint.of(command.walletId(), command.reservationId(), command.amount(), command.usageRef(), command.reference());
+        Fingerprint.requireKey(command.idempotencyKey());
+        String hash = Fingerprint.of(command.walletId(), command.reservationId(), command.amount(), command.usageRef(), command.reference());
         return unitOfWork.transactional(() -> {
             WalletId walletId = walletOf(command);
             Wallet wallet = wallets.lockById(walletId).orElseThrow(() -> new NotFoundException("wallet not found"));

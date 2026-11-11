@@ -1,21 +1,20 @@
 package dev.ngb.core_billing.customer.adapter.web;
 
-import dev.ngb.core_billing.customer.application.command.AuditContext;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.customer.application.command.CustomerAdministration;
 import dev.ngb.core_billing.customer.application.query.CustomerQueries;
 import dev.ngb.core_billing.customer.application.query.CustomerView;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
-import dev.ngb.core_billing.platform.api.error.AccessDeniedException;
 import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.error.AccessDeniedException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,7 +84,7 @@ public class CustomerController {
         Actor actor = currentActor.get();
         TenantSystemId system = tenantSystemFor(actor, request.tenantSystemId());
         return CustomerResponse.of(create.execute(new CreateCustomerUseCase.Command(
-                system, request.externalUserId(), request.displayName(), request.email(), idempotencyKey, audit(actor, requestId))).customer());
+                system, request.externalUserId(), request.displayName(), request.email(), idempotencyKey, Audit.of(actor, requestId))).customer());
     }
 
     @GetMapping
@@ -118,14 +117,14 @@ public class CustomerController {
             @RequestBody UpdateCustomerRequest request) {
         Actor actor = currentActor.get();
         return CustomerResponse.of(administration.update(
-                audit(actor, requestId), CustomerId.of(id), request.displayName(), request.email(), actor.tenantSystemId()));
+                Audit.of(actor, requestId), CustomerId.of(id), request.displayName(), request.email(), actor.tenantSystemId()));
     }
 
     @PostMapping("/{id}/deactivate")
     @RequiresPermission(Permission.CUSTOMER_WRITE)
     public CustomerResponse deactivate(@PathVariable String id, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
         Actor actor = currentActor.get();
-        return CustomerResponse.of(administration.deactivate(audit(actor, requestId), CustomerId.of(id), actor.tenantSystemId()));
+        return CustomerResponse.of(administration.deactivate(Audit.of(actor, requestId), CustomerId.of(id), actor.tenantSystemId()));
     }
 
     /**
@@ -140,10 +139,5 @@ public class CustomerController {
             return actor.tenantSystemId();
         }
         return requested == null ? null : TenantSystemId.of(requested);
-    }
-
-    private static AuditContext audit(Actor actor, String requestId) {
-        boolean usable = requestId != null && !requestId.isBlank() && requestId.length() <= 64 && requestId.chars().allMatch(c -> c > 32 && c < 127);
-        return new AuditContext(actor.auditName(), usable ? requestId : UUID.randomUUID().toString());
     }
 }

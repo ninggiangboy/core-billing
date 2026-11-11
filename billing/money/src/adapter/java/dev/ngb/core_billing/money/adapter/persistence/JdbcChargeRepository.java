@@ -4,6 +4,9 @@ import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
 import dev.ngb.core_billing.money.domain.charge.Charge;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.sharedkernel.Causes;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.DuplicateKeyException;
 import java.util.Optional;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -26,7 +29,7 @@ public class JdbcChargeRepository implements ChargeRepository {
         try {
             aggregates.insert(ChargeRow.from(c));
         } catch (RuntimeException e) {
-            if (Rows.duplicate(e)) {
+            if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this idempotency key was already used for a charge");
             }
             throw e;

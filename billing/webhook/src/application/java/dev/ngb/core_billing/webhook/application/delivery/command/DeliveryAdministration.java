@@ -11,7 +11,7 @@ import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
-import dev.ngb.core_billing.webhook.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
 import java.time.Instant;

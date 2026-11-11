@@ -7,6 +7,7 @@ import dev.ngb.core_billing.payment.domain.stripe.EventAttempt;
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
+import dev.ngb.core_billing.sharedkernel.Text;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,8 @@ import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class JdbcStripeEventRepository implements StripeEventRepository {
+
+    private static final int MAX_DETAIL = 1000;
 
     private static final String COLUMNS = "id, tenant_id, configuration_id, stripe_account, event_id, type, livemode, payload, status, attempts, "
             + "next_attempt_at, last_error, received_at, processed_at";
@@ -75,10 +78,6 @@ public class JdbcStripeEventRepository implements StripeEventRepository {
     @Override
     public void addAttempt(StripeEvent event, int number, String outcome, String detail, Instant at) {
         aggregates.insert(new EventAttemptRow(
-                UUID.randomUUID(), event.tenantId().value(), event.id().value(), number, outcome, detail == null ? null : clip(detail), at));
-    }
-
-    private static String clip(String text) {
-        return text.length() <= 1000 ? text : text.substring(0, 1000);
+                UUID.randomUUID(), event.tenantId().value(), event.id().value(), number, outcome, detail == null ? null : Text.clip(detail, MAX_DETAIL), at));
     }
 }

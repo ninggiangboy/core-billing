@@ -1,5 +1,6 @@
 package dev.ngb.core_billing.webhook.adapter.persistence;
 
+import dev.ngb.core_billing.sharedkernel.Text;
 import dev.ngb.core_billing.webhook.application.delivery.command.ClaimedDelivery;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryAttempt;
@@ -111,7 +112,7 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
                         select gen_random_uuid(), tenant_id, id, ?, ?, ?, ?, ?, ? from webhook_deliveries where id = ?
                         on conflict (delivery_id, attempt_no) do nothing
                         """)
-                .params(attempt.attemptNo(), attempt.statusCode(), Rows.clip(attempt.error(), MAX_ERROR), Rows.clip(attempt.responseExcerpt(), MAX_EXCERPT),
+                .params(attempt.attemptNo(), attempt.statusCode(), Text.clip(attempt.error(), MAX_ERROR), Text.clip(attempt.responseExcerpt(), MAX_EXCERPT),
                         (int) Math.min(attempt.latencyMs(), Integer.MAX_VALUE), Timestamp.from(attempt.attemptedAt()), id.value())
                 .update();
         jdbc.sql("""
@@ -119,7 +120,7 @@ public class JdbcWebhookDeliveryRepository implements WebhookDeliveryRepository 
                         set status = ?, next_attempt_at = ?, last_status_code = ?, last_error = ?, completed_at = ?
                         where id = ? and attempts = ? and status = 'IN_PROGRESS'
                         """)
-                .params(status.name(), Timestamp.from(nextAttemptAt), attempt.statusCode(), Rows.clip(attempt.error(), MAX_ERROR),
+                .params(status.name(), Timestamp.from(nextAttemptAt), attempt.statusCode(), Text.clip(attempt.error(), MAX_ERROR),
                         completedAt == null ? null : Timestamp.from(completedAt), id.value(), claimedAttempts)
                 .update();
     }

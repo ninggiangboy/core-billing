@@ -1,5 +1,5 @@
 package dev.ngb.core_billing.platform.adapter.persistence.tenant;
-import dev.ngb.core_billing.platform.adapter.persistence.Causes;
+import dev.ngb.core_billing.sharedkernel.Causes;
 
 
 import static org.springframework.data.relational.core.query.Criteria.where;

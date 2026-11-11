@@ -8,7 +8,7 @@ import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.application.auth.Authentication;
-import dev.ngb.core_billing.platform.application.auth.Caller;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.tenant.command.ProvisionTenantUseCase;
 import dev.ngb.core_billing.platform.application.role.command.RoleAdministration;
 import dev.ngb.core_billing.platform.application.role.query.RoleQueries;
@@ -40,7 +40,7 @@ import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 @Import({PostgresContainerConfig.class, FakeIdentityConfig.class})
 class UserAdministrationIntegrationTest {
 
-    private static final Caller CALLER = new Caller("user/admin", "req-1");
+    private static final Audit CALLER = new Audit("user/admin", "req-1");
 
     @Autowired UserAdministration userAdmin;
     @Autowired UserQueries userQueries;

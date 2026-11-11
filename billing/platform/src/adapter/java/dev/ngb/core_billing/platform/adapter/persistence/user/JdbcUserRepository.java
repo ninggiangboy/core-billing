@@ -1,5 +1,5 @@
 package dev.ngb.core_billing.platform.adapter.persistence.user;
-import dev.ngb.core_billing.platform.adapter.persistence.Causes;
+import dev.ngb.core_billing.sharedkernel.Causes;
 
 
 import dev.ngb.core_billing.platform.api.error.ConflictException;

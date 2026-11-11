@@ -2,6 +2,7 @@ package dev.ngb.core_billing.payment.application.stripe.query;
 
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
+import dev.ngb.core_billing.sharedkernel.PageSize;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +10,6 @@ import java.util.UUID;
 /** Reads Stripe webhook event history for the GET handlers. */
 public class StripeEventQueries {
 
-    public static final int MAX_PAGE = 200;
 
     public record Detail(StripeEventView event, List<EventAttemptView> attempts) {}
 
@@ -22,7 +22,7 @@ public class StripeEventQueries {
     }
 
     public List<StripeEventView> list(EventStatus status, UUID before, int limit) {
-        return unitOfWork.transactional(() -> events.list(status, before, Math.max(1, Math.min(limit, MAX_PAGE))));
+        return unitOfWork.transactional(() -> events.list(status, before, PageSize.of(limit)));
     }
 
     public Detail get(UUID id) {

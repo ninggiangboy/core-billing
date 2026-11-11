@@ -1,6 +1,7 @@
 package dev.ngb.core_billing.payment.domain.stripe;
 
 import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.Text;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -9,6 +10,8 @@ import java.util.Objects;
  * can be repeated from it. {@code attempts} counts how often processing was tried.
  */
 public final class StripeEvent {
+
+    private static final int MAX_ERROR = 1000;
 
     private final StoredEventId id;
     private final TenantId tenantId;
@@ -84,7 +87,7 @@ public final class StripeEvent {
             return;
         }
         this.status = EventStatus.FAILED;
-        this.lastError = clip(why);
+        this.lastError = Text.clip(why, MAX_ERROR);
         this.nextAttemptAt = retryAt;
     }
 
@@ -100,13 +103,9 @@ public final class StripeEvent {
 
     private void finish(EventStatus next, String note, Instant now) {
         this.status = next;
-        this.lastError = next == EventStatus.PROCESSED ? null : clip(note);
+        this.lastError = next == EventStatus.PROCESSED ? null : Text.clip(note, MAX_ERROR);
         this.nextAttemptAt = null;
         this.processedAt = now;
-    }
-
-    private static String clip(String text) {
-        return text == null || text.length() <= 1000 ? text : text.substring(0, 1000);
     }
 
     public StoredEventId id() {

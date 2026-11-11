@@ -16,7 +16,7 @@ import java.time.Instant;
 import java.util.Optional;
 import dev.ngb.core_billing.payment.application.payment.command.PaymentSettings;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
-import dev.ngb.core_billing.payment.application.shared.command.Audit;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.payment.application.stripe.port.ProviderAccess;
 import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;

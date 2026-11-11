@@ -6,6 +6,7 @@ import dev.ngb.core_billing.customer.domain.customer.CustomerStatus;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class JdbcCustomerRepository implements CustomerRepository {
         try {
             jdbc.insert(toRow(customer));
         } catch (RuntimeException e) {
-            if (contains(e, DuplicateKeyException.class)) {
+            if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this external user is already mapped to a customer");
             }
             throw e;
@@ -90,12 +91,4 @@ public class JdbcCustomerRepository implements CustomerRepository {
                         .collect(Collectors.toSet()));
     }
 
-    private static boolean contains(Throwable throwable, Class<? extends Throwable> type) {
-        for (Throwable t = throwable; t != null; t = t.getCause() == t ? null : t.getCause()) {
-            if (type.isInstance(t)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

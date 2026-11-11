@@ -1,5 +1,6 @@
 package dev.ngb.sampletenant.billing.adapter;
 
+import dev.ngb.sampletenant.billing.api.BillingAdmin;
 import dev.ngb.sampletenant.billing.api.BillingCharges;
 import dev.ngb.sampletenant.billing.api.BillingCustomers;
 import dev.ngb.sampletenant.billing.api.BillingInvoices;
@@ -9,6 +10,7 @@ import dev.ngb.sampletenant.billing.api.BillingSessions;
 import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.billing.api.BillingWebhooks;
 import dev.ngb.sampletenant.billing.api.model.BillingSession;
 import dev.ngb.sampletenant.billing.api.model.Charge;
 import dev.ngb.sampletenant.billing.api.model.ChargeUsageRequest;
@@ -68,7 +70,9 @@ public class HttpBillingClient
                 BillingSessions,
                 BillingPayments,
                 BillingInvoices,
-                BillingSubscriptions {
+                BillingSubscriptions,
+                BillingAdmin,
+                BillingWebhooks {
 
     private final HttpClient http;
     private final ObjectMapper json = JsonMapper.builder()
@@ -333,6 +337,21 @@ public class HttpBillingClient
     }
 
     private record SubscribeRequest(String walletId, String planId) {}
+
+    @Override
+    public PricingPlan createPlan(CreatePlanRequest request) {
+        return send("POST", "/api/v1/pricing-plans", request, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public List<Endpoint> endpoints() {
+        return send("GET", "/api/v1/webhook-endpoints", null, Map.of(), new TypeReference<>() {});
+    }
+
+    @Override
+    public EndpointWithSecret createEndpoint(CreateEndpointRequest request) {
+        return send("POST", "/api/v1/webhook-endpoints", request, Map.of(), new TypeReference<>() {});
+    }
 
     private record SessionRequest(
             String customerId, String returnUrl, List<String> permissions, Long expiresInSeconds) {}

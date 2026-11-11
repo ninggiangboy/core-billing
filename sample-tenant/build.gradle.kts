@@ -19,7 +19,7 @@ tasks.register("checkNoBillingDependency") {
             project.configurations.flatMap { configuration ->
                 configuration.dependencies.mapNotNull { dependency ->
                     (dependency as? ProjectDependency)
-                        ?.takeIf { it.path.contains("billing", ignoreCase = true) }
+                        ?.takeIf { it.path.split(":").any { segment -> segment == "billing" } }
                         ?.let { "${project.path}:${configuration.name} -> ${it.path}" }
                 }
             }

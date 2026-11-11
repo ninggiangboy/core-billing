@@ -25,5 +25,17 @@ services:
     volumes:
       - ./ops/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
 
+  sample-tenant-postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: sampletenant
+      POSTGRES_USER: sampletenant
+      POSTGRES_PASSWORD: ${SAMPLE_TENANT_DB_PASSWORD:-sampletenant}
+    ports:
+      - "5433:5432"
+    volumes:
+      - sample-tenant-postgres-data:/var/lib/postgresql
+
 volumes:
   postgres-data:
+  sample-tenant-postgres-data:

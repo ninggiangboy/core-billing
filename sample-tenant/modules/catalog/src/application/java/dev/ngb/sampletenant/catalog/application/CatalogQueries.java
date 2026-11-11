@@ -25,6 +25,10 @@ public class CatalogQueries implements CatalogLookup {
         return plans.findAll().stream().filter(CatalogPlan::active).toList();
     }
 
+    public List<CatalogPlan> all() {
+        return plans.findAll();
+    }
+
     public CatalogPlan plan(UUID id) {
         return plans.findById(id).orElseThrow(() -> new NotFoundException("catalog plan not found"));
     }

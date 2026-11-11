@@ -36,7 +36,7 @@ class LockHierarchyTest {
         assertThat(sources).as("the scan must reach every module's sources").isNotEmpty();
 
         for (Path path : sources) {
-            modules.add(RepositoryPaths.billingRoot().relativize(path).getName(0).toString());
+            modules.add(moduleName(path));
             try {
                 if (BLOCKING_ADVISORY_LOCK.matcher(Files.readString(path)).find()) {
                     offenders.add(path.toString());
@@ -55,29 +55,52 @@ class LockHierarchyTest {
         assertThat(RepositoryPaths.repositoryRoot().resolve("docs/concurrency-and-locking.md")).exists();
     }
 
+    /** The module a file belongs to: the directory above {@code src}, wherever its group puts it. */
+    private static String moduleName(Path file) {
+        for (Path part = file; part != null; part = part.getParent()) {
+            if (part.getFileName().toString().equals("src")) {
+                return part.getParent().getFileName().toString();
+            }
+        }
+        throw new IllegalStateException("no src directory above " + file);
+    }
+
     /**
      * Every hand-written source file of every module, across all four layer source sets plus the conventional
      * {@code src/main}. Generated output under {@code build/} is never read.
      */
     private static List<Path> sources() {
         List<Path> files = new ArrayList<>();
-        try (Stream<Path> modules = Files.list(RepositoryPaths.billingRoot())) {
-            for (Path module : modules.filter(Files::isDirectory).toList()) {
-                Path src = module.resolve("src");
-                if (!Files.isDirectory(src) || module.getFileName().toString().startsWith(".")) {
-                    continue;
-                }
-                try (Stream<Path> walk = Files.walk(src)) {
-                    files.addAll(walk.filter(Files::isRegularFile)
-                            .filter(path -> path.toString().endsWith(".java") || path.toString().endsWith(".sql"))
-                            .filter(path -> !path.toString().contains("/build/"))
-                            .filter(path -> !path.toString().contains("/src/test/"))
-                            .toList());
+        for (Path module : modules(RepositoryPaths.billingRoot())) {
+            Path src = module.resolve("src");
+            if (!Files.isDirectory(src)) {
+                continue;
+            }
+            try (Stream<Path> walk = Files.walk(src)) {
+                files.addAll(walk.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java") || path.toString().endsWith(".sql"))
+                        .filter(path -> !path.toString().contains("/build/"))
+                        .filter(path -> !path.toString().contains("/src/test/"))
+                        .toList());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return files;
+    }
+
+    /** Every directory holding a {@code src}, so a module grouped one or more levels down is still found. */
+    private static List<Path> modules(Path root) {
+        List<Path> modules = new ArrayList<>();
+        try (Stream<Path> walk = Files.walk(root, 2)) {
+            for (Path dir : walk.filter(Files::isDirectory).toList()) {
+                if (!dir.equals(root) && Files.isDirectory(dir.resolve("src"))) {
+                    modules.add(dir);
                 }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return files;
+        return modules;
     }
 }

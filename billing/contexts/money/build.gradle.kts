@@ -4,11 +4,11 @@ plugins {
 
 dependencies {
     // The platform contract (scope, actor, permissions, idempotency, audit, shared errors) and the customer lookup.
-    "domainImplementation"(project(":platform"))
-    "applicationImplementation"(project(":platform"))
-    "applicationImplementation"(project(":customer"))
-    "adapterImplementation"(project(":platform"))
-    "adapterImplementation"(project(":customer"))
+    "domainImplementation"(project(":contexts:platform"))
+    "applicationImplementation"(project(":contexts:platform"))
+    "applicationImplementation"(project(":contexts:customer"))
+    "adapterImplementation"(project(":contexts:platform"))
+    "adapterImplementation"(project(":contexts:customer"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jooq")
     "adapterImplementation"(project(":jooq-schema"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")

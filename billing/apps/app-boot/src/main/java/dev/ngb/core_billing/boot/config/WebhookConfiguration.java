@@ -31,7 +31,7 @@ import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
 import dev.ngb.core_billing.webhook.application.endpoint.port.EventTypeCatalog;
 import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
 import dev.ngb.core_billing.webhook.application.delivery.command.RecordDeliveriesUseCase;
-import dev.ngb.core_billing.webhook.application.endpoint.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.webhook.application.endpoint.port.SigningKeys;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;

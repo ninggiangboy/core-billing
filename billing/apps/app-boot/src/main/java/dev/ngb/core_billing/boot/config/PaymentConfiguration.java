@@ -42,7 +42,7 @@ import dev.ngb.core_billing.payment.application.stripe.command.ReconcileStripeUs
 import dev.ngb.core_billing.payment.application.refund.port.RefundRepository;
 import dev.ngb.core_billing.payment.application.refund.command.RequestRefundUseCase;
 import dev.ngb.core_billing.payment.application.stripe.command.RetryStripeEventsUseCase;
-import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.application.stripe.service.StripeConfigurationService;
 import dev.ngb.core_billing.payment.application.stripe.command.ManageStripeEventUseCase;

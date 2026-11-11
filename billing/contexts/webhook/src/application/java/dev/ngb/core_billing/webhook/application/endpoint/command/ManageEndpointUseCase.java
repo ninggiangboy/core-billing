@@ -17,7 +17,7 @@ import java.util.UUID;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.application.endpoint.port.EventTypeCatalog;
-import dev.ngb.core_billing.webhook.application.endpoint.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.webhook.application.endpoint.port.SigningKeys;
 import dev.ngb.core_billing.webhook.application.endpoint.service.WebhookSettings;
 import dev.ngb.core_billing.webhook.application.endpoint.service.EndpointRules;

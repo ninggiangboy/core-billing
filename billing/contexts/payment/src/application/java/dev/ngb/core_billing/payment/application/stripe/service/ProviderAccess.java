@@ -5,7 +5,7 @@ import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
-import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 
 /** Works out which credentials a call for a configuration uses: the Tenant's own key, or the Platform's key acting on the connected account. */
 public class ProviderAccess {

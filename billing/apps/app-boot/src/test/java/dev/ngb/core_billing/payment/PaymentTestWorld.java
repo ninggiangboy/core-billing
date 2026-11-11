@@ -3,7 +3,7 @@ package dev.ngb.core_billing.payment;
 import dev.ngb.core_billing.money.MoneyTestWorld;
 import dev.ngb.core_billing.money.MoneyTestWorld.World;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
-import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;
 import dev.ngb.core_billing.payment.domain.payment.Payment;

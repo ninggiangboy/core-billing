@@ -17,7 +17,7 @@ import java.util.Optional;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;
 import dev.ngb.core_billing.payment.domain.stripe.ConnectionStatus;

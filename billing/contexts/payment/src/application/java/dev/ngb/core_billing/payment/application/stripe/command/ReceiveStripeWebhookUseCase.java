@@ -18,7 +18,7 @@ import java.util.Optional;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
-import dev.ngb.core_billing.payment.application.stripe.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;

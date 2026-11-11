@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.infrastructure.security;
 
-import dev.ngb.core_billing.webhook.application.endpoint.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -20,7 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
  * port for it, so neither depends on the other's type. The master key id is stored so a later key rotation
  * can tell which key wrapped what; this class holds a single master key and refuses any other id.
  */
-public class AesGcmSecretCipher implements SecretCipher, dev.ngb.core_billing.payment.application.stripe.port.SecretCipher {
+public class AesGcmSecretCipher implements SecretCipher {
 
     private static final String VERSION = "v1";
     private static final int NONCE_BYTES = 12;

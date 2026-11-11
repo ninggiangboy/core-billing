@@ -20,7 +20,7 @@ import java.util.function.DoubleSupplier;
 import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookSender;
-import dev.ngb.core_billing.webhook.application.endpoint.port.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.SecretCipher;
 import dev.ngb.core_billing.webhook.application.endpoint.service.WebhookSettings;
 import dev.ngb.core_billing.webhook.application.delivery.port.ClaimedDelivery;
 

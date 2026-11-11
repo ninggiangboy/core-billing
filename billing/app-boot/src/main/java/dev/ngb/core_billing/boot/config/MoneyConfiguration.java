@@ -1,15 +1,15 @@
 package dev.ngb.core_billing.boot.config;
 
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
-import dev.ngb.core_billing.money.adapter.persistence.JdbcChargeRepository;
-import dev.ngb.core_billing.money.adapter.persistence.JdbcLedgerRepository;
-import dev.ngb.core_billing.money.adapter.persistence.JdbcLedgerVerifier;
-import dev.ngb.core_billing.money.adapter.persistence.JdbcReservationRepository;
-import dev.ngb.core_billing.money.adapter.persistence.JdbcWalletRepository;
-import dev.ngb.core_billing.money.adapter.persistence.charge.JdbcChargeReadRepository;
-import dev.ngb.core_billing.money.adapter.persistence.ledger.JdbcLedgerReadRepository;
-import dev.ngb.core_billing.money.adapter.persistence.reservation.JdbcReservationReadRepository;
-import dev.ngb.core_billing.money.adapter.persistence.wallet.JdbcWalletReadRepository;
+import dev.ngb.core_billing.money.adapter.persistence.JooqChargeRepository;
+import dev.ngb.core_billing.money.adapter.persistence.JooqLedgerRepository;
+import dev.ngb.core_billing.money.adapter.persistence.JooqLedgerVerifier;
+import dev.ngb.core_billing.money.adapter.persistence.JooqReservationRepository;
+import dev.ngb.core_billing.money.adapter.persistence.JooqWalletRepository;
+import dev.ngb.core_billing.money.adapter.persistence.charge.JooqChargeReadRepository;
+import dev.ngb.core_billing.money.adapter.persistence.ledger.JooqLedgerReadRepository;
+import dev.ngb.core_billing.money.adapter.persistence.reservation.JooqReservationReadRepository;
+import dev.ngb.core_billing.money.adapter.persistence.wallet.JooqWalletReadRepository;
 import dev.ngb.core_billing.money.api.charge.ChargeLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.application.charge.port.ChargeRepository;
@@ -40,9 +40,8 @@ import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import org.springframework.context.annotation.Bean;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
  * Wires the money module. Holds no business rules. The use cases implement the money api
@@ -52,48 +51,48 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 class MoneyConfiguration {
 
     @Bean
-    WalletRepository walletRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcWalletRepository(aggregates, jdbc);
+    WalletRepository walletRepository(DSLContext dsl) {
+        return new JooqWalletRepository(dsl);
     }
 
     @Bean
-    LedgerRepository ledgerRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcLedgerRepository(aggregates, jdbc);
+    LedgerRepository ledgerRepository(DSLContext dsl) {
+        return new JooqLedgerRepository(dsl);
     }
 
     @Bean
-    ReservationRepository reservationRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcReservationRepository(aggregates, jdbc);
+    ReservationRepository reservationRepository(DSLContext dsl) {
+        return new JooqReservationRepository(dsl);
     }
 
     @Bean
-    ChargeRepository chargeRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcChargeRepository(aggregates, jdbc);
+    ChargeRepository chargeRepository(DSLContext dsl) {
+        return new JooqChargeRepository(dsl);
     }
 
     @Bean
-    WalletReadRepository walletReadRepository(JdbcClient jdbc) {
-        return new JdbcWalletReadRepository(jdbc);
+    WalletReadRepository walletReadRepository(DSLContext dsl) {
+        return new JooqWalletReadRepository(dsl);
     }
 
     @Bean
-    LedgerReadRepository ledgerReadRepository(JdbcClient jdbc) {
-        return new JdbcLedgerReadRepository(jdbc);
+    LedgerReadRepository ledgerReadRepository(DSLContext dsl) {
+        return new JooqLedgerReadRepository(dsl);
     }
 
     @Bean
-    ReservationReadRepository reservationReadRepository(JdbcClient jdbc) {
-        return new JdbcReservationReadRepository(jdbc);
+    ReservationReadRepository reservationReadRepository(DSLContext dsl) {
+        return new JooqReservationReadRepository(dsl);
     }
 
     @Bean
-    ChargeReadRepository chargeReadRepository(JdbcClient jdbc) {
-        return new JdbcChargeReadRepository(jdbc);
+    ChargeReadRepository chargeReadRepository(DSLContext dsl) {
+        return new JooqChargeReadRepository(dsl);
     }
 
     @Bean
-    LedgerVerifier ledgerVerifier(JdbcClient jdbc) {
-        return new JdbcLedgerVerifier(jdbc);
+    LedgerVerifier ledgerVerifier(DSLContext dsl) {
+        return new JooqLedgerVerifier(dsl);
     }
 
     @Bean

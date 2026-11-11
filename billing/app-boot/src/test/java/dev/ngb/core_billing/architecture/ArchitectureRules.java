@@ -66,7 +66,7 @@ final class ArchitectureRules {
         for (String table : List.of("Wallets", "LedgerEntries", "Reservations", "Charges")) {
             TABLE_OWNER.put(table, "money");
         }
-        for (String table : List.of("Outbox", "EventInbox", "IdempotencyKeys", "AuditLog")) {
+        for (String table : List.of("Outbox", "EventInbox", "IdempotencyKeys", "AuditLog", "JobLeases", "JobRuns", "RateLimitBuckets")) {
             TABLE_OWNER.put(table, "boot");
         }
     }

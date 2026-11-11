@@ -3,7 +3,6 @@ package dev.ngb.core_billing.platform;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.ngb.core_billing.platform.adapter.security.InMemoryRateLimiter;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
@@ -21,7 +20,6 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 
 class IdentityDomainTest {
@@ -126,33 +124,6 @@ class IdentityDomainTest {
             assertThatThrownBy(() -> BillingUser.create(new UserId(UUID.randomUUID()), TENANT, PermissionScope.TENANT, bad, "A", "s", NOW))
                     .as(bad).isInstanceOf(IllegalArgumentException.class);
         }
-    }
-
-    @Test
-    void rateLimiterAdmitsABurstThenRefills() {
-        AtomicLong nanos = new AtomicLong();
-        InMemoryRateLimiter limiter = new InMemoryRateLimiter(3, 1.0, 100, nanos::get);
-
-        assertThat(limiter.tryAcquire("k")).isTrue();
-        assertThat(limiter.tryAcquire("k")).isTrue();
-        assertThat(limiter.tryAcquire("k")).isTrue();
-        assertThat(limiter.tryAcquire("k")).isFalse();
-        assertThat(limiter.tryAcquire("other")).isTrue();
-
-        nanos.addAndGet(2_000_000_000L);
-        assertThat(limiter.tryAcquire("k")).isTrue();
-        assertThat(limiter.tryAcquire("k")).isTrue();
-        assertThat(limiter.tryAcquire("k")).isFalse();
-    }
-
-    @Test
-    void rateLimiterTracksABoundedNumberOfKeys() {
-        InMemoryRateLimiter limiter = new InMemoryRateLimiter(1, 0.0, 2, () -> 0L);
-        limiter.tryAcquire("a");
-        limiter.tryAcquire("b");
-        limiter.tryAcquire("c"); // evicts "a"
-        assertThat(limiter.tryAcquire("a")).as("a was forgotten and starts with a full bucket").isTrue();
-        assertThat(limiter.tryAcquire("c")).as("c was still tracked and is empty").isFalse();
     }
 
     private static ApiCredential issue(ApiKey.Generated key) {

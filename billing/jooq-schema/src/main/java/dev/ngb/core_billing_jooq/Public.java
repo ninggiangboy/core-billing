@@ -16,6 +16,8 @@ import dev.ngb.core_billing_jooq.tables.InvoiceCounters;
 import dev.ngb.core_billing_jooq.tables.InvoiceItems;
 import dev.ngb.core_billing_jooq.tables.InvoicePayments;
 import dev.ngb.core_billing_jooq.tables.Invoices;
+import dev.ngb.core_billing_jooq.tables.JobLeases;
+import dev.ngb.core_billing_jooq.tables.JobRuns;
 import dev.ngb.core_billing_jooq.tables.LedgerEntries;
 import dev.ngb.core_billing_jooq.tables.Outbox;
 import dev.ngb.core_billing_jooq.tables.PaymentAttempts;
@@ -24,6 +26,7 @@ import dev.ngb.core_billing_jooq.tables.Permissions;
 import dev.ngb.core_billing_jooq.tables.PricingMetrics;
 import dev.ngb.core_billing_jooq.tables.PricingPlanVersions;
 import dev.ngb.core_billing_jooq.tables.PricingPlans;
+import dev.ngb.core_billing_jooq.tables.RateLimitBuckets;
 import dev.ngb.core_billing_jooq.tables.Refunds;
 import dev.ngb.core_billing_jooq.tables.Reservations;
 import dev.ngb.core_billing_jooq.tables.RoleAssignments;
@@ -131,6 +134,16 @@ public class Public extends SchemaImpl {
     public final Invoices INVOICES = Invoices.INVOICES;
 
     /**
+     * The table <code>public.job_leases</code>.
+     */
+    public final JobLeases JOB_LEASES = JobLeases.JOB_LEASES;
+
+    /**
+     * The table <code>public.job_runs</code>.
+     */
+    public final JobRuns JOB_RUNS = JobRuns.JOB_RUNS;
+
+    /**
      * The table <code>public.ledger_entries</code>.
      */
     public final LedgerEntries LEDGER_ENTRIES = LedgerEntries.LEDGER_ENTRIES;
@@ -169,6 +182,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.pricing_plans</code>.
      */
     public final PricingPlans PRICING_PLANS = PricingPlans.PRICING_PLANS;
+
+    /**
+     * The table <code>public.rate_limit_buckets</code>.
+     */
+    public final RateLimitBuckets RATE_LIMIT_BUCKETS = RateLimitBuckets.RATE_LIMIT_BUCKETS;
 
     /**
      * The table <code>public.refunds</code>.
@@ -313,6 +331,8 @@ public class Public extends SchemaImpl {
             InvoiceItems.INVOICE_ITEMS,
             InvoicePayments.INVOICE_PAYMENTS,
             Invoices.INVOICES,
+            JobLeases.JOB_LEASES,
+            JobRuns.JOB_RUNS,
             LedgerEntries.LEDGER_ENTRIES,
             Outbox.OUTBOX,
             PaymentAttempts.PAYMENT_ATTEMPTS,
@@ -321,6 +341,7 @@ public class Public extends SchemaImpl {
             PricingMetrics.PRICING_METRICS,
             PricingPlanVersions.PRICING_PLAN_VERSIONS,
             PricingPlans.PRICING_PLANS,
+            RateLimitBuckets.RATE_LIMIT_BUCKETS,
             Refunds.REFUNDS,
             Reservations.RESERVATIONS,
             RoleAssignments.ROLE_ASSIGNMENTS,

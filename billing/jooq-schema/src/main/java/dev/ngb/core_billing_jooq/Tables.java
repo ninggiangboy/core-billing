@@ -16,6 +16,8 @@ import dev.ngb.core_billing_jooq.tables.InvoiceCounters;
 import dev.ngb.core_billing_jooq.tables.InvoiceItems;
 import dev.ngb.core_billing_jooq.tables.InvoicePayments;
 import dev.ngb.core_billing_jooq.tables.Invoices;
+import dev.ngb.core_billing_jooq.tables.JobLeases;
+import dev.ngb.core_billing_jooq.tables.JobRuns;
 import dev.ngb.core_billing_jooq.tables.LedgerEntries;
 import dev.ngb.core_billing_jooq.tables.Outbox;
 import dev.ngb.core_billing_jooq.tables.PaymentAttempts;
@@ -24,6 +26,7 @@ import dev.ngb.core_billing_jooq.tables.Permissions;
 import dev.ngb.core_billing_jooq.tables.PricingMetrics;
 import dev.ngb.core_billing_jooq.tables.PricingPlanVersions;
 import dev.ngb.core_billing_jooq.tables.PricingPlans;
+import dev.ngb.core_billing_jooq.tables.RateLimitBuckets;
 import dev.ngb.core_billing_jooq.tables.Refunds;
 import dev.ngb.core_billing_jooq.tables.Reservations;
 import dev.ngb.core_billing_jooq.tables.RoleAssignments;
@@ -116,6 +119,16 @@ public class Tables {
     public static final Invoices INVOICES = Invoices.INVOICES;
 
     /**
+     * The table <code>public.job_leases</code>.
+     */
+    public static final JobLeases JOB_LEASES = JobLeases.JOB_LEASES;
+
+    /**
+     * The table <code>public.job_runs</code>.
+     */
+    public static final JobRuns JOB_RUNS = JobRuns.JOB_RUNS;
+
+    /**
      * The table <code>public.ledger_entries</code>.
      */
     public static final LedgerEntries LEDGER_ENTRIES = LedgerEntries.LEDGER_ENTRIES;
@@ -154,6 +167,11 @@ public class Tables {
      * The table <code>public.pricing_plans</code>.
      */
     public static final PricingPlans PRICING_PLANS = PricingPlans.PRICING_PLANS;
+
+    /**
+     * The table <code>public.rate_limit_buckets</code>.
+     */
+    public static final RateLimitBuckets RATE_LIMIT_BUCKETS = RateLimitBuckets.RATE_LIMIT_BUCKETS;
 
     /**
      * The table <code>public.refunds</code>.

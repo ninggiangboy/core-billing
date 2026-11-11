@@ -7,7 +7,6 @@ import dev.ngb.core_billing.platform.adapter.persistence.role.JooqRoleRepository
 import dev.ngb.core_billing.platform.adapter.persistence.tenant.JooqTenantDomainRepository;
 import dev.ngb.core_billing.platform.adapter.persistence.tenantsystem.JooqTenantSystemRepository;
 import dev.ngb.core_billing.platform.adapter.persistence.user.JooqUserRepository;
-import dev.ngb.core_billing.platform.adapter.security.InMemoryRateLimiter;
 import dev.ngb.core_billing.platform.adapter.persistence.tenant.JooqTenantRepository;
 import dev.ngb.core_billing.platform.adapter.persistence.credential.JooqCredentialReadRepository;
 import dev.ngb.core_billing.platform.adapter.persistence.role.JooqRoleReadRepository;
@@ -149,13 +148,6 @@ class PlatformConfiguration {
             @Value("${billing.keycloak.admin-client-id}") String clientId,
             @Value("${billing.keycloak.admin-client-secret}") String clientSecret) {
         return new KeycloakIdentityProvider(RestClient.builder(), baseUrl, realm, clientId, clientSecret);
-    }
-
-    @Bean
-    RateLimiter apiKeyRateLimiter(
-            @Value("${billing.security.api-key-rate-limit.burst:100}") int burst,
-            @Value("${billing.security.api-key-rate-limit.per-second:20}") double perSecond) {
-        return new InMemoryRateLimiter(burst, perSecond, 10_000, System::nanoTime);
     }
 
     @Bean

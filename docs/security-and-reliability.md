@@ -35,6 +35,7 @@ Requirements beyond business functions.
 - Dead Letter Queue. A row that runs out of attempts becomes `DEAD` and is kept; a dead webhook delivery can be resent.
 - Idempotent Consumer. In-process consumers record each handled event id in an inbox table in the same transaction as their effect.
 - Background jobs run once per Tenant, each inside that Tenant's scope, because Row-Level Security lets a job see one Tenant at a time. A failure in one Tenant does not stop the others.
+- Singleton heavy jobs (ledger verification and Stripe reconciliation) own a time-bounded lease; a per-day run record makes a repeated verification a no-op. Lock order, lease rules and the retryable lock errors are in [concurrency-and-locking.md](concurrency-and-locking.md).
 - Audit Log of administrative actions and transactions.
 - Monitoring and Distributed Tracing.
 

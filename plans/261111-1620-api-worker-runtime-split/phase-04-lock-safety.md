@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Lock safety net and documentation"
-status: pending
+status: done
 ---
 
 # Lock safety net and documentation

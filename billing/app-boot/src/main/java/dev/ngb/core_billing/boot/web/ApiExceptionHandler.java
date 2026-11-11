@@ -12,8 +12,11 @@ import dev.ngb.core_billing.platform.application.auth.RateLimitExceededException
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -73,6 +76,21 @@ class ApiExceptionHandler {
     @ExceptionHandler(RateLimitExceededException.class)
     ProblemDetail rateLimited(RateLimitExceededException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, "Too many requests.");
+    }
+
+    /**
+     * A deadlock ({@code 40P01}) or a lock timeout ({@code 55P03}) is a temporary condition: the transaction was
+     * chosen as the victim or gave up waiting. Every money operation carries an idempotency key, so repeating the
+     * request is safe, and the caller is told to try again rather than shown an opaque 500.
+     */
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    ResponseEntity<ProblemDetail> retryableLock(PessimisticLockingFailureException e) {
+        LOG.warn("a transaction could not take its lock: {}", e.getMostSpecificCause().getMessage());
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE, "The request could not be completed just now. Repeat it with the same Idempotency-Key.");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "1")
+                .body(detail);
     }
 
     /** Money arithmetic never wraps; an amount that does not fit in 64-bit minor units is a bad request. */

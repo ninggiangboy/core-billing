@@ -25,6 +25,7 @@ Documentation for two independently deployable systems: the **Core Billing Syste
 | [webhooks-and-events.md](webhooks-and-events.md) | Tenant System to Billing and Billing to Tenant System integration |
 | [sample-tenant-system.md](sample-tenant-system.md) | The reference tenant and its integration scenarios |
 | [security-and-reliability.md](security-and-reliability.md) | Security and operational requirements |
+| [concurrency-and-locking.md](concurrency-and-locking.md) | Lock order, coordination transactions, and the lock safety net |
 
 ## Stateful records
 

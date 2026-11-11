@@ -63,7 +63,7 @@ public class CatalogController {
 
     @GetMapping("/plans/{id}")
     public PlanResponse plan(@PathVariable UUID id) {
-        return PlanResponse.of(queries.get(id));
+        return PlanResponse.of(queries.plan(id));
     }
 
     @GetMapping("/resource-types")

@@ -1,5 +1,6 @@
 package dev.ngb.sampletenant.catalog.application;
 
+import dev.ngb.sampletenant.catalog.api.CatalogLookup;
 import dev.ngb.sampletenant.catalog.application.port.CatalogPlanRepository;
 import dev.ngb.sampletenant.catalog.domain.CatalogPlan;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 /** Read side of the offer catalog. */
-public class CatalogQueries {
+public class CatalogQueries implements CatalogLookup {
 
     private final CatalogPlanRepository plans;
 
@@ -15,15 +16,33 @@ public class CatalogQueries {
         this.plans = plans;
     }
 
+    @Override
+    public PlanSnapshot get(UUID id) {
+        return snapshot(plan(id));
+    }
+
     public List<CatalogPlan> listActive() {
         return plans.findAll().stream().filter(CatalogPlan::active).toList();
     }
 
-    public CatalogPlan get(UUID id) {
+    public CatalogPlan plan(UUID id) {
         return plans.findById(id).orElseThrow(() -> new NotFoundException("catalog plan not found"));
     }
 
     public CatalogPlan getByCode(String code) {
         return plans.findByCode(code).orElseThrow(() -> new NotFoundException("catalog plan not found"));
+    }
+
+    private static PlanSnapshot snapshot(CatalogPlan plan) {
+        return new PlanSnapshot(
+                plan.id(),
+                plan.code(),
+                plan.name(),
+                plan.billingPlanId(),
+                plan.resourceType().name(),
+                plan.resourceType().pricingModel().name(),
+                plan.resourceType().metric(),
+                plan.resourceType().unit(),
+                plan.billable());
     }
 }

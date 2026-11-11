@@ -34,5 +34,7 @@ sampletenant:
   execution:
     poll-delay: PT2S
     batch-size: 10
+  resource:
+    reservation-ttl: PT15M
   identity:
     session-ttl: PT12H

@@ -3,6 +3,8 @@ package dev.ngb.sampletenant.boot.config;
 import dev.ngb.sampletenant.billing.adapter.HttpBillingClient;
 import dev.ngb.sampletenant.billing.adapter.HttpBillingSettings;
 import dev.ngb.sampletenant.billing.api.BillingCustomers;
+import dev.ngb.sampletenant.billing.api.BillingPricing;
+import dev.ngb.sampletenant.billing.api.BillingWallets;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +32,16 @@ class BillingConfiguration {
 
     @Bean
     BillingCustomers billingCustomers(HttpBillingClient client) {
+        return client;
+    }
+
+    @Bean
+    BillingPricing billingPricing(HttpBillingClient client) {
+        return client;
+    }
+
+    @Bean
+    BillingWallets billingWallets(HttpBillingClient client) {
         return client;
     }
 }

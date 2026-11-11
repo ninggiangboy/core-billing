@@ -51,7 +51,7 @@ public class CustomerController {
 
     @GetMapping("/me")
     public CustomerResponse me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return CustomerResponse.of(queries.byUserId(principal.id()));
+        return CustomerResponse.of(queries.byUser(principal.id()));
     }
 
     @GetMapping

@@ -17,6 +17,7 @@ import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -75,18 +75,19 @@ public class CustomerController {
         this.currentActor = currentActor;
     }
 
-    /** Safe to retry: the same Idempotency-Key returns the same customer; the same key with a different body is a 409. */
+    /** Safe to retry: the same Idempotency-Key returns the same customer (201 for new, 200 for replay); the same key with a different body is a 409. */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     @RequiresPermission(Permission.CUSTOMER_WRITE)
-    public CustomerResponse create(
+    public ResponseEntity<CustomerResponse> create(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @RequestHeader(value = "X-Request-Id", required = false) String requestId,
             @RequestBody CreateCustomerRequest request) {
         Actor actor = currentActor.get();
         TenantSystemId system = tenantSystemFor(actor, request.tenantSystemId());
-        return CustomerResponse.of(create.execute(new CreateCustomerUseCase.Command(
-                system, request.externalUserId(), request.displayName(), request.email(), idempotencyKey, Audit.of(actor, requestId))).customer());
+        CreateCustomerUseCase.Result result = create.execute(new CreateCustomerUseCase.Command(
+                system, request.externalUserId(), request.displayName(), request.email(), idempotencyKey, Audit.of(actor, requestId)));
+        HttpStatus status = result.replayed() ? HttpStatus.OK : HttpStatus.CREATED;
+        return ResponseEntity.status(status).body(CustomerResponse.of(result.customer()));
     }
 
     @GetMapping

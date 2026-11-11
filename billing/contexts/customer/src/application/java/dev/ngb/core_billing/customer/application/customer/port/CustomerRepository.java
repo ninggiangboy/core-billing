@@ -9,12 +9,19 @@ import java.util.Optional;
 /** Reads see only the current tenant's customers, because the database enforces it. */
 public interface CustomerRepository {
 
-    /** @throws dev.ngb.core_billing.platform.api.error.ConflictException when an external user is already mapped to a customer */
-    void add(Customer customer);
+    /**
+     * Inserts the customer unless this tenant already has one with its idempotency key.
+     *
+     * @return true when the row was inserted, false when the key already existed
+     * @throws dev.ngb.core_billing.platform.api.error.ConflictException when an external user is already mapped to a customer
+     */
+    boolean addIfAbsent(Customer customer);
 
     void update(Customer customer);
 
     Optional<Customer> findById(CustomerId id);
+
+    Optional<Customer> findByIdempotencyKey(String idempotencyKey);
 
     Optional<Customer> findByExternalIdentity(ExternalIdentity identity);
 

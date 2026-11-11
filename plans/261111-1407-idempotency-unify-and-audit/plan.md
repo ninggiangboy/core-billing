@@ -74,7 +74,7 @@ created: 2026-11-11
 | # | Phase | Effort | Status |
 |---|-------|--------|--------|
 | 1 | [Shared replay and constraint helpers](./phase-01-shared-helpers.md) | 1h | completed |
-| 2 | [Customer key on the row, store removed](./phase-02-customer-row-key.md) | 4h | pending |
+| 2 | [Customer key on the row, store removed](./phase-02-customer-row-key.md) | 4h | completed |
 | 3 | [Payment: top-up, invoice payment, refund](./phase-03-payment-flows.md) | 3h | pending |
 | 4 | [Subscription create](./phase-04-subscription-create.md) | 1.5h | pending |
 | 5 | [Money: conflict mapping and replay status](./phase-05-money-and-http-status.md) | 3h | pending |

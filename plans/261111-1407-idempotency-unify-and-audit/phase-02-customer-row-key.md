@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Customer key on the row, store removed"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: [1]
@@ -46,35 +46,35 @@ and the generic `IdempotencyStore` with its `idempotency_keys` table no longer e
 
 ## Tasks & Steps
 
-- [ ] 1. Back up any database that holds data before running V18 and V19 on it.
-- [ ] 2. `V18`: add nullable `idempotency_key text` and `request_hash text` to `customers`. Inside the migration,
+- [x] 1. Back up any database that holds data before running V18 and V19 on it.
+- [x] 2. `V18`: add nullable `idempotency_key text` and `request_hash text` to `customers`. Inside the migration,
       lift the forced RLS on `customers` and `idempotency_keys` (`alter table … no force row level security`).
       Backfill from `idempotency_keys` where `scope = 'customer.create'`, joining `response_body::uuid = customers.id`
       and matching `tenant_id`. Give any customer without an entry the key `legacy:<id>` and the hash `legacy`,
       so the next step cannot fail. Restore `force row level security`. Set both columns `not null` and add
       `unique (tenant_id, idempotency_key)`.
-- [ ] 3. `V19`: `drop table idempotency_keys`.
-- [ ] 4. Regenerate jOOQ: `./gradlew :apps:app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true`.
+- [x] 3. `V19`: `drop table idempotency_keys`.
+- [x] 4. Regenerate jOOQ: `./gradlew :apps:app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true`.
       Remove `IdempotencyKeys` from the shared-table list in `JooqSchemaTest`.
-- [ ] 5. `Customer`: carry `idempotencyKey` and `requestHash` the way `Charge` does. Keep the hash function
+- [x] 5. `Customer`: carry `idempotencyKey` and `requestHash` the way `Charge` does. Keep the hash function
       byte-for-byte identical (move `fingerprint` unchanged), so backfilled hashes still match.
-- [ ] 6. `JooqCustomerRepository.addIfAbsent`: `on conflict (tenant_id, idempotency_key) do nothing`, returning
+- [x] 6. `JooqCustomerRepository.addIfAbsent`: `on conflict (tenant_id, idempotency_key) do nothing`, returning
       whether a row was inserted. Keep the existing `DuplicateKeyException` mapping for the external-user
       mapping constraint.
-- [ ] 7. `CreateCustomerUseCase`: insert-first. On `false`, read by key, call `Fingerprint.requireSameRequest`
+- [x] 7. `CreateCustomerUseCase`: insert-first. On `false`, read by key, call `Fingerprint.requireSameRequest`
       and return `replayed = true`. Publish `CustomerCreated`, write the audit entry and insert the external
       mapping only when the row was inserted. Remove the store dependency.
-- [ ] 8. `CustomerController.create`: return `ResponseEntity` with 201 for new and 200 for replay; update the javadoc.
-- [ ] 9. Delete the store types, the bean and its wiring. Update the ArchUnit table-ownership rule so
+- [x] 8. `CustomerController.create`: return `ResponseEntity` with 201 for new and 200 for replay; update the javadoc.
+- [x] 9. Delete the store types, the bean and its wiring. Update the ArchUnit table-ownership rule so
       `idempotency_keys` is no longer listed.
-- [ ] 10. Tests:
+- [x] 10. Tests:
        - Migration upgrade: migrate a fresh database to V17, seed a tenant, a customer and its `idempotency_keys`
          row with `app.tenant_id` set, migrate to latest, then assert the customer has that key and hash and that
          replaying the original request returns the same customer with 200.
        - 8 parallel same-key creates give one customer, one 201 and seven 200s.
        - Same key with a different body gives 409.
        - Replace the `idempotency_keys` row-count assertion in `CustomerIntegrationTest` with a check on `customers`.
-- [ ] 11. Regenerate the API contract: `./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true`.
+- [x] 11. Regenerate the API contract: `./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true`.
 
 ## Verification
 

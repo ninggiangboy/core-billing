@@ -111,6 +111,36 @@ public class CustomersRecord extends UpdatableRecordImpl<CustomersRecord> {
         return (Instant) get(5);
     }
 
+    /**
+     * Setter for <code>public.customers.idempotency_key</code>.
+     */
+    public CustomersRecord setIdempotencyKey(String value) {
+        set(6, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>public.customers.idempotency_key</code>.
+     */
+    public String getIdempotencyKey() {
+        return (String) get(6);
+    }
+
+    /**
+     * Setter for <code>public.customers.request_hash</code>.
+     */
+    public CustomersRecord setRequestHash(String value) {
+        set(7, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>public.customers.request_hash</code>.
+     */
+    public String getRequestHash() {
+        return (String) get(7);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -134,7 +164,7 @@ public class CustomersRecord extends UpdatableRecordImpl<CustomersRecord> {
     /**
      * Create a detached, initialised CustomersRecord
      */
-    public CustomersRecord(UUID id, UUID tenantId, String displayName, String email, String status, Instant createdAt) {
+    public CustomersRecord(UUID id, UUID tenantId, String displayName, String email, String status, Instant createdAt, String idempotencyKey, String requestHash) {
         super(Customers.CUSTOMERS);
 
         setId(id);
@@ -143,6 +173,8 @@ public class CustomersRecord extends UpdatableRecordImpl<CustomersRecord> {
         setEmail(email);
         setStatus(status);
         setCreatedAt(createdAt);
+        setIdempotencyKey(idempotencyKey);
+        setRequestHash(requestHash);
         resetTouchedOnNotNull();
     }
 }

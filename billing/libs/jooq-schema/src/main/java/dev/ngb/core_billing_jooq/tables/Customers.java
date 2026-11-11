@@ -96,6 +96,16 @@ public class Customers extends TableImpl<CustomersRecord> {
      */
     public final TableField<CustomersRecord, Instant> CREATED_AT = createField(DSL.name("created_at"), SQLDataType.INSTANT.nullable(false), this, "");
 
+    /**
+     * The column <code>public.customers.idempotency_key</code>.
+     */
+    public final TableField<CustomersRecord, String> IDEMPOTENCY_KEY = createField(DSL.name("idempotency_key"), SQLDataType.CLOB.nullable(false), this, "");
+
+    /**
+     * The column <code>public.customers.request_hash</code>.
+     */
+    public final TableField<CustomersRecord, String> REQUEST_HASH = createField(DSL.name("request_hash"), SQLDataType.CLOB.nullable(false), this, "");
+
     private Customers(Name alias, Table<CustomersRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -170,7 +180,7 @@ public class Customers extends TableImpl<CustomersRecord> {
 
     @Override
     public List<UniqueKey<CustomersRecord>> getUniqueKeys() {
-        return Arrays.asList(Keys.CUSTOMERS_TENANT_ID_ID_KEY);
+        return Arrays.asList(Keys.CUSTOMERS_TENANT_ID_ID_KEY, Keys.CUSTOMERS_TENANT_ID_IDEMPOTENCY_KEY_KEY);
     }
 
     @Override

@@ -27,17 +27,25 @@ public class JooqCustomerRepository implements CustomerRepository {
     }
 
     @Override
-    public void add(Customer customer) {
+    public boolean addIfAbsent(Customer customer) {
         try {
-            dsl.insertInto(CUSTOMERS)
+            int inserted = dsl.insertInto(CUSTOMERS)
                     .set(CUSTOMERS.ID, customer.id().value())
                     .set(CUSTOMERS.TENANT_ID, customer.tenantId().value())
                     .set(CUSTOMERS.DISPLAY_NAME, customer.displayName())
                     .set(CUSTOMERS.EMAIL, customer.email())
                     .set(CUSTOMERS.STATUS, customer.status().name())
+                    .set(CUSTOMERS.IDEMPOTENCY_KEY, customer.idempotencyKey())
+                    .set(CUSTOMERS.REQUEST_HASH, customer.requestHash())
                     .set(CUSTOMERS.CREATED_AT, customer.createdAt())
+                    .onConflict(CUSTOMERS.TENANT_ID, CUSTOMERS.IDEMPOTENCY_KEY)
+                    .doNothing()
                     .execute();
+            if (inserted == 0) {
+                return false;
+            }
             insertMappings(customer);
+            return true;
         } catch (RuntimeException e) {
             if (Causes.contains(e, DuplicateKeyException.class)) {
                 throw new ConflictException("this external user is already mapped to a customer");
@@ -62,14 +70,27 @@ public class JooqCustomerRepository implements CustomerRepository {
     public Optional<Customer> findById(CustomerId id) {
         return dsl.selectFrom(CUSTOMERS)
                 .where(CUSTOMERS.ID.eq(id.value()))
-                .fetchOptional(row -> Customer.restore(
-                        new CustomerId(row.getId()),
-                        new TenantId(row.getTenantId()),
-                        row.getDisplayName(),
-                        row.getEmail(),
-                        CustomerStatus.valueOf(row.getStatus()),
-                        row.getCreatedAt(),
-                        identities(id)));
+                .fetchOptional(row -> restore(row, identities(id)));
+    }
+
+    @Override
+    public Optional<Customer> findByIdempotencyKey(String idempotencyKey) {
+        return dsl.selectFrom(CUSTOMERS)
+                .where(CUSTOMERS.IDEMPOTENCY_KEY.eq(idempotencyKey))
+                .fetchOptional(row -> restore(row, identities(new CustomerId(row.getId()))));
+    }
+
+    private static Customer restore(org.jooq.Record row, Set<ExternalIdentity> identities) {
+        return Customer.restore(
+                new CustomerId(row.get(CUSTOMERS.ID)),
+                new TenantId(row.get(CUSTOMERS.TENANT_ID)),
+                row.get(CUSTOMERS.DISPLAY_NAME),
+                row.get(CUSTOMERS.EMAIL),
+                CustomerStatus.valueOf(row.get(CUSTOMERS.STATUS)),
+                row.get(CUSTOMERS.CREATED_AT),
+                row.get(CUSTOMERS.IDEMPOTENCY_KEY),
+                row.get(CUSTOMERS.REQUEST_HASH),
+                identities);
     }
 
     @Override

@@ -10,7 +10,6 @@ import dev.ngb.core_billing.customer.application.customer.query.CustomerQueries;
 import dev.ngb.core_billing.customer.application.customer.query.CustomerReadRepository;
 import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
-import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
@@ -33,13 +32,12 @@ class CustomerConfiguration {
     CreateCustomerUseCase createCustomerUseCase(
             UnitOfWork unitOfWork,
             CustomerRepository customers,
-            IdempotencyStore idempotency,
             EventPublisher events,
             AuditLog auditLog,
             TenantContext tenantContext,
             IdGenerator ids,
             Clock clock) {
-        return new CreateCustomerUseCase(unitOfWork, customers, idempotency, events, auditLog, tenantContext, ids, clock);
+        return new CreateCustomerUseCase(unitOfWork, customers, events, auditLog, tenantContext, ids, clock);
     }
 
     @Bean

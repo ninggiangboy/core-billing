@@ -11,7 +11,6 @@ import dev.ngb.core_billing_jooq.tables.Charges;
 import dev.ngb.core_billing_jooq.tables.CustomerMappings;
 import dev.ngb.core_billing_jooq.tables.Customers;
 import dev.ngb.core_billing_jooq.tables.EventInbox;
-import dev.ngb.core_billing_jooq.tables.IdempotencyKeys;
 import dev.ngb.core_billing_jooq.tables.InvoiceCounters;
 import dev.ngb.core_billing_jooq.tables.InvoiceItems;
 import dev.ngb.core_billing_jooq.tables.InvoicePayments;
@@ -107,11 +106,6 @@ public class Public extends SchemaImpl {
      * The table <code>public.event_inbox</code>.
      */
     public final EventInbox EVENT_INBOX = EventInbox.EVENT_INBOX;
-
-    /**
-     * The table <code>public.idempotency_keys</code>.
-     */
-    public final IdempotencyKeys IDEMPOTENCY_KEYS = IdempotencyKeys.IDEMPOTENCY_KEYS;
 
     /**
      * The table <code>public.invoice_counters</code>.
@@ -326,7 +320,6 @@ public class Public extends SchemaImpl {
             CustomerMappings.CUSTOMER_MAPPINGS,
             Customers.CUSTOMERS,
             EventInbox.EVENT_INBOX,
-            IdempotencyKeys.IDEMPOTENCY_KEYS,
             InvoiceCounters.INVOICE_COUNTERS,
             InvoiceItems.INVOICE_ITEMS,
             InvoicePayments.INVOICE_PAYMENTS,

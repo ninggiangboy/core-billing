@@ -6,10 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
-import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
-import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
-import dev.ngb.core_billing.platform.api.idempotency.StoredResponse;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
@@ -20,12 +17,6 @@ import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.TestEvent;
 import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,7 +28,6 @@ class UnitOfWorkIntegrationTest {
 
     @Autowired UnitOfWork unitOfWork;
     @Autowired EventPublisher events;
-    @Autowired IdempotencyStore idempotency;
     @Autowired AuditLog auditLog;
     @Autowired TenantContext tenantContext;
     @Autowired OwnerDatabase owner;
@@ -49,18 +39,16 @@ class UnitOfWorkIntegrationTest {
 
     private void writeEverything(TenantId tenantId) {
         events.publish(TestEvent.forTenant(tenantId));
-        idempotency.begin(tenantId, "charge", "key-1", "hash-1");
         auditLog.record(AuditEntry.tenant(tenantId, "tester", "thing.done", "thing/1", "req-1", Instant.now()));
     }
 
     @Test
-    void outboxIdempotencyAndAuditCommitTogether() {
+    void outboxAndAuditCommitTogether() {
         Tenant tenant = scopes.newTenant();
 
         scopes.runInTenant(tenant.id(), () -> unitOfWork.transactional(() -> writeEverything(tenant.id())));
 
         assertThat(rows("outbox", tenant.id())).isEqualTo(1);
-        assertThat(rows("idempotency_keys", tenant.id())).isEqualTo(1);
         assertThat(rows("audit_log", tenant.id())).isEqualTo(1);
     }
 
@@ -75,7 +63,6 @@ class UnitOfWorkIntegrationTest {
                 .hasMessageContaining("injected failure");
 
         assertThat(rows("outbox", tenant.id())).isZero();
-        assertThat(rows("idempotency_keys", tenant.id())).isZero();
         assertThat(rows("audit_log", tenant.id())).isZero();
     }
 
@@ -108,85 +95,5 @@ class UnitOfWorkIntegrationTest {
                         () -> tenantContext.callAs(RequestScope.tenant(b.id()), () -> unitOfWork.transactional(() -> "nested")))))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("same scope");
-    }
-
-    @Test
-    void aRepeatedKeyReturnsTheStoredResponse() {
-        Tenant tenant = scopes.newTenant();
-        StoredResponse response = new StoredResponse(201, "{\"id\":\"abc\"}");
-
-        Optional<StoredResponse> first = scopes.inTenant(tenant.id(), () -> unitOfWork.transactional(() -> {
-            Optional<StoredResponse> seen = idempotency.begin(tenant.id(), "charge", "k", "h");
-            idempotency.complete(tenant.id(), "charge", "k", response);
-            return seen;
-        }));
-        Optional<StoredResponse> second = scopes.inTenant(tenant.id(),
-                () -> unitOfWork.transactional(() -> idempotency.begin(tenant.id(), "charge", "k", "h")));
-
-        assertThat(first).isEmpty();
-        assertThat(second).contains(response);
-        assertThat(rows("idempotency_keys", tenant.id())).isEqualTo(1);
-    }
-
-    @Test
-    void aChangedPayloadUnderTheSameKeyIsAConflict() {
-        Tenant tenant = scopes.newTenant();
-        scopes.runInTenant(tenant.id(), () -> unitOfWork.transactional(() -> {
-            idempotency.begin(tenant.id(), "charge", "k", "h1");
-            idempotency.complete(tenant.id(), "charge", "k", new StoredResponse(200, "{}"));
-        }));
-
-        assertThatThrownBy(() -> scopes.inTenant(tenant.id(),
-                        () -> unitOfWork.transactional(() -> idempotency.begin(tenant.id(), "charge", "k", "h2"))))
-                .isInstanceOf(IdempotencyConflictException.class);
-    }
-
-    @Test
-    void sameKeyInAnotherTenantIsIndependent() {
-        Tenant a = scopes.newTenant();
-        Tenant b = scopes.newTenant();
-        Optional<StoredResponse> inA = scopes.inTenant(a.id(), () -> unitOfWork.transactional(() -> idempotency.begin(a.id(), "s", "k", "h")));
-        Optional<StoredResponse> inB = scopes.inTenant(b.id(), () -> unitOfWork.transactional(() -> idempotency.begin(b.id(), "s", "k", "other")));
-        assertThat(inA).isEmpty();
-        assertThat(inB).isEmpty();
-    }
-
-    @Test
-    void concurrentDuplicatesWaitForTheFirstAndSeeItsResponse() throws Exception {
-        Tenant tenant = scopes.newTenant();
-        StoredResponse response = new StoredResponse(200, "{\"charged\":true}");
-        CountDownLatch firstHasKey = new CountDownLatch(1);
-        ExecutorService pool = Executors.newFixedThreadPool(2);
-        try {
-            CompletableFuture<Optional<StoredResponse>> first = CompletableFuture.supplyAsync(
-                    () -> scopes.inTenant(tenant.id(), () -> unitOfWork.transactional(() -> {
-                        Optional<StoredResponse> seen = idempotency.begin(tenant.id(), "charge", "dup", "h");
-                        firstHasKey.countDown();
-                        pause(400);
-                        idempotency.complete(tenant.id(), "charge", "dup", response);
-                        return seen;
-                    })),
-                    pool);
-            assertThat(firstHasKey.await(10, TimeUnit.SECONDS)).isTrue();
-            CompletableFuture<Optional<StoredResponse>> second = CompletableFuture.supplyAsync(
-                    () -> scopes.inTenant(tenant.id(),
-                            () -> unitOfWork.transactional(() -> idempotency.begin(tenant.id(), "charge", "dup", "h"))),
-                    pool);
-
-            assertThat(first.get(15, TimeUnit.SECONDS)).isEmpty();
-            assertThat(second.get(15, TimeUnit.SECONDS)).contains(response);
-            assertThat(rows("idempotency_keys", tenant.id())).isEqualTo(1);
-        } finally {
-            pool.shutdownNow();
-        }
-    }
-
-    private static void pause(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(e);
-        }
     }
 }

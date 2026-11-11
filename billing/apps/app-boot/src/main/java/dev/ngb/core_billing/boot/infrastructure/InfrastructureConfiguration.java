@@ -4,7 +4,6 @@ import dev.ngb.core_billing.boot.infrastructure.coordination.JobLeases;
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobRuns;
 import dev.ngb.core_billing.boot.infrastructure.security.PostgresRateLimiter;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
-import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.event.EventInbox;
@@ -23,7 +22,6 @@ import dev.ngb.core_billing.boot.infrastructure.kernel.UuidV7IdGenerator;
 import dev.ngb.core_billing.boot.infrastructure.messaging.JooqEventInbox;
 import dev.ngb.core_billing.boot.infrastructure.messaging.JooqOutboxAppender;
 import dev.ngb.core_billing.boot.infrastructure.persistence.JooqAuditLog;
-import dev.ngb.core_billing.boot.infrastructure.persistence.JooqIdempotencyStore;
 import dev.ngb.core_billing.boot.infrastructure.tenancy.ScopedTenantContext;
 import dev.ngb.core_billing.boot.infrastructure.tenancy.SpringUnitOfWork;
 
@@ -59,11 +57,6 @@ class InfrastructureConfiguration {
     @Bean
     EventInbox eventInbox(DSLContext dsl) {
         return new JooqEventInbox(dsl);
-    }
-
-    @Bean
-    IdempotencyStore idempotencyStore(DSLContext dsl) {
-        return new JooqIdempotencyStore(dsl);
     }
 
     @Bean

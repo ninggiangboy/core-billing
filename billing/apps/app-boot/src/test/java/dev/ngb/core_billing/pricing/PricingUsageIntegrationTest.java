@@ -308,7 +308,7 @@ class PricingUsageIntegrationTest {
         PricingPlan plan = worlds.plan(tenant, "storage", worlds.storage(metric));
         worlds.record(tenant, w.customerId(), metric, "gb", "500", DAY);
         String[] tables = {"outbox", "audit_log", "usage_events", "usage_charges", "usage_ratings", "charges", "ledger_entries", "reservations", "wallets",
-            "pricing_plans", "pricing_plan_versions", "pricing_metrics", "idempotency_keys", "webhook_deliveries"};
+            "pricing_plans", "pricing_plan_versions", "pricing_metrics", "webhook_deliveries"};
         Map<String, Long> before = new java.util.TreeMap<>();
         for (String table : tables) {
             before.put(table, count("select count(*) from " + table + " where tenant_id = ?", tenant.value()));

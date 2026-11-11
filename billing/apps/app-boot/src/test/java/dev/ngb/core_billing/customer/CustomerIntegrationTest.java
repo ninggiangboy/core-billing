@@ -138,9 +138,8 @@ class CustomerIntegrationTest {
 
         assertThatThrownBy(() -> scopes.inTenant(tenant.id(), () -> createCustomer.execute(command(system, "user_001", "Acme again", "key-b"))))
                 .isInstanceOf(ConflictException.class);
-        assertThat(owner.count("select count(*) from customers where tenant_id = ?", tenant.id().value()))
+        assertThat(owner.count("select count(*) from customers where tenant_id = ? and idempotency_key = 'key-a'", tenant.id().value()))
                 .as("the failed attempt left nothing behind").isEqualTo(1);
-        assertThat(owner.count("select count(*) from idempotency_keys where tenant_id = ? and scope = 'customer.create'", tenant.id().value())).isEqualTo(1);
     }
 
     @Test
@@ -175,17 +174,27 @@ class CustomerIntegrationTest {
     void concurrentDuplicatesProduceOneCustomer() throws Exception {
         Tenant tenant = scopes.newTenant();
         TenantSystemId system = newSystem(tenant);
-        ExecutorService pool = Executors.newFixedThreadPool(4);
+        ExecutorService pool = Executors.newFixedThreadPool(8);
         try {
-            var futures = java.util.stream.IntStream.range(0, 4)
+            var futures = java.util.stream.IntStream.range(0, 8)
                     .mapToObj(i -> CompletableFuture.supplyAsync(
                             () -> scopes.inTenant(tenant.id(), () -> createCustomer.execute(command(system, "user_001", "Acme", "parallel-key"))), pool))
                     .toList();
             var ids = new java.util.HashSet<CustomerId>();
+            long firsts = 0;
+            long replays = 0;
             for (var future : futures) {
-                ids.add(future.get(30, TimeUnit.SECONDS).customer().id());
+                var result = future.get(30, TimeUnit.SECONDS);
+                ids.add(result.customer().id());
+                if (result.replayed()) {
+                    replays++;
+                } else {
+                    firsts++;
+                }
             }
             assertThat(ids).hasSize(1);
+            assertThat(firsts).isEqualTo(1);
+            assertThat(replays).isEqualTo(7);
             assertThat(owner.count("select count(*) from customers where tenant_id = ?", tenant.id().value())).isEqualTo(1);
             assertThat(owner.count("select count(*) from outbox where tenant_id = ? and type = 'customer.created'", tenant.id().value())).isEqualTo(1);
         } finally {

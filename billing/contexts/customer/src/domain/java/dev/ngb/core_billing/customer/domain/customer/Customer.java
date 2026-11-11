@@ -16,6 +16,8 @@ public final class Customer {
     private final CustomerId id;
     private final TenantId tenantId;
     private final Instant createdAt;
+    private final String idempotencyKey;
+    private final String requestHash;
     private final Set<ExternalIdentity> identities;
     private String displayName;
     private String email;
@@ -28,6 +30,8 @@ public final class Customer {
             String email,
             CustomerStatus status,
             Instant createdAt,
+            String idempotencyKey,
+            String requestHash,
             Set<ExternalIdentity> identities) {
         this.id = Objects.requireNonNull(id, "id");
         this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
@@ -35,16 +39,20 @@ public final class Customer {
         this.email = normalizeEmail(email);
         this.status = Objects.requireNonNull(status, "status");
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
+        this.idempotencyKey = Objects.requireNonNull(idempotencyKey, "idempotencyKey");
+        this.requestHash = Objects.requireNonNull(requestHash, "requestHash");
         this.identities = new HashSet<>(identities);
     }
 
-    public static Customer create(CustomerId id, TenantId tenantId, String displayName, String email, Instant now) {
-        return new Customer(id, tenantId, displayName, email, CustomerStatus.ACTIVE, now, Set.of());
+    public static Customer create(
+            CustomerId id, TenantId tenantId, String displayName, String email, String idempotencyKey, String requestHash, Instant now) {
+        return new Customer(id, tenantId, displayName, email, CustomerStatus.ACTIVE, now, idempotencyKey, requestHash, Set.of());
     }
 
     public static Customer restore(
-            CustomerId id, TenantId tenantId, String displayName, String email, CustomerStatus status, Instant createdAt, Set<ExternalIdentity> identities) {
-        return new Customer(id, tenantId, displayName, email, status, createdAt, identities);
+            CustomerId id, TenantId tenantId, String displayName, String email, CustomerStatus status, Instant createdAt,
+            String idempotencyKey, String requestHash, Set<ExternalIdentity> identities) {
+        return new Customer(id, tenantId, displayName, email, status, createdAt, idempotencyKey, requestHash, identities);
     }
 
     /** Maps a Tenant System's user to this customer. The database enforces that one such user maps to one customer. */
@@ -90,6 +98,14 @@ public final class Customer {
 
     public Instant createdAt() {
         return createdAt;
+    }
+
+    public String idempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public String requestHash() {
+        return requestHash;
     }
 
     public Set<ExternalIdentity> identities() {

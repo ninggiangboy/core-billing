@@ -17,7 +17,7 @@ class CustomerDomainTest {
     private static final TenantId TENANT = new TenantId(UUID.randomUUID());
 
     private static Customer customer() {
-        return Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "  Acme Ltd  ", "  billing@acme.test ", NOW);
+        return Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "  Acme Ltd  ", "  billing@acme.test ", "key-1", "hash-1", NOW);
     }
 
     @Test
@@ -31,17 +31,17 @@ class CustomerDomainTest {
 
     @Test
     void emailIsOptionalButMustBeValidWhenGiven() {
-        assertThat(Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "No Mail", null, NOW).email()).isNull();
-        assertThat(Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "Blank Mail", "  ", NOW).email()).isNull();
-        assertThatThrownBy(() -> Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "Bad", "not-an-email", NOW))
+        assertThat(Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "No Mail", null, "k", "h", NOW).email()).isNull();
+        assertThat(Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "Blank Mail", "  ", "k", "h", NOW).email()).isNull();
+        assertThatThrownBy(() -> Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "Bad", "not-an-email", "k", "h", NOW))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void displayNameIsRequired() {
-        assertThatThrownBy(() -> Customer.create(new CustomerId(UUID.randomUUID()), TENANT, " ", null, NOW))
+        assertThatThrownBy(() -> Customer.create(new CustomerId(UUID.randomUUID()), TENANT, " ", null, "k", "h", NOW))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "x".repeat(201), null, NOW))
+        assertThatThrownBy(() -> Customer.create(new CustomerId(UUID.randomUUID()), TENANT, "x".repeat(201), null, "k", "h", NOW))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

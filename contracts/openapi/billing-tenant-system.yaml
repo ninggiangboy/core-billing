@@ -834,8 +834,8 @@ paths:
               $ref: "#/components/schemas/CreateCustomerRequest"
         required: true
       responses:
-        "201":
-          description: "Created"
+        "200":
+          description: "OK"
           content:
             '*/*':
               schema:

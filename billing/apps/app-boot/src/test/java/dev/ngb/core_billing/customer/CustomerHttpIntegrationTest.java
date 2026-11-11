@@ -97,7 +97,7 @@ class CustomerHttpIntegrationTest {
         MvcResult retry = post(acme, acmeKey, key, body);
 
         assertThat(first.getResponse().getStatus()).isEqualTo(201);
-        assertThat(retry.getResponse().getStatus()).isEqualTo(201);
+        assertThat(retry.getResponse().getStatus()).isEqualTo(200);
         assertThat(parse(retry).get("id").asString()).isEqualTo(parse(first).get("id").asString());
         assertThat(parse(first).get("identities").get(0).get("tenantSystemId").asString()).isEqualTo(acmeSystemId);
         assertThat(parse(first).get("identities").get(0).get("externalUserId").asString()).isEqualTo(externalUser);

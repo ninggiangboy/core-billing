@@ -9,9 +9,9 @@ import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import org.springframework.context.annotation.Bean;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.PlatformTransactionManager;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -40,22 +40,22 @@ class InfrastructureConfiguration {
     }
 
     @Bean
-    EventPublisher eventPublisher(JdbcClient jdbc, JsonMapper json) {
-        return new JdbcOutboxAppender(jdbc, json);
+    EventPublisher eventPublisher(DSLContext dsl, JsonMapper json) {
+        return new JooqOutboxAppender(dsl, json);
     }
 
     @Bean
-    EventInbox eventInbox(JdbcClient jdbc) {
-        return new JdbcEventInbox(jdbc);
+    EventInbox eventInbox(DSLContext dsl) {
+        return new JooqEventInbox(dsl);
     }
 
     @Bean
-    IdempotencyStore idempotencyStore(JdbcClient jdbc) {
-        return new JdbcIdempotencyStore(jdbc);
+    IdempotencyStore idempotencyStore(DSLContext dsl) {
+        return new JooqIdempotencyStore(dsl);
     }
 
     @Bean
-    AuditLog auditLog(JdbcClient jdbc, IdGenerator ids) {
-        return new JdbcAuditLog(jdbc, ids);
+    AuditLog auditLog(DSLContext dsl, IdGenerator ids) {
+        return new JooqAuditLog(dsl, ids);
     }
 }

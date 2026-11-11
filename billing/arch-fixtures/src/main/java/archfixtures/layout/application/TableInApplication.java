@@ -1,7 +1,8 @@
 package archfixtures.layout.application;
 
-import org.springframework.data.relational.core.mapping.Table;
+import dev.ngb.core_billing_jooq.tables.records.CustomersRecord;
 
-/** Violates table-rows-in-adapter-persistence: a @Table row outside adapter.persistence. */
-@Table("misplaced_rows")
-public class TableInApplication {}
+/** Violates generated-records-in-adapter-persistence: a generated record outside adapter.persistence. */
+public class TableInApplication {
+    CustomersRecord record;
+}

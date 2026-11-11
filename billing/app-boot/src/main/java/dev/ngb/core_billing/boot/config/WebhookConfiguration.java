@@ -46,7 +46,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.jooq.DSLContext;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.json.JsonMapper;
 
 /** Wires the outbox relay and the webhook module. Holds no business rules. */
@@ -55,12 +54,12 @@ class WebhookConfiguration {
 
     @Bean
     OutboxRelay outboxRelay(
-            UnitOfWork unitOfWork, JdbcClient jdbc, JsonMapper json, ApplicationEventPublisher publisher, Clock clock, MeterRegistry meters,
+            UnitOfWork unitOfWork, DSLContext dsl, JsonMapper json, ApplicationEventPublisher publisher, Clock clock, MeterRegistry meters,
             @Value("${billing.outbox.batch-size:100}") int batchSize,
             @Value("${billing.outbox.max-attempts:10}") int maxAttempts,
             @Value("${billing.outbox.backoff-base:PT10S}") Duration backoffBase,
             @Value("${billing.outbox.backoff-cap:PT1H}") Duration backoffCap) {
-        return new OutboxRelay(unitOfWork, jdbc, json, publisher, clock, meters, batchSize, maxAttempts, new Backoff(backoffBase, backoffCap, 0.2));
+        return new OutboxRelay(unitOfWork, dsl, json, publisher, clock, meters, batchSize, maxAttempts, new Backoff(backoffBase, backoffCap, 0.2));
     }
 
     @Bean

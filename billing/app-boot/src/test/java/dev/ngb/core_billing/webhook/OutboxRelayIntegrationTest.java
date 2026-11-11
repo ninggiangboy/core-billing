@@ -25,7 +25,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.simple.JdbcClient;
+import static dev.ngb.core_billing_jooq.Tables.EVENT_INBOX;
+
+import org.jooq.DSLContext;
 
 /** The relay's own guarantees, independent of any consumer: claim, retry with backoff, dead-letter, rollback of a failed consumer. */
 @SpringBootTest(classes = Application.class)
@@ -35,17 +37,22 @@ class OutboxRelayIntegrationTest {
     /** Writes a probe row first, then fails for {@code test.poison} while {@code failing} is set. */
     static final class Probe {
         final AtomicBoolean failing = new AtomicBoolean(true);
-        private final JdbcClient jdbc;
+        private final DSLContext dsl;
 
-        Probe(JdbcClient jdbc) {
-            this.jdbc = jdbc;
+        Probe(DSLContext dsl) {
+            this.dsl = dsl;
         }
 
         @EventListener
         @Order(Ordered.LOWEST_PRECEDENCE - 1)
         void record(EventEnvelope event) {
-            jdbc.sql("insert into event_inbox (tenant_id, consumer, event_id) values (?, 'probe', ?) on conflict do nothing")
-                    .params(event.tenantId().value(), event.eventId()).update();
+            dsl.insertInto(EVENT_INBOX)
+                    .set(EVENT_INBOX.TENANT_ID, event.tenantId().value())
+                    .set(EVENT_INBOX.CONSUMER, "probe")
+                    .set(EVENT_INBOX.EVENT_ID, event.eventId())
+                    .onConflict(EVENT_INBOX.TENANT_ID, EVENT_INBOX.CONSUMER, EVENT_INBOX.EVENT_ID)
+                    .doNothing()
+                    .execute();
         }
 
         @EventListener
@@ -59,8 +66,8 @@ class OutboxRelayIntegrationTest {
     @TestConfiguration(proxyBeanMethods = false)
     static class Consumers {
         @Bean
-        Probe probe(JdbcClient jdbc) {
-            return new Probe(jdbc);
+        Probe probe(DSLContext dsl) {
+            return new Probe(dsl);
         }
     }
 

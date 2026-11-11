@@ -1,7 +1,8 @@
 package archfixtures.alpha.domain;
 
-import org.springframework.data.relational.core.mapping.Table;
+import dev.ngb.core_billing_jooq.tables.records.CustomersRecord;
 
-/** Violates persistence placement: a Spring Data row type outside adapter.persistence. */
-@Table("orders")
-public class RowInDomain {}
+/** Violates persistence placement: a generated jOOQ type outside adapter.persistence. */
+public class RowInDomain {
+    CustomersRecord record;
+}

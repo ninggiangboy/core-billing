@@ -4,10 +4,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
-import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
-import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.CompositeArchRule;
@@ -15,12 +13,10 @@ import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.lang.syntax.elements.GivenClassesConjunction;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
-import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
  * The architecture rules, parameterised by root package so the same set runs against production
@@ -39,6 +35,41 @@ final class ArchitectureRules {
     record NamedRule(String id, ArchRule rule) {}
 
     private static final Set<String> NON_CONTEXT = Set.of("sharedkernel", "boot");
+
+    /** Which context owns each generated table; boot owns the tables every context shares. */
+    private static final Map<String, String> TABLE_OWNER = new HashMap<>();
+
+    static {
+        for (String table : List.of("Customers", "CustomerMappings")) {
+            TABLE_OWNER.put(table, "customer");
+        }
+        TABLE_OWNER.put("UsageEvents", "usage");
+        for (String table : List.of("WebhookEndpoints", "WebhookDeliveries", "WebhookDeliveryAttempts")) {
+            TABLE_OWNER.put(table, "webhook");
+        }
+        for (String table : List.of(
+                "ApiCredentials", "Roles", "RolePermissions", "Permissions", "BillingUsers", "RoleAssignments", "UserPermissions", "Tenants",
+                "TenantDomains", "TenantSystems")) {
+            TABLE_OWNER.put(table, "platform");
+        }
+        for (String table : List.of("PricingPlans", "PricingPlanVersions", "PricingMetrics", "UsageRatings", "UsageCharges")) {
+            TABLE_OWNER.put(table, "pricing");
+        }
+        for (String table : List.of(
+                "Payments", "PaymentAttempts", "Refunds", "StripeConfigurations", "StripeEvents", "StripeEventAttempts", "StripeIncidents",
+                "StripeRoutes")) {
+            TABLE_OWNER.put(table, "payment");
+        }
+        for (String table : List.of("Invoices", "InvoiceItems", "InvoicePayments", "InvoiceCounters", "Subscriptions", "SubscriptionEvents")) {
+            TABLE_OWNER.put(table, "invoicing");
+        }
+        for (String table : List.of("Wallets", "LedgerEntries", "Reservations", "Charges")) {
+            TABLE_OWNER.put(table, "money");
+        }
+        for (String table : List.of("Outbox", "EventInbox", "IdempotencyKeys", "AuditLog")) {
+            TABLE_OWNER.put(table, "boot");
+        }
+    }
     private static final String JAVA = "java..";
     private static final List<String> LAYERS = List.of("domain", "application", "adapter", "api");
     private static final List<String> READ_METHOD_PREFIXES = List.of("list", "page", "search");
@@ -73,8 +104,8 @@ final class ArchitectureRules {
                 new NamedRule("role-package-not-layer-root", rolePackageNotLayerRoot(root)),
                 new NamedRule("use-cases-and-queries-in-command-or-query", useCasesAndQueriesInCommandOrQuery(root)),
                 new NamedRule("ports-in-port-or-query", portsInPortOrQuery(root)),
-                new NamedRule("table-rows-in-adapter-persistence", tableRowsInAdapterPersistence(root)),
-                new NamedRule("persistence-maps-without-row-mapper", persistenceMapsWithoutRowMapper(root)),
+                new NamedRule("generated-records-in-adapter-persistence", generatedRecordsInAdapterPersistence(root)),
+                new NamedRule("context-uses-only-own-tables", contextUsesOnlyItsOwnTables(root)),
                 new NamedRule("write-side-does-not-depend-on-query", writeSideDoesNotDependOnQuery(root)),
                 new NamedRule("read-side-does-not-depend-on-write", readSideDoesNotDependOnWrite(root)),
                 new NamedRule("query-side-uses-no-domain-aggregates", querySideUsesNoDomainAggregates(root)),
@@ -107,8 +138,8 @@ final class ArchitectureRules {
 
     private static ArchRule persistenceTypesInAdapter(String root) {
         return noClasses().that().resideOutsideOfPackages(root + ".*.adapter.persistence..", root + ".boot..")
-                .should().dependOnClassesThat().resideInAPackage("org.springframework.data..")
-                .because("row types and repositories live in adapter.persistence");
+                .should().dependOnClassesThat().resideInAPackage("dev.ngb.core_billing_jooq..")
+                .because("generated jOOQ types live in adapter.persistence");
     }
 
     /** A "use case" is a class named *UseCase; every one in money must open the transaction itself. */
@@ -176,7 +207,7 @@ final class ArchitectureRules {
     private static ArchRule noJpa() {
         return noClasses().should().dependOnClassesThat().resideInAnyPackage(
                         "jakarta.persistence..", "javax.persistence..", "org.hibernate..", "org.springframework.data.jpa..")
-                .because("persistence is Spring Data JDBC only");
+                .because("persistence is jOOQ only");
     }
 
     private static ArchRule sharedKernelIsIndependent(String root) {
@@ -244,28 +275,40 @@ final class ArchitectureRules {
                 .because("write ports live with the command side and read ports with the query side");
     }
 
-    /** A Spring Data row is an adapter detail and lives next to its write repository. */
-    private static ArchRule tableRowsInAdapterPersistence(String root) {
-        return classes().that().areAnnotatedWith(Table.class)
-                .and().resideInAnyPackage(root + "..")
-                .should().resideInAnyPackage(root + ".*.adapter.persistence..")
-                .because("a @Table row lives in adapter.persistence next to the repository that uses it");
+    /** A generated jOOQ record is an adapter detail and lives next to the repository that uses it. */
+    private static ArchRule generatedRecordsInAdapterPersistence(String root) {
+        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter.persistence..", root + ".boot..")
+                .should().dependOnClassesThat().resideInAPackage("dev.ngb.core_billing_jooq.tables.records..")
+                .because("a generated record lives in adapter.persistence next to the repository that uses it");
     }
 
     /**
-     * Persistence maps result sets through {@code query(Class)} into a Row or a view. A RowMapper would let a
-     * result set flow straight into a domain type again, which is the shape this refactor removes.
+     * A context's adapters use only the tables it owns. The outbox, inbox, idempotency keys and audit log are
+     * shared infrastructure and belong to boot.
      */
-    private static ArchRule persistenceMapsWithoutRowMapper(String root) {
-        return noClasses().that().resideInAnyPackage(root + ".*.adapter.persistence..")
-                .should().callMethodWhere(new DescribedPredicate<>("call JdbcClient.query(RowMapper)") {
+    private static ArchRule contextUsesOnlyItsOwnTables(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.adapter..", root + ".boot..")
+                .should(new ArchCondition<>("use only the tables its own context owns") {
                     @Override
-                    public boolean test(JavaMethodCall call) {
-                        return queriesWithARowMapper(call);
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String context = owningContextOf(root, item.getPackageName());
+                        if (context == null) {
+                            return;
+                        }
+                        for (var access : item.getFieldAccessesFromSelf()) {
+                            if (!"dev.ngb.core_billing_jooq.Tables".equals(access.getTarget().getOwner().getName())) {
+                                continue;
+                            }
+                            String table = tableName(access.getTarget().getName());
+                            String owner = TABLE_OWNER.get(table);
+                            if (owner != null && !owner.equals(context)) {
+                                events.add(SimpleConditionEvent.violated(item,
+                                        item.getFullName() + " uses " + table + ", owned by " + owner));
+                            }
+                        }
                     }
                 })
-                .because("persistence maps through query(Class); a RowMapper could map straight into a domain type")
-                .allowEmptyShould(true);
+                .because("each context persists only its own tables");
     }
 
     /** The command side never reads through the query side; a use case that must read decides with its own port. */
@@ -286,7 +329,7 @@ final class ArchitectureRules {
                 .because("a query class reads through a read port and never through the write side")
                 .allowEmptyShould(true);
         ArchRule byName = noClasses().that().resideInAnyPackage(root + "..")
-                .and().haveSimpleNameStartingWith("Jdbc").and().haveSimpleNameEndingWith("ReadRepository")
+                .and().haveSimpleNameStartingWith("Jooq").and().haveSimpleNameEndingWith("ReadRepository")
                 .should().dependOnClassesThat().resideInAnyPackage(root + ".*..command..", root + ".*..port..")
                 .because("a read repository selects into a view and never into the write side")
                 .allowEmptyShould(true);
@@ -323,17 +366,6 @@ final class ArchitectureRules {
                 .should().haveNameMatching("(list|page|search).*")
                 .because("the write side never serves reads; a list, page or search method belongs to a read port")
                 .allowEmptyShould(true);
-    }
-
-    private static boolean queriesWithARowMapper(JavaMethodCall call) {
-        if (!call.getTarget().getName().equals("query")) {
-            return false;
-        }
-        if (!call.getTarget().getOwner().isAssignableTo(JdbcClient.StatementSpec.class)) {
-            return false;
-        }
-        return Arrays.stream(call.getTarget().getRawParameterTypes().toArray(JavaClass[]::new))
-                .anyMatch(type -> type.isAssignableTo(RowMapper.class));
     }
 
     private static boolean isOutboundPort(String simpleName) {
@@ -382,6 +414,24 @@ final class ArchitectureRules {
                 }
             }
         };
+    }
+
+    private static String owningContextOf(String root, String packageName) {
+        String prefix = root + ".";
+        if (!packageName.startsWith(prefix)) {
+            return null;
+        }
+        String rest = packageName.substring(prefix.length());
+        int dot = rest.indexOf('.');
+        return dot < 0 ? rest : rest.substring(0, dot);
+    }
+
+    private static String tableName(String constant) {
+        StringBuilder name = new StringBuilder();
+        for (String part : constant.split("_")) {
+            name.append(part.charAt(0)).append(part.substring(1).toLowerCase());
+        }
+        return name.toString();
     }
 
     private static String contextOf(String root, String packageName) {

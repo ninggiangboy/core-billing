@@ -41,8 +41,8 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("role-package-not-layer-root", "StrayRoleClass");
         CULPRIT_BY_RULE_ID.put("use-cases-and-queries-in-command-or-query", "MisplacedUseCase");
         CULPRIT_BY_RULE_ID.put("ports-in-port-or-query", "MisplacedReadRepository");
-        CULPRIT_BY_RULE_ID.put("table-rows-in-adapter-persistence", "TableInApplication");
-        CULPRIT_BY_RULE_ID.put("persistence-maps-without-row-mapper", "DomainRowMapper");
+        CULPRIT_BY_RULE_ID.put("generated-records-in-adapter-persistence", "TableInApplication");
+        CULPRIT_BY_RULE_ID.put("context-uses-only-own-tables", "UsesAnotherContextsTable");
         CULPRIT_BY_RULE_ID.put("write-side-does-not-depend-on-query", "CommandReachesQuery");
         CULPRIT_BY_RULE_ID.put("read-side-does-not-depend-on-write", "QueryReachesWritePort");
         CULPRIT_BY_RULE_ID.put("query-side-uses-no-domain-aggregates", "QueryReachesAggregate");

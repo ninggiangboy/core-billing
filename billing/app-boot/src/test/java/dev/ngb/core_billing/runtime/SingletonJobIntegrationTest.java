@@ -8,6 +8,7 @@ import dev.ngb.core_billing.boot.jobs.MoneyJobs;
 import dev.ngb.core_billing.money.application.ledger.command.VerifyLedgerUseCase;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.UUID;
@@ -107,6 +108,35 @@ class SingletonJobIntegrationTest {
     }
 
     @Test
+    void anUnfinishedClaimLeftByADeadWorkerIsTakenOver() {
+        String runKey = LocalDate.now(ZoneOffset.UTC).toString();
+        OWNER.update("delete from job_runs where job = ? and run_key = ?", VERIFY, runKey);
+        OWNER.update(
+                "insert into job_runs (job, run_key, tenant_id, started_at) values (?, ?, ?, now() - interval '31 minutes')",
+                VERIFY, runKey, TENANT);
+
+        moneyJobs.verifyLedgers();
+
+        assertThat(finishedAt(runKey, TENANT)).as("the tenant is verified despite the abandoned claim").isNotNull();
+    }
+
+    @Test
+    void aFinishedClaimIsNotTakenOverEvenAfterTheTtl() {
+        String runKey = LocalDate.now(ZoneOffset.UTC).toString();
+        OWNER.update("delete from job_runs where job = ? and run_key = ?", VERIFY, runKey);
+        OWNER.update(
+                "insert into job_runs (job, run_key, tenant_id, started_at, finished_at)"
+                        + " values (?, ?, ?, now() - interval '31 minutes', now() - interval '30 minutes')",
+                VERIFY, runKey, TENANT);
+        Instant started = startedAt(runKey, TENANT);
+
+        moneyJobs.verifyLedgers();
+
+        assertThat(startedAt(runKey, TENANT)).as("a finished run is not repeated").isEqualTo(started);
+        assertThat(finishedAt(runKey, TENANT)).isNotNull();
+    }
+
+    @Test
     void thePlatformBootstrapRunsOnceAndReleasesItsLease() {
         assertThat(lease(BOOTSTRAP)).isZero();
         assertThat(jdbc.queryForObject("select count(*) from permissions", Integer.class)).isPositive();
@@ -120,6 +150,16 @@ class SingletonJobIntegrationTest {
     private Integer runs(String runKey) {
         return jdbc.queryForObject(
                 "select count(*) from job_runs where job = ? and run_key = ?", Integer.class, VERIFY, runKey);
+    }
+
+    private Instant startedAt(String runKey, UUID tenant) {
+        return jdbc.queryForObject(
+                "select started_at from job_runs where job = ? and run_key = ? and tenant_id = ?", Instant.class, VERIFY, runKey, tenant);
+    }
+
+    private Instant finishedAt(String runKey, UUID tenant) {
+        return jdbc.queryForObject(
+                "select finished_at from job_runs where job = ? and run_key = ? and tenant_id = ?", Instant.class, VERIFY, runKey, tenant);
     }
 
     private Integer lease(String name) {

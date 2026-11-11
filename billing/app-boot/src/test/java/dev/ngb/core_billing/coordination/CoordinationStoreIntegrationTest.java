@@ -47,14 +47,35 @@ class CoordinationStoreIntegrationTest {
         JobRuns runs = new JobRuns(transactions, jdbc);
         String job = "run-" + UUID.randomUUID();
         UUID tenant = UUID.randomUUID();
+        Duration ttl = Duration.ofMinutes(30);
 
-        assertThat(runs.claim(job, "2026-11-11", tenant)).isTrue();
-        assertThat(runs.claim(job, "2026-11-11", tenant)).as("a repeated claim does nothing").isFalse();
-        assertThat(runs.claim(job, "2026-11-11", UUID.randomUUID())).as("another tenant has its own run").isTrue();
-        assertThat(runs.claim(job, "2026-11-12", tenant)).as("the next key runs again").isTrue();
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).isTrue();
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).as("a repeated claim does nothing").isFalse();
+        assertThat(runs.claim(job, "2026-11-11", UUID.randomUUID(), ttl)).as("another tenant has its own run").isTrue();
+        assertThat(runs.claim(job, "2026-11-12", tenant, ttl)).as("the next key runs again").isTrue();
 
         runs.release(job, "2026-11-11", tenant);
-        assertThat(runs.claim(job, "2026-11-11", tenant)).as("a released claim can be taken again").isTrue();
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).as("a released claim can be taken again").isTrue();
+    }
+
+    @Test
+    void anUnfinishedClaimIsTakenOverOnlyAfterItsTtlAndAFinishedOneNever() {
+        JobRuns runs = new JobRuns(transactions, jdbc);
+        String job = "run-" + UUID.randomUUID();
+        UUID tenant = UUID.randomUUID();
+        Duration ttl = Duration.ofMinutes(30);
+
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).isTrue();
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).as("a fresh unfinished claim is still owned").isFalse();
+
+        jdbc.update("update job_runs set started_at = now() - interval '31 minutes' where job = ? and run_key = ? and tenant_id = ?",
+                job, "2026-11-11", tenant);
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).as("a claim left by a dead process is taken over").isTrue();
+
+        runs.complete(job, "2026-11-11", tenant);
+        jdbc.update("update job_runs set started_at = now() - interval '31 minutes' where job = ? and run_key = ? and tenant_id = ?",
+                job, "2026-11-11", tenant);
+        assertThat(runs.claim(job, "2026-11-11", tenant, ttl)).as("a finished run is never repeated").isFalse();
     }
 
     @Test

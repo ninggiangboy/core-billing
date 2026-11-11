@@ -81,6 +81,21 @@ public class JobRunsRecord extends UpdatableRecordImpl<JobRunsRecord> {
         return (Instant) get(3);
     }
 
+    /**
+     * Setter for <code>public.job_runs.finished_at</code>.
+     */
+    public JobRunsRecord setFinishedAt(Instant value) {
+        set(4, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>public.job_runs.finished_at</code>.
+     */
+    public Instant getFinishedAt() {
+        return (Instant) get(4);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -104,13 +119,14 @@ public class JobRunsRecord extends UpdatableRecordImpl<JobRunsRecord> {
     /**
      * Create a detached, initialised JobRunsRecord
      */
-    public JobRunsRecord(String job, String runKey, UUID tenantId, Instant startedAt) {
+    public JobRunsRecord(String job, String runKey, UUID tenantId, Instant startedAt, Instant finishedAt) {
         super(JobRuns.JOB_RUNS);
 
         setJob(job);
         setRunKey(runKey);
         setTenantId(tenantId);
         setStartedAt(startedAt);
+        setFinishedAt(finishedAt);
         resetTouchedOnNotNull();
     }
 }

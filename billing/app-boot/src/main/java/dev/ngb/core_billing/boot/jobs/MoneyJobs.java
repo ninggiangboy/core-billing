@@ -29,7 +29,8 @@ import org.springframework.stereotype.Component;
  * second run the same day a no-op, so the mismatch counter cannot count the same run twice. Neither the lease nor
  * the run record is held while wallets are read. It is scheduled as a short fixed delay rather than one daily
  * firing, so a worker that dies mid-round hands the remaining tenants to the next tick of another worker, and a
- * tenant whose verification failed releases its claim and is tried again on a later tick.
+ * tenant whose verification failed releases its claim and is tried again on a later tick. A claim left unfinished
+ * by a dead process is taken over once it is older than the lease TTL, so that tenant does not lose its day.
  */
 @Profile("!api & !migrate")
 @Component
@@ -106,7 +107,7 @@ public class MoneyJobs {
             LOG.warn("ledger verification lost its lease before tenant {}", tenant);
             return;
         }
-        if (!runs.claim(VERIFY_RUN, runKey, tenant.value())) {
+        if (!runs.claim(VERIFY_RUN, runKey, tenant.value(), VERIFY_TTL)) {
             return;
         }
         try {
@@ -115,6 +116,7 @@ public class MoneyJobs {
                 meters.counter("billing.ledger.mismatch").increment(mismatches.size());
                 LOG.error("ledger mismatch for tenant {}: {} wallets disagree with their entries", tenant, mismatches.size());
             }
+            runs.complete(VERIFY_RUN, runKey, tenant.value());
         } catch (RuntimeException failure) {
             runs.release(VERIFY_RUN, runKey, tenant.value());
             throw failure;

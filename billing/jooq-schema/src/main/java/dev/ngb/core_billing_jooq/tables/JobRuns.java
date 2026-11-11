@@ -72,6 +72,11 @@ public class JobRuns extends TableImpl<JobRunsRecord> {
      */
     public final TableField<JobRunsRecord, Instant> STARTED_AT = createField(DSL.name("started_at"), SQLDataType.INSTANT.nullable(false), this, "");
 
+    /**
+     * The column <code>public.job_runs.finished_at</code>.
+     */
+    public final TableField<JobRunsRecord, Instant> FINISHED_AT = createField(DSL.name("finished_at"), SQLDataType.INSTANT, this, "");
+
     private JobRuns(Name alias, Table<JobRunsRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

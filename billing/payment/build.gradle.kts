@@ -11,7 +11,8 @@ dependencies {
     "adapterImplementation"(project(":platform"))
     "adapterImplementation"(project(":customer"))
     "adapterImplementation"(project(":money"))
-    "adapterImplementation"("org.springframework.boot:spring-boot-starter-data-jdbc")
+    "adapterImplementation"("org.springframework.boot:spring-boot-starter-jooq")
+    "adapterImplementation"(project(":jooq-schema"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jackson")
     // Stripe's own types stay inside payment.adapter.stripe; everything else sees the PaymentProvider port.

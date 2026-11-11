@@ -6,17 +6,17 @@ import dev.ngb.core_billing.money.api.wallet.DebitWallet;
 import dev.ngb.core_billing.money.api.reservation.ReleaseReservation;
 import dev.ngb.core_billing.money.api.reservation.ReserveBudget;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
-import dev.ngb.core_billing.payment.adapter.persistence.incident.JdbcIncidentRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.payment.JdbcPaymentRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.refund.JdbcRefundRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeConfigurationRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeEventRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeRoutes;
-import dev.ngb.core_billing.payment.adapter.persistence.incident.JdbcIncidentReadRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.payment.JdbcPaymentReadRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.refund.JdbcRefundReadRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeConfigurationReadRepository;
-import dev.ngb.core_billing.payment.adapter.persistence.stripe.JdbcStripeEventReadRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.incident.JooqIncidentRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.payment.JooqPaymentRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.refund.JooqRefundRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeConfigurationRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeEventRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeRoutes;
+import dev.ngb.core_billing.payment.adapter.persistence.incident.JooqIncidentReadRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.payment.JooqPaymentReadRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.refund.JooqRefundReadRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeConfigurationReadRepository;
+import dev.ngb.core_billing.payment.adapter.persistence.stripe.JooqStripeEventReadRepository;
 import dev.ngb.core_billing.payment.adapter.stripe.StripePaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.command.CheckoutOpener;
 import dev.ngb.core_billing.payment.application.payment.command.CreateInvoicePaymentUseCase;
@@ -60,9 +60,8 @@ import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Wires the payment module and its Stripe adapter. Holds no business rules. */
 @Configuration(proxyBeanMethods = false)
@@ -105,58 +104,58 @@ class PaymentConfiguration {
     }
 
     @Bean
-    StripeConfigurationRepository stripeConfigurationRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcStripeConfigurationRepository(aggregates, jdbc);
+    StripeConfigurationRepository stripeConfigurationRepository(DSLContext dsl) {
+        return new JooqStripeConfigurationRepository(dsl);
     }
 
     @Bean
-    StripeRoutes stripeRoutes(JdbcAggregateOperations aggregates, JdbcClient jdbc, Clock clock) {
-        return new JdbcStripeRoutes(aggregates, jdbc, clock);
+    StripeRoutes stripeRoutes(DSLContext dsl, Clock clock) {
+        return new JooqStripeRoutes(dsl, clock);
     }
 
     @Bean
-    PaymentRepository paymentRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcPaymentRepository(aggregates, jdbc);
+    PaymentRepository paymentRepository(DSLContext dsl) {
+        return new JooqPaymentRepository(dsl);
     }
 
     @Bean
-    RefundRepository refundRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcRefundRepository(aggregates, jdbc);
+    RefundRepository refundRepository(DSLContext dsl) {
+        return new JooqRefundRepository(dsl);
     }
 
     @Bean
-    StripeEventRepository stripeEventRepository(JdbcAggregateOperations aggregates, JdbcClient jdbc) {
-        return new JdbcStripeEventRepository(aggregates, jdbc);
+    StripeEventRepository stripeEventRepository(DSLContext dsl) {
+        return new JooqStripeEventRepository(dsl);
     }
 
     @Bean
-    IncidentRepository incidentRepository(JdbcClient jdbc) {
-        return new JdbcIncidentRepository(jdbc);
+    IncidentRepository incidentRepository(DSLContext dsl) {
+        return new JooqIncidentRepository(dsl);
     }
 
     @Bean
-    PaymentReadRepository paymentReadRepository(JdbcClient jdbc) {
-        return new JdbcPaymentReadRepository(jdbc);
+    PaymentReadRepository paymentReadRepository(DSLContext dsl) {
+        return new JooqPaymentReadRepository(dsl);
     }
 
     @Bean
-    RefundReadRepository refundReadRepository(JdbcClient jdbc) {
-        return new JdbcRefundReadRepository(jdbc);
+    RefundReadRepository refundReadRepository(DSLContext dsl) {
+        return new JooqRefundReadRepository(dsl);
     }
 
     @Bean
-    StripeConfigurationReadRepository stripeConfigurationReadRepository(JdbcClient jdbc) {
-        return new JdbcStripeConfigurationReadRepository(jdbc);
+    StripeConfigurationReadRepository stripeConfigurationReadRepository(DSLContext dsl) {
+        return new JooqStripeConfigurationReadRepository(dsl);
     }
 
     @Bean
-    StripeEventReadRepository stripeEventReadRepository(JdbcClient jdbc) {
-        return new JdbcStripeEventReadRepository(jdbc);
+    StripeEventReadRepository stripeEventReadRepository(DSLContext dsl) {
+        return new JooqStripeEventReadRepository(dsl);
     }
 
     @Bean
-    IncidentReadRepository incidentReadRepository(JdbcClient jdbc) {
-        return new JdbcIncidentReadRepository(jdbc);
+    IncidentReadRepository incidentReadRepository(DSLContext dsl) {
+        return new JooqIncidentReadRepository(dsl);
     }
 
     @Bean

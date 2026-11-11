@@ -27,7 +27,11 @@ public class JdbcUsageEventReadRepository implements UsageEventReadRepository {
 
     @Override
     public List<UsageEventView> page(CustomerId customerId, String metric, Instant from, Instant to, UsageEventId before, int limit) {
-        StringBuilder sql = new StringBuilder("select " + HISTORY_COLUMNS + " from usage_events where customer_id = ?");
+        StringBuilder sql = new StringBuilder("""
+                        select %s
+                        from usage_events
+                        where customer_id = ?
+                        """.formatted(HISTORY_COLUMNS));
         List<Object> params = new ArrayList<>();
         params.add(customerId.value());
         if (metric != null) {
@@ -53,8 +57,11 @@ public class JdbcUsageEventReadRepository implements UsageEventReadRepository {
 
     @Override
     public List<UsageRecordView> find(CustomerId customerId, Set<String> metrics, Instant from, Instant to, int limit) {
-        StringBuilder sql = new StringBuilder("select id, customer_id, metric, unit, quantity, occurred_at from usage_events "
-                + "where customer_id = ? and occurred_at >= ? and occurred_at < ?");
+        StringBuilder sql = new StringBuilder("""
+                        select id, customer_id, metric, unit, quantity, occurred_at
+                        from usage_events
+                        where customer_id = ? and occurred_at >= ? and occurred_at < ?
+                        """);
         List<Object> params = new ArrayList<>(List.of(customerId.value(), Timestamp.from(from), Timestamp.from(to)));
         if (!metrics.isEmpty()) {
             sql.append(" and metric = any(?)");
@@ -67,8 +74,11 @@ public class JdbcUsageEventReadRepository implements UsageEventReadRepository {
 
     @Override
     public List<UsageTotalView> totals(CustomerId customerId, Set<String> metrics, Instant from, Instant to) {
-        StringBuilder sql = new StringBuilder("select metric, unit, sum(quantity) as quantity, count(*) as events from usage_events "
-                + "where customer_id = ? and occurred_at >= ? and occurred_at < ?");
+        StringBuilder sql = new StringBuilder("""
+                        select metric, unit, sum(quantity) as quantity, count(*) as events
+                        from usage_events
+                        where customer_id = ? and occurred_at >= ? and occurred_at < ?
+                        """);
         List<Object> params = new ArrayList<>(List.of(customerId.value(), Timestamp.from(from), Timestamp.from(to)));
         if (!metrics.isEmpty()) {
             sql.append(" and metric = any(?)");

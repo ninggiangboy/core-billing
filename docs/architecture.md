@@ -120,7 +120,7 @@ The directories under `billing/` group the modules by the role they play, and ea
 
 | Directory | Module | Holds |
 |---|---|---|
-| `contexts/` | `platform` | Tenants, Billing Users, roles, API credentials, Tenant Systems, and the shared request scope, permissions, idempotency and audit |
+| `contexts/` | `platform` | Tenants, Billing Users, roles, API credentials, Tenant Systems, and the shared request scope, permissions and audit |
 | | `customer` | Billing Customers and the Tenant User mapping |
 | | `money` | Wallet, Ledger, Reservation and Charge |
 | | `pricing` | Pricing plans, metrics, rating and the charging orchestration |
@@ -144,7 +144,7 @@ Decisions:
 - Charging from usage is orchestrated in `pricing`, which is the one place that adds a synchronous edge to the money path: it reads quantities through the read-only `usage.api` and calls `money.api`, including the read-only `WalletLookup` that lets it check a wallet's owner and currency. `usage` never depends on `pricing`; the metric-unit catalog `usage` needs reaches `pricing` through a port wired in `app-boot`, so the graph stays one-directional.
 - `platform.api` is the exception that every context uses: the request scope, the authenticated actor and its permissions, idempotency, audit and the shared not-found and conflict errors. It carries no business operation, so depending on it does not couple contexts.
 - Inside a module the dependency direction is `adapter → application → domain`. `app-boot` only wires and never holds business rules.
-- Persistence types live in the adapter, not in the domain. A domain type never names a jOOQ type. Each adapter maps a generated record straight to its aggregate or view through a small `toDomain`/`toView` method; the write repository persists plain inserts, updates and by-id reads through the DSL. Statements that are themselves the rule stay explicit: `for update` and `skip locked` locks, guarded or partial updates, append-only ledger inserts, conflict-ignoring inserts and upserts. A read repository selects directly into an immutable view and never builds an aggregate. An ArchUnit rule keeps a context's adapters on the tables it owns, with the outbox, inbox, idempotency keys and audit log assigned to `app-boot`.
+- Persistence types live in the adapter, not in the domain. A domain type never names a jOOQ type. Each adapter maps a generated record straight to its aggregate or view through a small `toDomain`/`toView` method; the write repository persists plain inserts, updates and by-id reads through the DSL. Statements that are themselves the rule stay explicit: `for update` and `skip locked` locks, guarded or partial updates, append-only ledger inserts, conflict-ignoring inserts and upserts. A read repository selects directly into an immutable view and never builds an aggregate. An ArchUnit rule keeps a context's adapters on the tables it owns, with the outbox, inbox and audit log assigned to `app-boot`.
 
 ## Text conventions
 

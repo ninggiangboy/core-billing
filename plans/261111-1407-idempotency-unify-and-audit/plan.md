@@ -1,7 +1,7 @@
 ---
 title: "Unify idempotency on the created row and make every keyed create race-free"
 description: "One idempotency pattern (key and request hash on the row a request creates), the generic IdempotencyStore removed, every Idempotency-Key flow race-free, 201 for new and 200 for replay, and 409 IdempotencyConflict for a reused key."
-status: pending
+status: completed
 priority: P1
 effort: 14h
 branch: dev
@@ -78,7 +78,7 @@ created: 2026-11-11
 | 3 | [Payment: top-up, invoice payment, refund](./phase-03-payment-flows.md) | 3h | completed |
 | 4 | [Subscription create](./phase-04-subscription-create.md) | 1.5h | completed |
 | 5 | [Money: conflict mapping and replay status](./phase-05-money-and-http-status.md) | 3h | completed |
-| 6 | [Docs and full verification](./phase-06-docs-and-verification.md) | 1.5h | pending |
+| 6 | [Docs and full verification](./phase-06-docs-and-verification.md) | 1.5h | completed |
 
 Phases run in order. Phase 1 blocks all others. Phases 3, 4 and 5 touch disjoint contexts, but all
 three regenerate `contracts/openapi/billing.yaml`, so they stay sequential. Each phase runs its

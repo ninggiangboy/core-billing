@@ -12,6 +12,7 @@ The order is the order rows are locked, not the order endpoints are called.
 |---|---|
 | Subscription renewal | subscription, then wallet (through `money.charge`) |
 | Charge, credit, debit, reserve, reverse | wallet first, then everything else. A charge's idempotency check runs after the wallet lock |
+| Refund | payment, then refund, then wallet. The idempotency key is read after the payment lock |
 | Reservation expiry | wallet with `skip locked`, then reservation (the comment on the statement says why) |
 | Billing cycle close and `InvoiceChargeUseCase` | unbilled lines, then the invoice counter |
 | Stripe event | event, then payment, then refund. A wallet credit goes through `PaymentSettlement`, so the wallet is after the payment |
@@ -64,6 +65,25 @@ Two consequences:
    simply timed out into a failure notice, a reconciliation incident or a dead letter.
 
 ## Adding a flow
+
+### Idempotency
+
+Every keyed create follows one pattern, and a new flow picks one of its two shapes:
+
+1. **Lock-first.** Lock the parent row every request with this key must lock, then read the key. This is valid only
+   when the parent is part of the request hash, so a same-key request with another parent is by definition a
+   different request. Used by charge, reservation, ledger postings and refund.
+2. **Insert-first.** Insert with `on conflict (tenant_id, idempotency_key) do nothing`. When it inserts nothing, read
+   the row that won. Used by usage, customer, top-up, invoice payment and subscription; `RecordUsageUseCase` is the
+   reference implementation.
+3. **Decide.** The same request hash returns the row's current state with `replayed = true`; a different hash is an
+   `IdempotencyConflictException` (409). A key-constraint violation that escapes a lock-first flow is also an
+   idempotency conflict, never a generic conflict or a `DataIntegrityViolationException`.
+4. **Status.** 201 for a new resource and 200 for a replay. A recorded outcome such as the 402 of a failed charge is
+   replayed unchanged.
+
+The key and the request hash live on the row the request creates, guarded by `unique (tenant_id, idempotency_key)`;
+there is no separate idempotency table.
 
 Before merging a flow that writes money, payments, invoices or coordination state:
 

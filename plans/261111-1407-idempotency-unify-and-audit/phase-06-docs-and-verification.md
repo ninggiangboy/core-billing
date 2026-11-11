@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Docs and full verification"
-status: pending
+status: completed
 priority: P2
 effort: "1.5h"
 dependencies: [2, 3, 4, 5]
@@ -23,13 +23,13 @@ and the whole suite is green.
 
 ## Tasks & Steps
 
-- [ ] 1. Add the four-point pattern from `plan.md` to `docs/concurrency-and-locking.md`, with the lock-first condition
+- [x] 1. Add the four-point pattern from `plan.md` to `docs/concurrency-and-locking.md`, with the lock-first condition
       (the parent is in the hash) and `RecordUsageUseCase` named as the insert-first reference.
-- [ ] 2. Update the lock-order table row for refunds: the payment lock is taken before the key is read.
-- [ ] 3. Remove the store and the `idempotency_keys` table from `docs/architecture.md`; keep `Fingerprint` as what
+- [x] 2. Update the lock-order table row for refunds: the payment lock is taken before the key is read.
+- [x] 3. Remove the store and the `idempotency_keys` table from `docs/architecture.md`; keep `Fingerprint` as what
       `platform.api.idempotency` holds.
-- [ ] 4. Check every doc claim against the code: `grep -rn -i "idempoten" docs`.
-- [ ] 5. Run the full suite and confirm the acceptance list in `plan.md`.
+- [x] 4. Check every doc claim against the code: `grep -rn -i "idempoten" docs`.
+- [x] 5. Run the full suite and confirm the acceptance list in `plan.md`.
 
 ## Verification
 

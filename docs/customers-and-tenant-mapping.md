@@ -34,7 +34,7 @@ Because a Tenant can integrate more than one Tenant System, `tenant_system_id` k
 
 ### Creating and finding Customers
 
-- Creating a Customer is idempotent by the `Idempotency-Key` header, which is required. Repeating the request returns the same Customer; reusing the key for a different request is a conflict, and so is mapping an external user that already has a Customer under a new key.
+- Creating a Customer is idempotent by the `Idempotency-Key` header, which is required. The response is 201 for a new Customer and 200 for a replay. Repeating the request returns the same Customer; reusing the key for a different request is a conflict, and so is mapping an external user that already has a Customer under a new key.
 - A Tenant System creates and finds Customers for itself only; it cannot name another Tenant System. A Tenant User with the right permission administers Customers and names the Tenant System explicitly. A Customer may exist without a mapping.
 - The `customer.created` event carries the Customer id, display name and mapped external ids, and no email or other personal data.
 - Other contexts that act on a Customer (money, payment) ask the `customer` module's public lookup, which answers within the current Tenant only.

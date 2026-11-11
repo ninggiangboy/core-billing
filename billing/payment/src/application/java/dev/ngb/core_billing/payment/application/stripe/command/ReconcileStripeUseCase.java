@@ -6,6 +6,7 @@ import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
 import dev.ngb.core_billing.payment.domain.refund.Refund;
 import dev.ngb.core_billing.payment.domain.refund.RefundStatus;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -93,7 +94,8 @@ public class ReconcileStripeUseCase {
                 corrected += outcome[0];
                 mismatches += outcome[1];
             } catch (RuntimeException failure) {
-                // One bad item must not hide the rest; it is flagged for a person and the next run looks at it again.
+                // One bad item must not hide the rest; a real failure is flagged for a person, while a lock wait is
+                // left for the next run.
                 mismatches += failed(configuration, "checkout/" + checkout.sessionId(), failure);
             }
         }
@@ -171,6 +173,11 @@ public class ReconcileStripeUseCase {
     }
 
     private int failed(StripeConfiguration configuration, String subject, RuntimeException failure) {
+        if (Causes.isRetryableContention(failure)) {
+            // Nothing was read or changed, so this item is neither a mismatch nor an incident: the next run tries
+            // it again.
+            return 0;
+        }
         unitOfWork.transactional(() -> flag(configuration, subject,
                 "Reconciliation could not examine this: %s: %s".formatted(failure.getClass().getSimpleName(), failure.getMessage())));
         return 1;

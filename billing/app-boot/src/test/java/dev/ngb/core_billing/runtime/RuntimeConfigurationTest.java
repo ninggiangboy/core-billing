@@ -39,6 +39,9 @@ class RuntimeConfigurationTest {
         assertThat(value("application-api.yml", "spring", "datasource", "hikari", "maximum-pool-size")).isNotNull();
         assertThat(value("application-worker.yml", "spring", "datasource", "hikari", "maximum-pool-size")).isNotNull();
         assertThat(value("application-worker.yml", "spring", "task", "scheduling", "pool", "size")).isNotNull();
+        assertThat(value("application-worker.yml", "spring", "task", "scheduling", "shutdown", "await-termination"))
+                .as("a worker lets a running job finish")
+                .isEqualTo(true);
     }
 
     @Test

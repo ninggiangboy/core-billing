@@ -13,6 +13,7 @@ import dev.ngb.core_billing.money.api.charge.ChargeCommand;
 import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.charge.ChargeResult;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
+import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.api.plan.PeriodPrice;
@@ -26,6 +27,7 @@ import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -110,10 +112,19 @@ class RenewSubscriptionUseCaseTest {
         }
     };
 
-    private final RenewSubscriptionUseCase useCase = new RenewSubscriptionUseCase(passThrough, repository, pricing, command -> {
+    private boolean walletContended;
+
+    private final ChargeWallet charging = command -> {
+        if (walletContended) {
+            throw new IllegalStateException("the wallet lock timed out",
+                    new SQLException("canceling statement due to lock timeout", "55P03"));
+        }
         charged.add(command);
         return new ChargeResult(new ChargeId(UUID.randomUUID()), ChargeStatus.SUCCEEDED, null, command.amount(), new LedgerEntryId(UUID.randomUUID()), false);
-    }, published::add, new RenewalSettings(10, 3, new Backoff(Duration.ofMinutes(1), Duration.ofHours(1), 0.0)), () -> 0.5, UUID::randomUUID, () -> NOW);
+    };
+
+    private final RenewSubscriptionUseCase useCase = new RenewSubscriptionUseCase(passThrough, repository, pricing, charging, published::add,
+            new RenewalSettings(10, 3, new Backoff(Duration.ofMinutes(1), Duration.ofHours(1), 0.0)), () -> 0.5, UUID::randomUUID, () -> NOW);
 
     private Subscription due(UUID plan, Instant dueAt) {
         Subscription s = Subscription.create(new SubscriptionId(UUID.randomUUID()), TENANT, new CustomerId(UUID.randomUUID()), new WalletId(UUID.randomUUID()), USD, plan,
@@ -138,6 +149,26 @@ class RenewSubscriptionUseCaseTest {
         assertThat(broken.nextRenewalAt()).isAfter(NOW);
         assertThat(published).extracting(DomainEvent::type).containsExactlyInAnyOrder("subscription.payment_failed", "subscription.renewed");
         assertThat(published.stream().filter(e -> e.type().equals("subscription.payment_failed")).findFirst().orElseThrow().payload()).containsEntry("reason", "renewal_error");
+    }
+
+    @Test
+    void aLockWaitThatTimesOutIsNotAFailedAttempt() {
+        Subscription s = due(UUID.randomUUID(), NOW.minusSeconds(60));
+        walletContended = true;
+
+        RenewSubscriptionUseCase.Report contended = useCase.runDue();
+
+        assertThat(contended).as("nothing was charged and no attempt was taken").isEqualTo(new RenewSubscriptionUseCase.Report(0, 0, 0));
+        assertThat(s.status()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(s.renewalAttempts()).isZero();
+        assertThat(s.nextRenewalAt()).isEqualTo(NOW.minusSeconds(60));
+        assertThat(history).isEmpty();
+        assertThat(published).isEmpty();
+
+        walletContended = false;
+        assertThat(useCase.runDue().renewed()).as("the next tick finds the period still due").isEqualTo(1);
+        assertThat(s.periodsCharged()).isEqualTo(1);
+        assertThat(s.renewalAttempts()).isZero();
     }
 
     @Test

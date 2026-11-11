@@ -7,6 +7,7 @@ import dev.ngb.core_billing.payment.domain.stripe.StoredEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
@@ -69,8 +70,19 @@ public class StripeEventProcessor {
             Prefetch fetched = prefetch(id);
             return unitOfWork.transactional(() -> process(id, fetched));
         } catch (RuntimeException failure) {
+            if (Causes.isRetryableContention(failure)) {
+                // The lock wait timed out, so nothing was applied and nothing was attempted: the event stays due
+                // and the next poll picks it up again instead of spending one of its retries.
+                return currentStatus(id, "lock contention, retrying on the next poll");
+            }
             return unitOfWork.transactional(() -> recordFailure(id, failure));
         }
+    }
+
+    private Outcome currentStatus(StoredEventId id, String detail) {
+        return unitOfWork.transactional(() -> events.findById(id)
+                .map(event -> new Outcome(event.status(), detail))
+                .orElseThrow(() -> new NotFoundException("stripe event not found")));
     }
 
     /**

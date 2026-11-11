@@ -12,6 +12,7 @@ import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.api.plan.PeriodPrice;
 import dev.ngb.core_billing.pricing.api.plan.PlanPricing;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
@@ -34,7 +35,8 @@ import java.util.function.DoubleSupplier;
  * <p>A period that cannot be paid (the wallet refuses the charge, or the price cannot be determined) makes the
  * subscription past due, is announced as {@code subscription.payment_failed}, and is retried on a bounded schedule
  * (see {@link RenewalSettings}). Billing never stops a Resource: the Tenant System decides what past due means. A
- * success at any attempt returns the subscription to active.
+ * success at any attempt returns the subscription to active. A lock wait that times out is not a failed attempt:
+ * nothing was charged, so the subscription stays due for the next tick.
  *
  * <p>A Prepaid wallet pays from its balance. A Postpaid wallet is charged the same way, which records the debt, and the
  * charge reaches the invoice for the period through the normal charge collection.
@@ -90,6 +92,11 @@ public class RenewSubscriptionUseCase {
             try {
                 outcome = unitOfWork.transactional(() -> subscriptions.lockNextDue(clock.now()).map(this::guarded));
             } catch (Poisoned poisoned) {
+                if (Causes.isRetryableContention(poisoned.getCause())) {
+                    // A lock wait that timed out is not an attempt: nothing was charged, so the period stays due
+                    // and the next tick tries again instead of counting down the retry budget.
+                    break;
+                }
                 // Count it as a failed attempt so one broken subscription cannot starve the rest behind it.
                 unitOfWork.transactional(() -> subscriptions.lockById(poisoned.id)
                         .ifPresent(found -> failed(found, found.periodToCharge(), null, "renewal_error", clock.now())));

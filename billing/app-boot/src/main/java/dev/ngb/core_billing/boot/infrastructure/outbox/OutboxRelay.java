@@ -3,6 +3,7 @@ package dev.ngb.core_billing.boot.infrastructure.outbox;
 import static dev.ngb.core_billing_jooq.Tables.OUTBOX;
 
 import dev.ngb.core_billing.sharedkernel.Backoff;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventEnvelope;
 import dev.ngb.core_billing.sharedkernel.TenantId;
@@ -40,7 +41,7 @@ public class OutboxRelay {
 
     private record Row(UUID id, UUID tenantId, String aggregate, String type, String payload, Instant createdAt, int attempts) {}
 
-    private enum Outcome { NONE, DELIVERED, RETRY, DEAD }
+    private enum Outcome { NONE, DELIVERED, RETRY, DEAD, CONTENDED }
 
     private static final class DispatchFailure extends RuntimeException {
         private static final long serialVersionUID = 1L;
@@ -83,7 +84,8 @@ public class OutboxRelay {
         int dead = 0;
         for (int i = 0; i < batchSize; i++) {
             Outcome outcome = relayNext();
-            if (outcome == Outcome.NONE) {
+            if (outcome == Outcome.NONE || outcome == Outcome.CONTENDED) {
+                // A contended row stays due, so another pass in this tick would only find the same row again.
                 break;
             }
             switch (outcome) {
@@ -155,6 +157,12 @@ public class OutboxRelay {
     }
 
     private Outcome recordFailure(Row row, RuntimeException cause, Instant now) {
+        if (Causes.isRetryableContention(cause)) {
+            // The lock wait timed out, so no consumer committed and no attempt was spent: the row stays due and the
+            // next poll tries it again.
+            LOG.warn("outbox event {} ({}) hit lock contention, retrying on the next poll", row.id(), row.type());
+            return Outcome.CONTENDED;
+        }
         int failures = row.attempts() + 1;
         boolean dead = failures >= maxAttempts;
         Instant next = dead ? now : now.plus(backoff.delayAfter(failures, ThreadLocalRandom.current().nextDouble()));

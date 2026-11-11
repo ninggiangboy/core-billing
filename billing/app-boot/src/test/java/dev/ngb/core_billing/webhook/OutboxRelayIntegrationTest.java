@@ -12,6 +12,7 @@ import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.TestEvent;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +38,7 @@ class OutboxRelayIntegrationTest {
     /** Writes a probe row first, then fails for {@code test.poison} while {@code failing} is set. */
     static final class Probe {
         final AtomicBoolean failing = new AtomicBoolean(true);
+        final AtomicBoolean contended = new AtomicBoolean(false);
         private final DSLContext dsl;
 
         Probe(DSLContext dsl) {
@@ -59,6 +61,14 @@ class OutboxRelayIntegrationTest {
         void failOnPoison(EventEnvelope event) {
             if (event.type().equals("test.poison") && failing.get()) {
                 throw new IllegalStateException("consumer exploded");
+            }
+        }
+
+        @EventListener
+        void timeOutOnContendedEvent(EventEnvelope event) {
+            if (event.type().equals("test.contended") && contended.get()) {
+                throw new IllegalStateException("the row lock timed out",
+                        new SQLException("canceling statement due to lock timeout", "55P03"));
             }
         }
     }
@@ -127,6 +137,26 @@ class OutboxRelayIntegrationTest {
         assertThat(owner.count("select count(*) from outbox where id = ?", poison)).as("a dead row is kept").isEqualTo(1);
         owner.jdbc().update("update outbox set next_attempt_at = now() - interval '1 second' where id = ?", poison);
         assertThat(scopes.inTenant(tenant, relay::relayDue)).as("and never picked up again").isEqualTo(new OutboxRelay.Result(0, 0, 0));
+    }
+
+    @Test
+    void aLockTimeoutLeavesTheEventDueWithoutSpendingAnAttempt() {
+        TenantId tenant = scopes.newTenant().id();
+        UUID id = publish(tenant, "test.contended");
+        probe.contended.set(true);
+        try {
+            assertThat(scopes.inTenant(tenant, relay::relayDue))
+                    .as("the tick stops instead of retrying the same row")
+                    .isEqualTo(new OutboxRelay.Result(0, 0, 0));
+            assertThat(row(id)).as("no attempt was spent and the row is still due")
+                    .containsEntry("status", "PENDING").containsEntry("attempts", 0).containsEntry("in_future", false);
+
+            probe.contended.set(false);
+            assertThat(scopes.inTenant(tenant, relay::relayDue).delivered()).as("the next tick delivers it").isEqualTo(1);
+            assertThat(row(id)).containsEntry("status", "DELIVERED");
+        } finally {
+            probe.contended.set(false);
+        }
     }
 
     @Test

@@ -55,7 +55,9 @@ Two consequences:
    `application-worker.yml` and `application-migrate.yml`; they are starting points to measure under load.
 9. **Treat `40P01` and `55P03` as retryable.** The api answers 503 with `Retry-After` and expects the caller to
    repeat the request with the same `Idempotency-Key`; every money operation has one. A job logs the round and
-   retries on its next tick.
+   retries on its next tick without counting an attempt: renewal leaves the period due, and the Stripe retry and the
+   outbox relay leave the row due. None of them turns a lock that simply timed out into a failure notice or a dead
+   letter.
 
 ## Adding a flow
 

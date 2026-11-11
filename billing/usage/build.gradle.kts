@@ -9,7 +9,8 @@ dependencies {
     "applicationImplementation"(project(":customer"))
     "adapterImplementation"(project(":platform"))
     "adapterImplementation"(project(":customer"))
-    "adapterImplementation"("org.springframework.boot:spring-boot-starter-data-jdbc")
+    "adapterImplementation"("org.springframework.boot:spring-boot-starter-jooq")
+    "adapterImplementation"(project(":jooq-schema"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")
     testImplementation("org.assertj:assertj-core")
 }

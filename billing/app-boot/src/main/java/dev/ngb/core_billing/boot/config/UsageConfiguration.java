@@ -6,8 +6,8 @@ import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
-import dev.ngb.core_billing.usage.adapter.persistence.JdbcUsageEventRepository;
-import dev.ngb.core_billing.usage.adapter.persistence.usage.JdbcUsageEventReadRepository;
+import dev.ngb.core_billing.usage.adapter.persistence.JooqUsageEventRepository;
+import dev.ngb.core_billing.usage.adapter.persistence.usage.JooqUsageEventReadRepository;
 import dev.ngb.core_billing.usage.application.port.MetricUnits;
 import dev.ngb.core_billing.usage.application.command.RecordUsageUseCase;
 import dev.ngb.core_billing.usage.application.port.UsageEventRepository;
@@ -15,7 +15,7 @@ import dev.ngb.core_billing.usage.application.query.UsageEventReadRepository;
 import dev.ngb.core_billing.usage.application.query.UsageQueries;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.simple.JdbcClient;
+import org.jooq.DSLContext;
 
 /**
  * Wires the usage module. Holds no business rules. The one connection between usage and pricing lives here:
@@ -26,13 +26,13 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 class UsageConfiguration {
 
     @Bean
-    UsageEventRepository usageEventRepository(JdbcClient jdbc) {
-        return new JdbcUsageEventRepository(jdbc);
+    UsageEventRepository usageEventRepository(DSLContext dsl) {
+        return new JooqUsageEventRepository(dsl);
     }
 
     @Bean
-    UsageEventReadRepository usageEventReadRepository(JdbcClient jdbc) {
-        return new JdbcUsageEventReadRepository(jdbc);
+    UsageEventReadRepository usageEventReadRepository(DSLContext dsl) {
+        return new JooqUsageEventReadRepository(dsl);
     }
 
     @Bean

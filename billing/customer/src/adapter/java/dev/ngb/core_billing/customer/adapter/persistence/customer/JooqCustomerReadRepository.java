@@ -1,132 +1,121 @@
 package dev.ngb.core_billing.customer.adapter.persistence.customer;
 
+import static dev.ngb.core_billing_jooq.Tables.CUSTOMERS;
+import static dev.ngb.core_billing_jooq.Tables.CUSTOMER_MAPPINGS;
+import static org.jooq.impl.DSL.any;
+import static org.jooq.impl.DSL.exists;
+import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.selectOne;
+
 import dev.ngb.core_billing.customer.application.query.CustomerIdentityView;
 import dev.ngb.core_billing.customer.application.query.CustomerReadRepository;
 import dev.ngb.core_billing.customer.application.query.CustomerView;
 import dev.ngb.core_billing.customer.domain.customer.CustomerStatus;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
-import java.time.Instant;
+import dev.ngb.core_billing_jooq.tables.records.CustomersRecord;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.jdbc.core.simple.JdbcClient;
+import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.Record3;
 
 /** Selects customers and their mappings straight into views; the aggregate is never built. */
-public class JdbcCustomerReadRepository implements CustomerReadRepository {
+public class JooqCustomerReadRepository implements CustomerReadRepository {
 
-    private static final String COLUMNS = "id, display_name, email, status, created_at";
-    private static final String COLUMNS_C = "c.id, c.display_name, c.email, c.status, c.created_at";
+    private final DSLContext dsl;
 
-    private record Row(UUID id, String displayName, String email, String status, Instant createdAt) {}
-
-    private record MappingRow(UUID customerId, UUID tenantSystemId, String externalUserId) {}
-
-    private final JdbcClient jdbc;
-
-    public JdbcCustomerReadRepository(JdbcClient jdbc) {
-        this.jdbc = jdbc;
+    public JooqCustomerReadRepository(DSLContext dsl) {
+        this.dsl = dsl;
     }
 
     @Override
     public List<CustomerView> list() {
-        List<Row> rows = jdbc.sql("""
-                        select %s
-                        from customers
-                        order by created_at, id
-                        """.formatted(COLUMNS)).query(Row.class).list();
-        Map<UUID, List<CustomerIdentityView>> identities = mappings(rows.stream().map(Row::id).toArray(UUID[]::new), null);
-        return rows.stream().map(row -> toView(row, identities.getOrDefault(row.id(), List.of()))).toList();
+        List<CustomersRecord> rows = dsl.selectFrom(CUSTOMERS).orderBy(CUSTOMERS.CREATED_AT, CUSTOMERS.ID).fetch();
+        return withIdentities(rows, null);
     }
 
     @Override
     public List<CustomerView> listMappedTo(UUID tenantSystemId) {
-        List<Row> rows = jdbc.sql("""
-                        select %s
-                        from customers c
-                        join customer_mappings m on m.customer_id = c.id and m.tenant_system_id = ?
-                        order by c.created_at, c.id
-                        """.formatted(COLUMNS_C))
-                .param(tenantSystemId)
-                .query(Row.class)
-                .list();
-        Map<UUID, List<CustomerIdentityView>> identities = mappings(rows.stream().map(Row::id).toArray(UUID[]::new), tenantSystemId);
-        return rows.stream().map(row -> toView(row, identities.getOrDefault(row.id(), List.of()))).toList();
+        List<CustomersRecord> rows = dsl.select(CUSTOMERS.fields())
+                .from(CUSTOMERS)
+                .join(CUSTOMER_MAPPINGS)
+                .on(CUSTOMER_MAPPINGS.CUSTOMER_ID.eq(CUSTOMERS.ID).and(CUSTOMER_MAPPINGS.TENANT_SYSTEM_ID.eq(tenantSystemId)))
+                .orderBy(CUSTOMERS.CREATED_AT, CUSTOMERS.ID)
+                .fetchInto(CUSTOMERS);
+        return withIdentities(rows, tenantSystemId);
     }
 
     @Override
     public Optional<CustomerView> findById(CustomerId id) {
-        return jdbc.sql("""
-                        select %s
-                        from customers
-                        where id = ?
-                        """.formatted(COLUMNS)).param(id.value()).query(Row.class).optional()
-                .map(row -> toView(row, mappings(new UUID[] {row.id()}, null).getOrDefault(row.id(), List.of())));
+        return dsl.selectFrom(CUSTOMERS)
+                .where(CUSTOMERS.ID.eq(id.value()))
+                .fetchOptional()
+                .map(row -> withIdentities(List.of(row), null).getFirst());
     }
 
     @Override
     public Optional<CustomerView> findByIdMappedTo(CustomerId id, UUID tenantSystemId) {
-        return jdbc.sql("""
-                        select %s
-                        from customers c
-                        where c.id = ? and exists (select 1 from customer_mappings m where m.customer_id = c.id and m.tenant_system_id = ?)
-                        """.formatted(COLUMNS_C))
-                .params(id.value(), tenantSystemId)
-                .query(Row.class)
-                .optional()
-                .map(row -> toView(row, mappings(new UUID[] {row.id()}, tenantSystemId).getOrDefault(row.id(), List.of())));
+        return dsl.selectFrom(CUSTOMERS)
+                .where(CUSTOMERS.ID.eq(id.value()))
+                .and(exists(selectOne()
+                        .from(CUSTOMER_MAPPINGS)
+                        .where(CUSTOMER_MAPPINGS.CUSTOMER_ID.eq(CUSTOMERS.ID))
+                        .and(CUSTOMER_MAPPINGS.TENANT_SYSTEM_ID.eq(tenantSystemId))))
+                .fetchOptional()
+                .map(row -> withIdentities(List.of(row), tenantSystemId).getFirst());
     }
 
     @Override
     public Optional<CustomerView> findByExternalIdentity(UUID tenantSystemId, String externalUserId) {
-        return jdbc.sql("select customer_id from customer_mappings where tenant_system_id = ? and external_user_id = ?")
-                .params(tenantSystemId, externalUserId)
-                .query(UUID.class)
-                .optional()
+        return dsl.select(CUSTOMER_MAPPINGS.CUSTOMER_ID)
+                .from(CUSTOMER_MAPPINGS)
+                .where(CUSTOMER_MAPPINGS.TENANT_SYSTEM_ID.eq(tenantSystemId))
+                .and(CUSTOMER_MAPPINGS.EXTERNAL_USER_ID.eq(externalUserId))
+                .fetchOptional(CUSTOMER_MAPPINGS.CUSTOMER_ID)
                 .flatMap(id -> findByIdMappedTo(new CustomerId(id), tenantSystemId));
     }
 
     @Override
     public List<UUID> mappedCustomerIds(UUID tenantSystemId) {
-        return jdbc.sql("select distinct customer_id from customer_mappings where tenant_system_id = ?")
-                .param(tenantSystemId)
-                .query(UUID.class)
-                .list();
+        return dsl.selectDistinct(CUSTOMER_MAPPINGS.CUSTOMER_ID)
+                .from(CUSTOMER_MAPPINGS)
+                .where(CUSTOMER_MAPPINGS.TENANT_SYSTEM_ID.eq(tenantSystemId))
+                .fetch(CUSTOMER_MAPPINGS.CUSTOMER_ID);
+    }
+
+    private List<CustomerView> withIdentities(List<CustomersRecord> rows, UUID tenantSystemId) {
+        Map<UUID, List<CustomerIdentityView>> identities = mappings(rows.stream().map(CustomersRecord::getId).toArray(UUID[]::new), tenantSystemId);
+        return rows.stream().map(row -> toView(row, identities.getOrDefault(row.getId(), List.of()))).toList();
     }
 
     private Map<UUID, List<CustomerIdentityView>> mappings(UUID[] customerIds, UUID tenantSystemId) {
         if (customerIds.length == 0) {
             return Map.of();
         }
+        Condition scope = tenantSystemId == null ? noCondition() : CUSTOMER_MAPPINGS.TENANT_SYSTEM_ID.eq(tenantSystemId);
         Map<UUID, List<CustomerIdentityView>> byCustomer = new HashMap<>();
-        String scope = tenantSystemId == null ? "" : " and tenant_system_id = ?";
-        var statement = jdbc.sql("""
-                select customer_id, tenant_system_id, external_user_id
-                from customer_mappings
-                where customer_id = any(?)%s
-                order by external_user_id
-                """.formatted(scope));
-        if (tenantSystemId == null) {
-            statement = statement.param(customerIds);
-        } else {
-            statement = statement.params(customerIds, tenantSystemId);
+        for (Record3<UUID, UUID, String> row : dsl.select(CUSTOMER_MAPPINGS.CUSTOMER_ID, CUSTOMER_MAPPINGS.TENANT_SYSTEM_ID, CUSTOMER_MAPPINGS.EXTERNAL_USER_ID)
+                .from(CUSTOMER_MAPPINGS)
+                .where(CUSTOMER_MAPPINGS.CUSTOMER_ID.eq(any(customerIds)))
+                .and(scope)
+                .orderBy(CUSTOMER_MAPPINGS.EXTERNAL_USER_ID)
+                .fetch()) {
+            byCustomer.computeIfAbsent(row.value1(), key -> new ArrayList<>()).add(new CustomerIdentityView(row.value2(), row.value3()));
         }
-        statement.query(MappingRow.class)
-                .list()
-                .forEach(row -> byCustomer.computeIfAbsent(row.customerId(), key -> new ArrayList<>())
-                        .add(new CustomerIdentityView(row.tenantSystemId(), row.externalUserId())));
         return byCustomer;
     }
 
-    private static CustomerView toView(Row row, List<CustomerIdentityView> identities) {
+    private static CustomerView toView(CustomersRecord row, List<CustomerIdentityView> identities) {
         return new CustomerView(
-                new CustomerId(row.id()),
-                row.displayName(),
-                row.email(),
-                CustomerStatus.valueOf(row.status()),
-                row.createdAt(),
+                new CustomerId(row.getId()),
+                row.getDisplayName(),
+                row.getEmail(),
+                CustomerStatus.valueOf(row.getStatus()),
+                row.getCreatedAt(),
                 List.copyOf(identities));
     }
 }

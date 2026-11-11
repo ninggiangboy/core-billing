@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.boot.config;
 
-import dev.ngb.core_billing.customer.adapter.persistence.JdbcCustomerRepository;
-import dev.ngb.core_billing.customer.adapter.persistence.customer.JdbcCustomerReadRepository;
+import dev.ngb.core_billing.customer.adapter.persistence.JooqCustomerRepository;
+import dev.ngb.core_billing.customer.adapter.persistence.customer.JooqCustomerReadRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.customer.application.command.CustomerAdministration;
@@ -16,18 +16,17 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.EventPublisher;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Wires the customer module. Holds no business rules. */
 @Configuration(proxyBeanMethods = false)
 class CustomerConfiguration {
 
     @Bean
-    CustomerRepository customerRepository(JdbcAggregateOperations jdbc, JdbcClient sql) {
-        return new JdbcCustomerRepository(jdbc, sql);
+    CustomerRepository customerRepository(DSLContext dsl) {
+        return new JooqCustomerRepository(dsl);
     }
 
     @Bean
@@ -50,8 +49,8 @@ class CustomerConfiguration {
     }
 
     @Bean
-    CustomerReadRepository customerReadRepository(JdbcClient jdbc) {
-        return new JdbcCustomerReadRepository(jdbc);
+    CustomerReadRepository customerReadRepository(DSLContext dsl) {
+        return new JooqCustomerReadRepository(dsl);
     }
 
     @Bean

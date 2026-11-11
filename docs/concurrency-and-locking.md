@@ -86,10 +86,16 @@ Every keyed create follows one pattern, and a new flow picks one of its two shap
    `IdempotencyConflictException` (409). A key-constraint violation that escapes a lock-first flow is also an
    idempotency conflict, never a generic conflict or a `DataIntegrityViolationException`.
 4. **Status.** 201 for a new resource and 200 for a replay. A recorded outcome such as the 402 of a failed charge is
-   replayed unchanged.
+   replayed unchanged. Mark the handler `@RepeatableCreate` so the API document lists both 201 and 200; without it a
+   `ResponseEntity` handler is documented with a single 200.
 
 The key and the request hash live on the row the request creates, guarded by `unique (tenant_id, idempotency_key)`;
-there is no separate idempotency table.
+there is no separate idempotency table. A repository names that constraint through the generated `Keys` constant, so a
+renamed constraint fails the build instead of turning an idempotency conflict into a generic one.
+
+Test a new keyed flow with `UncommittedRace` as well as a parallel burst: it holds the first request's transaction open
+until the second is blocked on its row, so the path where the second request misses the uncommitted row is always
+taken.
 
 Before merging a flow that writes money, payments, invoices or coordination state:
 

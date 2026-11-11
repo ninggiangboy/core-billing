@@ -32,15 +32,23 @@ public class JdbcCustomerReadRepository implements CustomerReadRepository {
 
     @Override
     public List<CustomerView> list() {
-        List<Row> rows = jdbc.sql("select " + COLUMNS + " from customers order by created_at, id").query(Row.class).list();
+        List<Row> rows = jdbc.sql("""
+                        select %s
+                        from customers
+                        order by created_at, id
+                        """.formatted(COLUMNS)).query(Row.class).list();
         Map<UUID, List<CustomerIdentityView>> identities = mappings(rows.stream().map(Row::id).toArray(UUID[]::new), null);
         return rows.stream().map(row -> toView(row, identities.getOrDefault(row.id(), List.of()))).toList();
     }
 
     @Override
     public List<CustomerView> listMappedTo(UUID tenantSystemId) {
-        List<Row> rows = jdbc.sql("select " + COLUMNS_C + " from customers c join customer_mappings m "
-                        + "on m.customer_id = c.id and m.tenant_system_id = ? order by c.created_at, c.id")
+        List<Row> rows = jdbc.sql("""
+                        select %s
+                        from customers c
+                        join customer_mappings m on m.customer_id = c.id and m.tenant_system_id = ?
+                        order by c.created_at, c.id
+                        """.formatted(COLUMNS_C))
                 .param(tenantSystemId)
                 .query(Row.class)
                 .list();
@@ -50,14 +58,21 @@ public class JdbcCustomerReadRepository implements CustomerReadRepository {
 
     @Override
     public Optional<CustomerView> findById(CustomerId id) {
-        return jdbc.sql("select " + COLUMNS + " from customers where id = ?").param(id.value()).query(Row.class).optional()
+        return jdbc.sql("""
+                        select %s
+                        from customers
+                        where id = ?
+                        """.formatted(COLUMNS)).param(id.value()).query(Row.class).optional()
                 .map(row -> toView(row, mappings(new UUID[] {row.id()}, null).getOrDefault(row.id(), List.of())));
     }
 
     @Override
     public Optional<CustomerView> findByIdMappedTo(CustomerId id, UUID tenantSystemId) {
-        return jdbc.sql("select " + COLUMNS_C + " from customers c where c.id = ? and exists "
-                        + "(select 1 from customer_mappings m where m.customer_id = c.id and m.tenant_system_id = ?)")
+        return jdbc.sql("""
+                        select %s
+                        from customers c
+                        where c.id = ? and exists (select 1 from customer_mappings m where m.customer_id = c.id and m.tenant_system_id = ?)
+                        """.formatted(COLUMNS_C))
                 .params(id.value(), tenantSystemId)
                 .query(Row.class)
                 .optional()
@@ -87,8 +102,12 @@ public class JdbcCustomerReadRepository implements CustomerReadRepository {
         }
         Map<UUID, List<CustomerIdentityView>> byCustomer = new HashMap<>();
         String scope = tenantSystemId == null ? "" : " and tenant_system_id = ?";
-        var statement = jdbc.sql("select customer_id, tenant_system_id, external_user_id from customer_mappings "
-                + "where customer_id = any(?)" + scope + " order by external_user_id");
+        var statement = jdbc.sql("""
+                select customer_id, tenant_system_id, external_user_id
+                from customer_mappings
+                where customer_id = any(?)%s
+                order by external_user_id
+                """.formatted(scope));
         if (tenantSystemId == null) {
             statement = statement.param(customerIds);
         } else {

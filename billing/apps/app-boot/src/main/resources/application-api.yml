@@ -7,6 +7,12 @@
 # different: the pool stays at 20, so the short timeout ends that wait in a fast 503 with Retry-After instead of
 # queueing requests for 30s. The worker deliberately does not enable virtual threads (see application-worker.yml).
 spring:
+  config:
+    activate:
+      # The api runtime running alone. Dev and test activate api and worker together, where the base
+      # application.yml stands in for both; applying this file there would leak virtual threads and a short
+      # connection timeout into a process that also owns the jobs.
+      on-profile: "api & !worker"
   threads:
     virtual:
       enabled: true

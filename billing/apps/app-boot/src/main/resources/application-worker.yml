@@ -1,6 +1,12 @@
 # The background edge. It has no business controllers and owns every scheduled job. A short lock_timeout turns a
 # contended coordination row into a skipped tick instead of a worker stuck behind someone else's transaction.
 spring:
+  config:
+    activate:
+      # The worker runtime running alone. Dev and test activate api and worker together, where the base
+      # application.yml stands in for both; applying this file there would leak a 5s lock_timeout and eight-way
+      # tenant parallelism into a process that also serves HTTP.
+      on-profile: "worker & !api"
   flyway:
     enabled: false
   datasource:

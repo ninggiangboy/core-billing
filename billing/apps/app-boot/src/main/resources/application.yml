@@ -1,6 +1,11 @@
 spring:
   application:
     name: core-billing
+  profiles:
+    # With no active profile (dev, bootRun and every default-mode test) both runtime profiles are active, which
+    # keeps the all-in-one behaviour from before the split. The two profile files stay out of that run: each one
+    # guards itself with an on-profile expression so only a runtime that runs alone applies its settings.
+    default: api,worker
   security:
     oauth2:
       resourceserver:

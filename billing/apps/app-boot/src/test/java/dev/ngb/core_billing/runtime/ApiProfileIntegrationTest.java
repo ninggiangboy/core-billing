@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -42,6 +43,7 @@ class ApiProfileIntegrationTest {
     }
 
     @Autowired ApplicationContext context;
+    @Autowired Environment environment;
 
     @Test
     void theApiProfileCreatesNoJobBean() {
@@ -55,5 +57,12 @@ class ApiProfileIntegrationTest {
     @Test
     void theApiProfileKeepsTheBusinessEndpoints() {
         assertThat(context.getBeanNamesForType(CustomerController.class)).isNotEmpty();
+    }
+
+    /** application-api.yml guards itself with an on-profile expression; a broken guard would drop these silently. */
+    @Test
+    void theApiProfileAppliesItsOwnSettings() {
+        assertThat(environment.getProperty("spring.threads.virtual.enabled", Boolean.class)).isTrue();
+        assertThat(environment.getProperty("spring.datasource.hikari.maximum-pool-size", Integer.class)).isEqualTo(20);
     }
 }

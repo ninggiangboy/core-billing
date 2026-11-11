@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -48,6 +49,14 @@ class WorkerProfileIntegrationTest {
 
     @Autowired ApplicationContext context;
     @Autowired MockMvc mvc;
+    @Autowired Environment environment;
+
+    /** application-worker.yml guards itself with an on-profile expression; a broken guard would drop these silently. */
+    @Test
+    void theWorkerProfileAppliesItsOwnSettings() {
+        assertThat(environment.getProperty("billing.jobs.tenant-parallelism", Integer.class)).isEqualTo(8);
+        assertThat(environment.getProperty("spring.threads.virtual.enabled", Boolean.class)).isNotEqualTo(Boolean.TRUE);
+    }
 
     @Test
     void theWorkerProfileHasEveryJob() {

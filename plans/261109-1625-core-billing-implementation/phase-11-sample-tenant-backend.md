@@ -25,18 +25,18 @@ Source: [sample-tenant-system.md](../../docs/sample-tenant-system.md), [webhooks
 
 ## Tasks & Steps
 
-- [ ] 1. Reuse the layered-module convention from phase 1 by copying the build-logic (not depending on `billing/`). Add a CI check that no `sample-tenant` Gradle project depends on `billing`.
-- [ ] 2. `identity`: registration, authentication with its own credentials, account management, business roles and permissions. It does not use Billing's Keycloak realm.
-- [ ] 3. `billing-client`: typed calls for pricing plans, cost estimation, reservation, usage, charge, mapping, billing session, with Idempotency-Key on every write and retry with backoff on transport errors.
-- [ ] 4. `customer`: on registration create the Billing Customer and the mapping (scenario 1) and store the returned customer id.
-- [ ] 5. `catalog`, `resource`: the seven Resource types and their pricing models (Compute time-based, Storage and Bandwidth usage-based, Background Workload workload-based, API Operation event-based, Managed Service subscription, Cloud Package hybrid).
-- [ ] 6. `resource` order flow: fetch plan, estimate cost (scenario 2), check wallet and reserve (scenario 3), create the order and enqueue execution only when the reservation succeeds (scenario 4).
-- [ ] 7. `execution`: database-backed queue with `skip locked` workers that run orders, emit usage during execution (scenario 5), charge when cost is incurred (scenario 6), and release the remaining reservation (scenario 7).
-- [ ] 8. Top-up and billing views: create a Billing Session and redirect to the portal for top-up and invoice views (scenarios 8 and 10); handle both Direct and Connect tenants unchanged (scenario 9).
-- [ ] 9. `webhook-receiver`: verify the HMAC signature and timestamp, dedupe by event id, and apply the tenant's own policy to each event (record a debt, extend a period, suspend, or continue) (scenario 11).
-- [ ] 10. Subscriptions and combined pricing: Managed Service and Cloud Package orders create Billing subscriptions and react to renewal and failure events (scenario 12).
-- [ ] 11. Prepaid and Postpaid customers: a customer setting selects the wallet mode on the Billing side (scenario 13).
-- [ ] 12. Scenario-to-test matrix in `sample-tenant/README.md` mapping scenarios 1 to 13 to a module, an API and a test; scenarios 14 and 15 are exercised by the phase 14 suite with a second tenant.
+- [x] 1. Reuse the layered-module convention from phase 1 by copying the build-logic (not depending on `billing/`). Add a CI check that no `sample-tenant` Gradle project depends on `billing`.
+- [x] 2. `identity`: registration, authentication with its own credentials, account management, business roles and permissions. It does not use Billing's Keycloak realm.
+- [x] 3. `billing-client`: typed calls for pricing plans, cost estimation, reservation, usage, charge, mapping, billing session, with Idempotency-Key on every write and retry with backoff on transport errors.
+- [x] 4. `customer`: on registration create the Billing Customer and the mapping (scenario 1) and store the returned customer id.
+- [x] 5. `catalog`, `resource`: the seven Resource types and their pricing models (Compute time-based, Storage and Bandwidth usage-based, Background Workload workload-based, API Operation event-based, Managed Service subscription, Cloud Package hybrid).
+- [x] 6. `resource` order flow: fetch plan, estimate cost (scenario 2), check wallet and reserve (scenario 3), create the order and enqueue execution only when the reservation succeeds (scenario 4).
+- [x] 7. `execution`: database-backed queue with `skip locked` workers that run orders, emit usage during execution (scenario 5), charge when cost is incurred (scenario 6), and release the remaining reservation (scenario 7).
+- [x] 8. Top-up and billing views: create a Billing Session and redirect to the portal for top-up and invoice views (scenarios 8 and 10); handle both Direct and Connect tenants unchanged (scenario 9).
+- [x] 9. `webhook-receiver`: verify the HMAC signature and timestamp, dedupe by event id, and apply the tenant's own policy to each event (record a debt, extend a period, suspend, or continue) (scenario 11).
+- [x] 10. Subscriptions and combined pricing: Managed Service and Cloud Package orders create Billing subscriptions and react to renewal and failure events (scenario 12).
+- [x] 11. Prepaid and Postpaid customers: a customer setting selects the wallet mode on the Billing side (scenario 13).
+- [x] 12. Scenario-to-test matrix in `sample-tenant/README.md` mapping scenarios 1 to 13 to a module, an API and a test; scenarios 14 and 15 are exercised by the phase 14 suite with a second tenant.
 
 ## Verification
 

@@ -1,19 +1,19 @@
 package dev.ngb.core_billing.boot.config;
 
 import dev.ngb.core_billing.platform.adapter.keycloak.KeycloakIdentityProvider;
-import dev.ngb.core_billing.platform.adapter.persistence.credential.JdbcCredentialRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.role.JdbcPermissionCatalogRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.role.JdbcRoleRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.tenant.JdbcTenantDomainRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.tenantsystem.JdbcTenantSystemRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.user.JdbcUserRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.credential.JooqCredentialRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.role.JooqPermissionCatalogRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.role.JooqRoleRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.tenant.JooqTenantDomainRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.tenantsystem.JooqTenantSystemRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.user.JooqUserRepository;
 import dev.ngb.core_billing.platform.adapter.security.InMemoryRateLimiter;
-import dev.ngb.core_billing.platform.adapter.persistence.tenant.JdbcTenantRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.credential.JdbcCredentialReadRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.role.JdbcRoleReadRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.tenant.JdbcTenantReadRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.tenantsystem.JdbcTenantSystemReadRepository;
-import dev.ngb.core_billing.platform.adapter.persistence.user.JdbcUserReadRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.tenant.JooqTenantRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.credential.JooqCredentialReadRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.role.JooqRoleReadRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.tenant.JooqTenantReadRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.tenantsystem.JooqTenantSystemReadRepository;
+import dev.ngb.core_billing.platform.adapter.persistence.user.JooqUserReadRepository;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.application.tenant.command.AddTenantDomainUseCase;
@@ -55,10 +55,9 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.security.SecureRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.jdbc.core.JdbcAggregateOperations;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.web.client.RestClient;
 
 /** Wires the platform module. Holds no business rules. */
@@ -66,13 +65,13 @@ import org.springframework.web.client.RestClient;
 class PlatformConfiguration {
 
     @Bean
-    TenantRepository tenantRepository(JdbcAggregateOperations jdbc) {
-        return new JdbcTenantRepository(jdbc);
+    TenantRepository tenantRepository(DSLContext dsl) {
+        return new JooqTenantRepository(dsl);
     }
 
     @Bean
-    TenantDomainRepository tenantDomainRepository(JdbcAggregateOperations jdbc) {
-        return new JdbcTenantDomainRepository(jdbc);
+    TenantDomainRepository tenantDomainRepository(DSLContext dsl) {
+        return new JooqTenantDomainRepository(dsl);
     }
 
     @Bean
@@ -117,28 +116,28 @@ class PlatformConfiguration {
     }
 
     @Bean
-    UserRepository userRepository(JdbcAggregateOperations jdbc) {
-        return new JdbcUserRepository(jdbc);
+    UserRepository userRepository(DSLContext dsl) {
+        return new JooqUserRepository(dsl);
     }
 
     @Bean
-    RoleRepository roleRepository(JdbcAggregateOperations jdbc) {
-        return new JdbcRoleRepository(jdbc);
+    RoleRepository roleRepository(DSLContext dsl) {
+        return new JooqRoleRepository(dsl);
     }
 
     @Bean
-    TenantSystemRepository tenantSystemRepository(JdbcAggregateOperations jdbc) {
-        return new JdbcTenantSystemRepository(jdbc);
+    TenantSystemRepository tenantSystemRepository(DSLContext dsl) {
+        return new JooqTenantSystemRepository(dsl);
     }
 
     @Bean
-    CredentialRepository credentialRepository(JdbcAggregateOperations jdbc) {
-        return new JdbcCredentialRepository(jdbc);
+    CredentialRepository credentialRepository(DSLContext dsl) {
+        return new JooqCredentialRepository(dsl);
     }
 
     @Bean
-    PermissionCatalogRepository permissionCatalogRepository(JdbcClient jdbc) {
-        return new JdbcPermissionCatalogRepository(jdbc);
+    PermissionCatalogRepository permissionCatalogRepository(DSLContext dsl) {
+        return new JooqPermissionCatalogRepository(dsl);
     }
 
     /** Created on first use, so only code that really calls Keycloak needs its settings. */
@@ -223,28 +222,28 @@ class PlatformConfiguration {
     }
 
     @Bean
-    TenantReadRepository tenantReadRepository(JdbcClient jdbc) {
-        return new JdbcTenantReadRepository(jdbc);
+    TenantReadRepository tenantReadRepository(DSLContext dsl) {
+        return new JooqTenantReadRepository(dsl);
     }
 
     @Bean
-    RoleReadRepository roleReadRepository(JdbcClient jdbc) {
-        return new JdbcRoleReadRepository(jdbc);
+    RoleReadRepository roleReadRepository(DSLContext dsl) {
+        return new JooqRoleReadRepository(dsl);
     }
 
     @Bean
-    UserReadRepository userReadRepository(JdbcClient jdbc) {
-        return new JdbcUserReadRepository(jdbc);
+    UserReadRepository userReadRepository(DSLContext dsl) {
+        return new JooqUserReadRepository(dsl);
     }
 
     @Bean
-    TenantSystemReadRepository tenantSystemReadRepository(JdbcClient jdbc) {
-        return new JdbcTenantSystemReadRepository(jdbc);
+    TenantSystemReadRepository tenantSystemReadRepository(DSLContext dsl) {
+        return new JooqTenantSystemReadRepository(dsl);
     }
 
     @Bean
-    CredentialReadRepository credentialReadRepository(JdbcClient jdbc) {
-        return new JdbcCredentialReadRepository(jdbc);
+    CredentialReadRepository credentialReadRepository(DSLContext dsl) {
+        return new JooqCredentialReadRepository(dsl);
     }
 
     @Bean

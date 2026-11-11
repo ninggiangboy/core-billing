@@ -33,6 +33,8 @@ public class FakePaymentProvider implements PaymentProvider {
     private final AtomicInteger counter = COUNTER;
 
     public final List<CheckoutCall> checkouts = new CopyOnWriteArrayList<>();
+    /** How many distinct Checkout Sessions were actually created; a replayed call reuses one. */
+    public final AtomicInteger checkoutSessions = new AtomicInteger();
     public final List<RefundCall> refunds = new CopyOnWriteArrayList<>();
     public final List<String> keysVerified = new CopyOnWriteArrayList<>();
     public final Map<String, Intent> intents = new ConcurrentHashMap<>();
@@ -48,6 +50,7 @@ public class FakePaymentProvider implements PaymentProvider {
 
     public void reset() {
         checkouts.clear();
+        checkoutSessions.set(0);
         refunds.clear();
         keysVerified.clear();
         intents.clear();
@@ -106,6 +109,7 @@ public class FakePaymentProvider implements PaymentProvider {
             throw failure;
         }
         return checkoutByKey.computeIfAbsent(idempotencyKey, k -> {
+            checkoutSessions.incrementAndGet();
             String id = "cs_fake_" + RUN + "_" + counter.incrementAndGet();
             return new CreatedCheckout(id, "https://checkout.stripe.test/pay/" + id);
         });

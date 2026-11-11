@@ -64,21 +64,14 @@ public class CreateInvoicePaymentUseCase implements StartInvoicePayment {
         if (payment.checkoutSessionId() != null || payment.status() != PaymentStatus.REQUIRES_ACTION) {
             return started(payment, prepared.replayed());
         }
-        return started(checkouts.open(payment, prepared.configuration(), command.description(), "invoice-payment-" + payment.id()), false);
+        return started(checkouts.open(payment, prepared.configuration(), command.description(), "invoice-payment-" + payment.id()), prepared.replayed());
     }
 
     private Prepared prepare(StartInvoicePaymentCommand command, String key, String hash) {
         StripeConfiguration configuration = configurations.findLive().orElseThrow(() -> new ConflictException("Stripe is not configured"));
         Optional<Payment> existing = payments.findByIdempotencyKey(key);
         if (existing.isPresent()) {
-            Fingerprint.requireSameRequest("payment", key, existing.get().requestHash(), hash);
-            if (!existing.get().isForInvoice()) {
-                throw new IdempotencyConflictException("payment", key);
-            }
-            if (existing.get().checkoutSessionId() == null && !existing.get().configurationId().equals(configuration.id())) {
-                throw new ConflictException("the Stripe configuration changed since this payment was started; start it again with a new Idempotency-Key");
-            }
-            return new Prepared(existing.get(), configuration, true);
+            return replay(existing.get(), configuration, key, hash);
         }
         if (!configuration.canTakePayments()) {
             throw new ConflictException("Stripe is " + configuration.status().name().toLowerCase(Locale.ROOT) + " and cannot take payments yet");
@@ -92,8 +85,23 @@ public class CreateInvoicePaymentUseCase implements StartInvoicePayment {
         }
         Payment payment = Payment.startForInvoice(new PaymentId(ids.newId()), configuration, command.invoiceId(), wallet.id(), wallet.customerId(),
                 command.amount(), key, hash, clock.now());
-        payments.add(payment);
+        if (!payments.addIfAbsent(payment)) {
+            Payment winner = payments.findByIdempotencyKey(key)
+                    .orElseThrow(() -> new IllegalStateException("a payment vanished after a key conflict"));
+            return replay(winner, configuration, key, hash);
+        }
         return new Prepared(payment, configuration, false);
+    }
+
+    private Prepared replay(Payment existing, StripeConfiguration configuration, String key, String hash) {
+        Fingerprint.requireSameRequest("payment", key, existing.requestHash(), hash);
+        if (!existing.isForInvoice()) {
+            throw new IdempotencyConflictException("payment", key);
+        }
+        if (existing.checkoutSessionId() == null && !existing.configurationId().equals(configuration.id())) {
+            throw new ConflictException("the Stripe configuration changed since this payment was started; start it again with a new Idempotency-Key");
+        }
+        return new Prepared(existing, configuration, true);
     }
 
     private static StartInvoicePaymentResult started(Payment payment, boolean replayed) {

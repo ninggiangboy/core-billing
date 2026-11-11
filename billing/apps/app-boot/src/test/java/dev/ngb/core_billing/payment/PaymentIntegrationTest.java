@@ -46,9 +46,18 @@ import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.StripeEvents;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,6 +207,36 @@ class PaymentIntegrationTest {
         startTopUp(w, 5000, "reused");
 
         assertThatThrownBy(() -> startTopUp(w, 6000, "reused")).isInstanceOf(IdempotencyConflictException.class);
+    }
+
+    @Test
+    void concurrentTopUpsWithOneKeyOpenOneCheckout() throws Exception {
+        PayWorld w = worlds.direct(0);
+        ExecutorService pool = Executors.newFixedThreadPool(8);
+        try {
+            List<CompletableFuture<CreateTopUpUseCase.Result>> futures = IntStream.range(0, 8)
+                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> startTopUp(w, 5000, "parallel-topup"), pool))
+                    .toList();
+            Set<PaymentId> ids = new HashSet<>();
+            long firsts = 0;
+            long replays = 0;
+            for (var future : futures) {
+                CreateTopUpUseCase.Result result = future.get(30, TimeUnit.SECONDS);
+                ids.add(result.payment().id());
+                if (result.replayed()) {
+                    replays++;
+                } else {
+                    firsts++;
+                }
+            }
+            assertThat(ids).hasSize(1);
+            assertThat(firsts).isEqualTo(1);
+            assertThat(replays).isEqualTo(7);
+            assertThat(owner.count("select count(*) from payments where tenant_id = ?", w.money().tenant().id().value())).isEqualTo(1);
+            assertThat(stripe.checkoutSessions.get()).isEqualTo(1);
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     @Test
@@ -810,6 +849,61 @@ class PaymentIntegrationTest {
         assertThat(stripe.refunds).hasSize(1);
         assertThat(held(w)).isEqualTo(1000);
         assertThatThrownBy(() -> requestRefund(w, p, 2000L, "same")).isInstanceOf(IdempotencyConflictException.class);
+    }
+
+    @Test
+    void concurrentRefundsWithOneKeyCreateOneRefundAndOneHold() throws Exception {
+        PayWorld w = worlds.direct(0);
+        Payment p = settledPayment(w, 5000);
+        ExecutorService pool = Executors.newFixedThreadPool(8);
+        try {
+            List<CompletableFuture<Refund>> futures = IntStream.range(0, 8)
+                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> requestRefund(w, p, null, "parallel-refund"), pool))
+                    .toList();
+            Set<java.util.UUID> ids = new HashSet<>();
+            for (var future : futures) {
+                ids.add(future.get(30, TimeUnit.SECONDS).id().value());
+            }
+            assertThat(ids).hasSize(1);
+            assertThat(owner.count("select count(*) from refunds where tenant_id = ?", w.money().tenant().id().value())).isEqualTo(1);
+            assertThat(held(w)).as("one hold, not eight").isEqualTo(5000);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void theSameRefundKeyOnTwoPaymentsConcurrentlyConflicts() throws Exception {
+        PayWorld w = worlds.direct(0);
+        Payment first = settledPayment(w, 5000);
+        Payment second = settledPayment(w, 5000);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            CompletableFuture<Object> one = CompletableFuture.supplyAsync(() -> attempt(start, () -> requestRefund(w, first, null, "cross-key")), pool);
+            CompletableFuture<Object> two = CompletableFuture.supplyAsync(() -> attempt(start, () -> requestRefund(w, second, null, "cross-key")), pool);
+            start.countDown();
+
+            Object a = one.get(30, TimeUnit.SECONDS);
+            Object b = two.get(30, TimeUnit.SECONDS);
+            assertThat(List.of(a, b)).filteredOn(Refund.class::isInstance).as("one request wins").hasSize(1);
+            assertThat(List.of(a, b)).filteredOn(IdempotencyConflictException.class::isInstance).as("the other conflicts").hasSize(1);
+            assertThat(owner.count("select count(*) from refunds where tenant_id = ?", w.money().tenant().id().value())).isEqualTo(1);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    private static Object attempt(CountDownLatch start, java.util.function.Supplier<Refund> work) {
+        try {
+            start.await(10, TimeUnit.SECONDS);
+            return work.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new IllegalStateException(e);
+        } catch (RuntimeException e) {
+            return e;
+        }
     }
 
     @Test

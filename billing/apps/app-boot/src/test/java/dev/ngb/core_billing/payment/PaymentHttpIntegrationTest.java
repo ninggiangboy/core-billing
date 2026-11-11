@@ -246,8 +246,9 @@ class PaymentHttpIntegrationTest {
 
         assertThat(call(HttpMethod.POST, acme, systemKey, "/api/v1/payments/top-ups", "http-down",
                 HttpWorld.Map2.of("walletId", walletId, "amount", 300, "currency", "USD")).getResponse().getStatus()).isEqualTo(502);
+        // The payment row was stored before Stripe was called, so the retry replays it and answers 200.
         assertThat(call(HttpMethod.POST, acme, systemKey, "/api/v1/payments/top-ups", "http-down",
-                HttpWorld.Map2.of("walletId", walletId, "amount", 300, "currency", "USD")).getResponse().getStatus()).isEqualTo(201);
+                HttpWorld.Map2.of("walletId", walletId, "amount", 300, "currency", "USD")).getResponse().getStatus()).isEqualTo(200);
     }
 
     /** The same key limit applies here as in every other context that takes an {@code Idempotency-Key}. */

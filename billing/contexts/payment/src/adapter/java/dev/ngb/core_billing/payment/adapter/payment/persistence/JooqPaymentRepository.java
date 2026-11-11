@@ -33,9 +33,12 @@ public class JooqPaymentRepository implements PaymentRepository {
     }
 
     @Override
-    public void add(Payment p) {
+    public boolean addIfAbsent(Payment p) {
         var insert = dsl.insertInto(PAYMENTS);
-        apply(insert, p).execute();
+        return apply(insert, p)
+                .onConflict(PAYMENTS.TENANT_ID, PAYMENTS.IDEMPOTENCY_KEY)
+                .doNothing()
+                .execute() == 1;
     }
 
     @Override

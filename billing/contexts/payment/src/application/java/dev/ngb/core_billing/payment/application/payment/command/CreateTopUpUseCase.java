@@ -83,19 +83,14 @@ public class CreateTopUpUseCase {
         if (payment.checkoutSessionId() != null || payment.status() != PaymentStatus.REQUIRES_ACTION) {
             return new Result(payment, prepared.replayed());
         }
-        return new Result(checkouts.open(payment, prepared.configuration(), "Wallet top-up", "topup-" + payment.id()), false);
+        return new Result(checkouts.open(payment, prepared.configuration(), "Wallet top-up", "topup-" + payment.id()), prepared.replayed());
     }
 
     private Prepared prepare(Command command, String key, String hash) {
         StripeConfiguration configuration = configurations.findLive().orElseThrow(() -> new ConflictException("Stripe is not configured"));
         Optional<Payment> existing = payments.findByIdempotencyKey(key);
         if (existing.isPresent()) {
-            Fingerprint.requireSameRequest("payment", key, existing.get().requestHash(), hash);
-            if (existing.get().checkoutSessionId() == null && !existing.get().configurationId().equals(configuration.id())) {
-                // The payment was stored for a configuration that has since been replaced; Stripe would report it to the old one.
-                throw new ConflictException("the Stripe configuration changed since this top-up was started; start it again with a new Idempotency-Key");
-            }
-            return new Prepared(existing.get(), configuration, true);
+            return replay(existing.get(), configuration, key, hash);
         }
         if (!configuration.canTakePayments()) {
             throw new ConflictException("Stripe is " + configuration.status().name().toLowerCase(java.util.Locale.ROOT) + " and cannot take payments yet");
@@ -107,10 +102,23 @@ public class CreateTopUpUseCase {
         }
         Instant now = clock.now();
         Payment payment = Payment.start(new PaymentId(ids.newId()), configuration, wallet.id(), wallet.customerId(), command.amount(), key, hash, now);
-        payments.add(payment);
+        if (!payments.addIfAbsent(payment)) {
+            Payment winner = payments.findByIdempotencyKey(key)
+                    .orElseThrow(() -> new IllegalStateException("a payment vanished after a key conflict"));
+            return replay(winner, configuration, key, hash);
+        }
         TenantId tenantId = tenantContext.requireTenant();
         auditLog.record(AuditEntry.tenant(tenantId, command.audit().actor(), "payment.top-up-started", "payment/" + payment.id(),
                 command.audit().requestId(), now));
         return new Prepared(payment, configuration, false);
+    }
+
+    private Prepared replay(Payment existing, StripeConfiguration configuration, String key, String hash) {
+        Fingerprint.requireSameRequest("payment", key, existing.requestHash(), hash);
+        if (existing.checkoutSessionId() == null && !existing.configurationId().equals(configuration.id())) {
+            // The payment was stored for a configuration that has since been replaced; Stripe would report it to the old one.
+            throw new ConflictException("the Stripe configuration changed since this top-up was started; start it again with a new Idempotency-Key");
+        }
+        return new Prepared(existing, configuration, true);
     }
 }

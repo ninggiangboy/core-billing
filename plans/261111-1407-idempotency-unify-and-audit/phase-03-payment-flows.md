@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Payment: top-up, invoice payment, refund"
-status: pending
+status: completed
 priority: P1
 effort: "3h"
 dependencies: [1]
@@ -35,18 +35,18 @@ Racing duplicates of a top-up, an invoice payment or a refund replay the first r
 
 ## Tasks & Steps
 
-- [ ] 1. `JooqPaymentRepository.addIfAbsent`: the existing insert plus `on conflict (tenant_id, idempotency_key) do nothing`,
+- [x] 1. `JooqPaymentRepository.addIfAbsent`: the existing insert plus `on conflict (tenant_id, idempotency_key) do nothing`,
       returning `execute() == 1`.
-- [ ] 2. Top-up and invoice payment: keep the read-first fast path, then call `addIfAbsent`. On `false`, read the
+- [x] 2. Top-up and invoice payment: keep the read-first fast path, then call `addIfAbsent`. On `false`, read the
       winner and run the same replay branch as the fast path (hash check through `requireSameRequest`, then the
       configuration check). Write the audit entry only on a real insert. Extract the replay branch into one private
       method per use case, so both paths share it.
-- [ ] 3. Refund: lock the payment first, then read the key. Keep the existing replay branch and `RETRY_WINDOW` rule.
+- [x] 3. Refund: lock the payment first, then read the key. Keep the existing replay branch and `RETRY_WINDOW` rule.
       Lock order stays payment, then refund, then wallet. Update the "Lock order" comment.
-- [ ] 4. `JooqRefundRepository.add`: when `Causes.violates(e, REFUNDS_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName())`, throw
+- [x] 4. `JooqRefundRepository.add`: when `Causes.violates(e, REFUNDS_TENANT_ID_IDEMPOTENCY_KEY_KEY.getName())`, throw
       `IdempotencyConflictException("refund", key)`. Only a same key on a different payment, which takes a different
       lock, reaches this.
-- [ ] 5. Tests:
+- [x] 5. Tests:
        - 8 parallel top-ups with one key give one payment row, one checkout session opened at the fake provider, one
          201 and seven 200s with the same payment id and checkout URL.
        - The same for an invoice payment.

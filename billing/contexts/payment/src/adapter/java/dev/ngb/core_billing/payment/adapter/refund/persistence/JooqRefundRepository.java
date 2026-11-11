@@ -7,9 +7,11 @@ import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.refund.Refund;
 import dev.ngb.core_billing.payment.domain.refund.RefundId;
 import dev.ngb.core_billing.payment.domain.refund.RefundStatus;
+import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing_jooq.tables.records.RefundsRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -25,8 +27,15 @@ public class JooqRefundRepository implements RefundRepository {
 
     @Override
     public void add(Refund r) {
-        var insert = dsl.insertInto(REFUNDS);
-        apply(insert, r).execute();
+        try {
+            var insert = dsl.insertInto(REFUNDS);
+            apply(insert, r).execute();
+        } catch (RuntimeException e) {
+            if (Causes.violates(e, "refunds_tenant_id_idempotency_key_key")) {
+                throw new IdempotencyConflictException("refund", r.idempotencyKey());
+            }
+            throw e;
+        }
     }
 
     @Override

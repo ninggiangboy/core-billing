@@ -138,14 +138,14 @@ public class RequestRefundUseCase {
     }
 
     private Prepared prepare(Command command, String key, String hash) {
+        // Lock order is payment, then refund, then wallet, everywhere. The key is read after the payment lock,
+        // so a concurrent duplicate waits here and then sees the refund the first request wrote.
+        Payment payment = payments.lockById(command.paymentId()).orElseThrow(() -> new NotFoundException("payment not found"));
         Optional<Refund> existing = refunds.findByIdempotencyKey(key);
         if (existing.isPresent()) {
             Fingerprint.requireSameRequest("refund", key, existing.get().requestHash(), hash);
-            Payment payment = payments.findById(existing.get().paymentId()).orElseThrow();
             return new Prepared(existing.get(), payment, usable(payment), true);
         }
-        // Lock order is payment, then refund, then wallet, everywhere.
-        Payment payment = payments.lockById(command.paymentId()).orElseThrow(() -> new NotFoundException("payment not found"));
         if (payment.status() != PaymentStatus.SUCCEEDED) {
             throw new ConflictException("only a succeeded payment can be refunded; this one is " + payment.status());
         }

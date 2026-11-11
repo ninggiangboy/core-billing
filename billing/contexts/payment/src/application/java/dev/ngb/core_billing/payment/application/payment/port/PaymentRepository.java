@@ -9,7 +9,12 @@ import java.util.Optional;
 /** Payments of the current tenant. The {@code lock...} methods take the row lock and must run in a transaction. */
 public interface PaymentRepository {
 
-    void add(Payment payment);
+    /**
+     * Inserts the payment unless this tenant already has one with its idempotency key.
+     *
+     * @return true when the row was inserted, false when the key already existed
+     */
+    boolean addIfAbsent(Payment payment);
 
     void update(Payment payment);
 

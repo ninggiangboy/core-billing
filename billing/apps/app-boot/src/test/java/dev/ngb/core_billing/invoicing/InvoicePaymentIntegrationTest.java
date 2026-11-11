@@ -26,8 +26,15 @@ import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.StripeEvents;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,6 +195,36 @@ class InvoicePaymentIntegrationTest {
         assertThat(again.payment().replayed()).isTrue();
         assertThat(owner.count("select count(*) from payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
         assertThat(stripe.checkouts).hasSize(1);
+    }
+
+    @Test
+    void concurrentPaymentsWithOneKeyStartOnePaymentAndOneCheckout() throws Exception {
+        Debt debt = invoicedDebt();
+        ExecutorService pool = Executors.newFixedThreadPool(8);
+        try {
+            var futures = IntStream.range(0, 8)
+                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> pay(debt, "parallel-pay"), pool))
+                    .toList();
+            Set<UUID> ids = new HashSet<>();
+            long firsts = 0;
+            long replays = 0;
+            for (var future : futures) {
+                PayInvoiceUseCase.Result result = future.get(30, TimeUnit.SECONDS);
+                ids.add(result.payment().paymentId());
+                if (result.payment().replayed()) {
+                    replays++;
+                } else {
+                    firsts++;
+                }
+            }
+            assertThat(ids).hasSize(1);
+            assertThat(firsts).isEqualTo(1);
+            assertThat(replays).isEqualTo(7);
+            assertThat(owner.count("select count(*) from payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
+            assertThat(stripe.checkoutSessions.get()).isEqualTo(1);
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     @Test

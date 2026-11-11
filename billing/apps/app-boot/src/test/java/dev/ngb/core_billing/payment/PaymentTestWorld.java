@@ -91,7 +91,7 @@ public class PaymentTestWorld {
         return scopes.inTenant(world.money().tenant().id(), () -> unitOfWork.transactional(() -> {
             Payment payment = Payment.start(id, world.configuration(), world.money().wallet().id(), world.money().customerId(),
                     Money.of(amount, world.money().wallet().currency()), "key-" + id, "hash-" + id, clock.now());
-            payments.add(payment);
+            payments.addIfAbsent(payment);
             return payment;
         }));
     }

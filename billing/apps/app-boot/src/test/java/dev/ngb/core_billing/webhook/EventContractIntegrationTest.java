@@ -178,7 +178,7 @@ class EventContractIntegrationTest {
 
         UUID invoiceId = owner.jdbc().queryForObject("select id from invoices where tenant_id = ?", UUID.class, tenant.value());
         var paymentId = new dev.ngb.core_billing.payment.domain.payment.PaymentId(UUID.randomUUID());
-        scopes.runInTenant(tenant, () -> unitOfWork.transactional(() -> paymentRepository.add(dev.ngb.core_billing.payment.domain.payment.Payment.startForInvoice(paymentId,
+        scopes.runInTenant(tenant, () -> unitOfWork.transactional(() -> paymentRepository.addIfAbsent(dev.ngb.core_billing.payment.domain.payment.Payment.startForInvoice(paymentId,
                 w.configuration(), invoiceId, postpaid.wallet().id(), postpaid.customerId(), Money.of(1000, money), "key-" + paymentId, "hash-" + paymentId, Instant.now()))));
         deliver(w, dev.ngb.core_billing.support.StripeEvents.paidCheckout(dev.ngb.core_billing.support.StripeEvents.newEventId(), null, "cs_" + paymentId, "pi_" + paymentId,
                 paymentId.toString(), 1000));

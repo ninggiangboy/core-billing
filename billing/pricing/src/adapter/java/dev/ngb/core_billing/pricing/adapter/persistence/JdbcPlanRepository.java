@@ -40,8 +40,11 @@ public class JdbcPlanRepository implements PlanRepository {
     @Override
     public void addVersion(PlanVersion version) {
         PlanVersionRow row = PlanVersionRow.from(version, json);
-        jdbc.sql("insert into pricing_plan_versions (plan_id, version, tenant_id, rule, billing_cycle, min_charge, max_charge, rounding, valid_from, "
-                        + "valid_until, created_at, created_by) values (?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?)")
+        jdbc.sql("""
+                        insert into pricing_plan_versions (plan_id, version, tenant_id, rule, billing_cycle, min_charge, max_charge, rounding, valid_from,
+                                                           valid_until, created_at, created_by)
+                        values (?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """)
                 .params(row.planId(), row.version(), row.tenantId(), row.rule(), row.billingCycle(), row.minCharge(), row.maxCharge(), row.rounding(),
                         Timestamp.from(row.validFrom()), row.validUntil() == null ? null : Timestamp.from(row.validUntil()), Timestamp.from(row.createdAt()),
                         row.createdBy())
@@ -64,12 +67,21 @@ public class JdbcPlanRepository implements PlanRepository {
 
     @Override
     public Optional<PricingPlan> lockById(PlanId id) {
-        return load(jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where id = ? for update").param(id.value())).stream().findFirst();
+        return load(jdbc.sql("""
+                select %s
+                from pricing_plans
+                where id = ?
+                for update
+                """.formatted(PLAN_COLUMNS)).param(id.value())).stream().findFirst();
     }
 
     @Override
     public Optional<PricingPlan> findByCode(String code) {
-        return load(jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where code = ?").param(code)).stream().findFirst();
+        return load(jdbc.sql("""
+                select %s
+                from pricing_plans
+                where code = ?
+                """.formatted(PLAN_COLUMNS)).param(code)).stream().findFirst();
     }
 
     private List<PricingPlan> load(JdbcClient.StatementSpec statement) {
@@ -83,7 +95,12 @@ public class JdbcPlanRepository implements PlanRepository {
         Map<UUID, PricingPlanRow> byId = new HashMap<>();
         rows.forEach(row -> byId.put(row.id(), row));
         Map<UUID, List<PlanVersion>> versions = new HashMap<>();
-        jdbc.sql("select " + VERSION_COLUMNS + " from pricing_plan_versions where plan_id = any(?) order by plan_id, version")
+        jdbc.sql("""
+                        select %s
+                        from pricing_plan_versions
+                        where plan_id = any(?)
+                        order by plan_id, version
+                        """.formatted(VERSION_COLUMNS))
                 .param(byId.keySet().toArray(UUID[]::new))
                 .query(PlanVersionRow.class)
                 .list()

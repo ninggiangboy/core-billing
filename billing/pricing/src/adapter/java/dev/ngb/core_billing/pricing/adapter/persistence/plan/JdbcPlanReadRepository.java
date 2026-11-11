@@ -48,14 +48,27 @@ public class JdbcPlanReadRepository implements PlanReadRepository {
     @Override
     public List<PricingPlanView> list(PlanStatus status) {
         JdbcClient.StatementSpec statement = status == null
-                ? jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans order by id desc")
-                : jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where status = ? order by id desc").param(status.name());
+                ? jdbc.sql("""
+                        select %s
+                        from pricing_plans
+                        order by id desc
+                        """.formatted(PLAN_COLUMNS))
+                : jdbc.sql("""
+                        select %s
+                        from pricing_plans
+                        where status = ?
+                        order by id desc
+                        """.formatted(PLAN_COLUMNS)).param(status.name());
         return load(statement);
     }
 
     @Override
     public Optional<PricingPlanView> findById(UUID id) {
-        return load(jdbc.sql("select " + PLAN_COLUMNS + " from pricing_plans where id = ?").param(id)).stream().findFirst();
+        return load(jdbc.sql("""
+                select %s
+                from pricing_plans
+                where id = ?
+                """.formatted(PLAN_COLUMNS)).param(id)).stream().findFirst();
     }
 
     private List<PricingPlanView> load(JdbcClient.StatementSpec statement) {
@@ -64,7 +77,12 @@ public class JdbcPlanReadRepository implements PlanReadRepository {
             return List.of();
         }
         Map<UUID, List<PlanVersionView>> versions = new HashMap<>();
-        jdbc.sql("select " + VERSION_COLUMNS + " from pricing_plan_versions where plan_id = any(?) order by plan_id, version")
+        jdbc.sql("""
+                        select %s
+                        from pricing_plan_versions
+                        where plan_id = any(?)
+                        order by plan_id, version
+                        """.formatted(VERSION_COLUMNS))
                 .param(rows.stream().map(PlanRow::id).toArray(UUID[]::new))
                 .query(VersionRow.class)
                 .list()

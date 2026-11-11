@@ -6,8 +6,8 @@ import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.money.api.wallet.CreditCommand;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
 import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformAdminUseCase;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.support.HttpWorld;
 import dev.ngb.core_billing.support.HttpWorld.Account;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
@@ -106,8 +106,8 @@ class MoneyHttpIntegrationTest {
     }
 
     private void credit(String walletId, long amount, String currency) {
-        scopes.runInTenant(new dev.ngb.core_billing.sharedkernel.TenantId(UUID.fromString(acme.tenantId())), () -> creditWallet.credit(new CreditCommand(
-                WalletId.of(walletId), Money.of(amount, dev.ngb.core_billing.sharedkernel.Currency.of(currency)), "topup:" + UUID.randomUUID(), null,
+        scopes.runInTenant(new dev.ngb.core_billing.sharedkernel.id.TenantId(UUID.fromString(acme.tenantId())), () -> creditWallet.credit(new CreditCommand(
+                WalletId.of(walletId), Money.of(amount, dev.ngb.core_billing.sharedkernel.money.Currency.of(currency)), "topup:" + UUID.randomUUID(), null,
                 "credit-" + UUID.randomUUID(), "system/test")));
     }
 

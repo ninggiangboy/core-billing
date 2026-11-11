@@ -5,7 +5,7 @@ import dev.ngb.core_billing.platform.api.actor.Actor;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import dev.ngb.core_billing.usage.api.lookup.UsageEventId;
 import dev.ngb.core_billing.usage.api.lookup.UsageTotal;
 import dev.ngb.core_billing.usage.application.usage.command.RecordUsageUseCase;

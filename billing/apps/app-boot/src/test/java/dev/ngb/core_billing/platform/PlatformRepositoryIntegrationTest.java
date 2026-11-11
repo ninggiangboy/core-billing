@@ -16,9 +16,9 @@ import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.platform.domain.tenant.TenantCode;
 import dev.ngb.core_billing.platform.domain.tenant.TenantDomain;
 import dev.ngb.core_billing.platform.domain.tenant.TenantStatus;
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
@@ -80,7 +80,7 @@ class PlatformRepositoryIntegrationTest {
     @Test
     void duplicateCodeAndHostnameAreRejectedByTheDatabaseConstraint() {
         Tenant created = scopes.newTenant();
-        Tenant twin = Tenant.create(new dev.ngb.core_billing.sharedkernel.TenantId(ids.newId()), created.code(), "Twin", clock.now());
+        Tenant twin = Tenant.create(new dev.ngb.core_billing.sharedkernel.id.TenantId(ids.newId()), created.code(), "Twin", clock.now());
         assertThatThrownBy(() -> scopes.runOnPlatform(() -> unitOfWork.transactional(() -> tenants.add(twin))))
                 .isInstanceOf(TenantCodeAlreadyUsedException.class);
         assertThatThrownBy(() -> scopes.onPlatform(() -> createTenant.execute(

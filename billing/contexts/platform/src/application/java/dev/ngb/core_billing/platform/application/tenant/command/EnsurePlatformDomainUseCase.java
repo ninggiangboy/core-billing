@@ -2,9 +2,9 @@ package dev.ngb.core_billing.platform.application.tenant.command;
 
 import dev.ngb.core_billing.platform.domain.tenant.Hostname;
 import dev.ngb.core_billing.platform.domain.tenant.TenantDomain;
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
 import dev.ngb.core_billing.platform.application.tenant.exception.HostnameAlreadyMappedException;
 

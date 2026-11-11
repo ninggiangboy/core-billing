@@ -1,9 +1,9 @@
 package dev.ngb.core_billing.money.application.wallet.port;
 
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
-import dev.ngb.core_billing.sharedkernel.Currency;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.Optional;
 
 /**

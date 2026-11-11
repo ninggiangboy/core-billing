@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.money;
 
 /**
  * An amount as it appears in a request or a response: whole minor units (cents, dong) and an ISO 4217

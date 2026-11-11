@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.pricing.domain.plan;
 
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;

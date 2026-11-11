@@ -78,7 +78,7 @@ class PlatformBootstrap implements ApplicationRunner {
                 seedDefaultRoles.execute();
                 // Tenants created before a permission existed get it on their default roles.
                 tenantQueries.list().stream().filter(dev.ngb.core_billing.platform.application.tenant.query.TenantView::isActive).forEach(tenant ->
-                        tenantContext.runAs(RequestScope.tenant(new dev.ngb.core_billing.sharedkernel.TenantId(tenant.id())), seedDefaultRoles::execute));
+                        tenantContext.runAs(RequestScope.tenant(new dev.ngb.core_billing.sharedkernel.id.TenantId(tenant.id())), seedDefaultRoles::execute));
                 if (!adminEmail.isBlank()) {
                     bootstrapAdmin.execute(adminEmail, "Platform Administrator", adminTemporaryPassword.isBlank() ? null : adminTemporaryPassword);
                 }

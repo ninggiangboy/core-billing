@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.Set;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.application.role.command.SeedDefaultRolesUseCase;

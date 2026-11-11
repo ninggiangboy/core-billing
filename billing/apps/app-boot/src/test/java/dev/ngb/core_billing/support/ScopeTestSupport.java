@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.application.tenant.command.CreateTenantUseCase;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.springframework.stereotype.Component;

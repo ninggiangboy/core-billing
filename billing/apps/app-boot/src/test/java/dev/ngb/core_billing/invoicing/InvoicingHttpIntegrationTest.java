@@ -11,8 +11,8 @@ import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformAdminUseCase;
 import dev.ngb.core_billing.pricing.PricingTestWorld;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.support.FakePaymentProvider;
 import dev.ngb.core_billing.support.FakePaymentProviderConfig;
 import dev.ngb.core_billing.support.HttpWorld;
@@ -123,8 +123,8 @@ class InvoicingHttpIntegrationTest {
     }
 
     private ChargeResult charge(long amount) {
-        return scopes.inTenant(tenant, () -> charges.charge(new ChargeCommand(dev.ngb.core_billing.sharedkernel.WalletId.of(walletId), null, Money.of(amount,
-                dev.ngb.core_billing.sharedkernel.Currency.of("USD")), null, "http work", "charge-" + UUID.randomUUID())));
+        return scopes.inTenant(tenant, () -> charges.charge(new ChargeCommand(dev.ngb.core_billing.sharedkernel.id.WalletId.of(walletId), null, Money.of(amount,
+                dev.ngb.core_billing.sharedkernel.money.Currency.of("USD")), null, "http work", "charge-" + UUID.randomUUID())));
     }
 
     /** An open invoice for a fresh Postpaid charge, made the way a Tenant System would ask for one. */

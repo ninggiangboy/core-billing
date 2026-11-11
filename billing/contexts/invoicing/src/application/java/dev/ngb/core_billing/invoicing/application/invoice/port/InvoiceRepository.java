@@ -2,7 +2,7 @@ package dev.ngb.core_billing.invoicing.application.invoice.port;
 
 import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.Optional;
 import java.util.UUID;
 

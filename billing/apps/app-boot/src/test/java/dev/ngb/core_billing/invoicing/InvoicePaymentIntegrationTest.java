@@ -19,7 +19,7 @@ import dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebh
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.support.FakePaymentProvider;
 import dev.ngb.core_billing.support.FakePaymentProviderConfig;
 import dev.ngb.core_billing.support.OwnerDatabase;

@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.EventEnvelope;
-import dev.ngb.core_billing.sharedkernel.EventPublisher;
-import dev.ngb.core_billing.sharedkernel.TenantId;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
+import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;

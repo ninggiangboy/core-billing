@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.usage.application.usage.service;
 
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import dev.ngb.core_billing.usage.api.lookup.UsageLookup;
 import dev.ngb.core_billing.usage.api.lookup.UsageRecord;
 import dev.ngb.core_billing.usage.api.lookup.UsageTotal;

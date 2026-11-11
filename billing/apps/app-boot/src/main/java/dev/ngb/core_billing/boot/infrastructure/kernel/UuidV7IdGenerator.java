@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.infrastructure.kernel;
 
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
 import java.security.SecureRandom;
 import java.util.UUID;
 

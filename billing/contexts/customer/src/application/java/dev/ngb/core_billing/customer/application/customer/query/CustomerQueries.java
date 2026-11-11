@@ -3,8 +3,8 @@ package dev.ngb.core_billing.customer.application.customer.query;
 import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 
 /** Read access to the current tenant's customers. */

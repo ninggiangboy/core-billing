@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.event;
 
 /**
  * Remembers which events a consumer has already handled, so the at-least-once relay never makes a consumer act

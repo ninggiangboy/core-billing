@@ -2,8 +2,8 @@ package dev.ngb.core_billing.payment.application.stripe.command;
 
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;

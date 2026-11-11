@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.webhook.adapter.delivery.json;
 
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
 import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;

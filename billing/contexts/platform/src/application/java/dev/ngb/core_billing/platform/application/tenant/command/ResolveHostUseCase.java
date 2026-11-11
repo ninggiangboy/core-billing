@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.domain.tenant.Hostname;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.platform.domain.tenant.TenantDomain;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.Optional;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;

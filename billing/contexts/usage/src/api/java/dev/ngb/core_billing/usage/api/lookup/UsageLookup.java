@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.usage.api.lookup;
 
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;

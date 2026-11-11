@@ -2,7 +2,7 @@ package dev.ngb.core_billing.platform.domain.credential;
 
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Arrays;

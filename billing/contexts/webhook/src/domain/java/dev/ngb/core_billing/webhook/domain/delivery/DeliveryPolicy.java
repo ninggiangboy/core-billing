@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.webhook.domain.delivery;
 
-import dev.ngb.core_billing.sharedkernel.Backoff;
+import dev.ngb.core_billing.sharedkernel.util.Backoff;
 import java.time.Duration;
 import java.util.Objects;
 

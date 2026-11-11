@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.util;
 
 import java.sql.SQLException;
 import java.util.Set;

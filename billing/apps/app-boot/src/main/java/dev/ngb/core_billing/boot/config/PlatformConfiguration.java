@@ -48,9 +48,9 @@ import dev.ngb.core_billing.platform.application.tenant.command.EnsurePlatformDo
 import dev.ngb.core_billing.platform.application.tenant.command.ResolveHostUseCase;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainRepository;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.security.SecureRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

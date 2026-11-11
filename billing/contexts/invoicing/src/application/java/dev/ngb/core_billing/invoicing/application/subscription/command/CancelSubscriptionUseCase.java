@@ -9,9 +9,9 @@ import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.time.Instant;
 import java.util.UUID;
 

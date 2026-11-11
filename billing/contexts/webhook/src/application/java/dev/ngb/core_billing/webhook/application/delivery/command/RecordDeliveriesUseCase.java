@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.webhook.application.delivery.command;
 
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.EventInbox;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.event.EventInbox;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
 import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpoint;

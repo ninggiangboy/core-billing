@@ -2,8 +2,8 @@ package dev.ngb.core_billing.payment.application.stripe.query;
 
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.PageSize;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.util.PageSize;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import java.util.UUID;
 

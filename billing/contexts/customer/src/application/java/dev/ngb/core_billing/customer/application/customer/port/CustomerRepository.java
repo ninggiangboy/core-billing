@@ -3,7 +3,7 @@ package dev.ngb.core_billing.customer.application.customer.port;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.util.Optional;
 
 /** Reads see only the current tenant's customers, because the database enforces it. */

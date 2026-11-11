@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.money.application.wallet.query;
 
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.Currency;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
 
 /** A wallet as the read API shows it; the derived balances are computed from the stored columns. */

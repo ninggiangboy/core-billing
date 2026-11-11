@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.util;
 
 /** Shapes text that is stored in a column with a bounded width. */
 public final class Text {

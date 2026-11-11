@@ -23,7 +23,7 @@ class ArchitectureTest {
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
                 .importPackages(ROOT);
         // Guards against an import that silently matches nothing and makes every rule pass.
-        assertThat(production.contain("dev.ngb.core_billing.sharedkernel.Money")).isTrue();
+        assertThat(production.contain("dev.ngb.core_billing.sharedkernel.money.Money")).isTrue();
     }
 
     @org.junit.jupiter.api.Test

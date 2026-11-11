@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.money.api.wallet;
 
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.Optional;
 
 /**

@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.platform.application.role.command;
 
 import dev.ngb.core_billing.platform.api.actor.Permission;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import dev.ngb.core_billing.platform.application.role.port.PermissionCatalogRepository;
 

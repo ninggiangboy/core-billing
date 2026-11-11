@@ -21,7 +21,7 @@ import dev.ngb.core_billing.money.application.reservation.command.ExpireReservat
 import dev.ngb.core_billing.money.application.reservation.command.ReleaseReservationUseCase;
 import dev.ngb.core_billing.money.application.ledger.command.ReverseEntryUseCase;
 import dev.ngb.core_billing.money.application.wallet.query.WalletQueries;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.support.EventSchemas;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
@@ -77,7 +77,7 @@ class EventContractIntegrationTest {
     @Autowired dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebhookUseCase receive;
     @Autowired dev.ngb.core_billing.payment.application.payment.port.PaymentRepository paymentRepository;
     @Autowired dev.ngb.core_billing.payment.application.refund.port.RefundRepository refundRepository;
-    @Autowired dev.ngb.core_billing.sharedkernel.UnitOfWork unitOfWork;
+    @Autowired dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork unitOfWork;
     @Autowired dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay relay;
     @Autowired dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase closeCycle;
     @Autowired dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase subscribe;

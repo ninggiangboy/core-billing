@@ -3,7 +3,7 @@ package dev.ngb.core_billing.payment.application.refund.query;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentReadRepository;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.UUID;
 
 /** Reads refunds for the GET handler. */

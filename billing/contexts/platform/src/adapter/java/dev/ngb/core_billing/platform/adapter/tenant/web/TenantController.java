@@ -12,7 +12,7 @@ import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantView;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.platform.domain.tenant.TenantDomain;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.http.HttpStatus;

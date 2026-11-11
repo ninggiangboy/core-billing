@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.application.payment.query;
 
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

@@ -5,7 +5,7 @@ import static dev.ngb.core_billing_jooq.Tables.IDEMPOTENCY_KEYS;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.idempotency.StoredResponse;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.IdempotencyKeysRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;

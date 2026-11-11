@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.customer.api.lookup;
 
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.util.Objects;
 
 /** What other contexts may know about a Customer. */

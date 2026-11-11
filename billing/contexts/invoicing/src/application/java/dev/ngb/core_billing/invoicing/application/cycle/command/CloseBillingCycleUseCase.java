@@ -8,9 +8,9 @@ import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceOrigin;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.sharedkernel.Clock;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
 

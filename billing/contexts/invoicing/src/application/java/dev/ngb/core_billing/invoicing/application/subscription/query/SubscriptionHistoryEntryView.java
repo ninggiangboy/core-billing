@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.invoicing.application.subscription.query;
 
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionHistoryEntry;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.UUID;
 

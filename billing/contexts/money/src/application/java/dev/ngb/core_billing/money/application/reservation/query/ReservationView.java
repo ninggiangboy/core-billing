@@ -2,8 +2,8 @@ package dev.ngb.core_billing.money.application.reservation.query;
 
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.api.reservation.ReservationStatus;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
 
 /** A reservation as the read API shows it. */

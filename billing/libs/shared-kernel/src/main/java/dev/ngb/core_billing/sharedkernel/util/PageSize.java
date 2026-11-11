@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.util;
 
 /** The size of one page of a listing request. */
 public final class PageSize {

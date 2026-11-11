@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.invoicing.application.cycle.port;
 
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

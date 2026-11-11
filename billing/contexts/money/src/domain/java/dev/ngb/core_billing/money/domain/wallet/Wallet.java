@@ -2,11 +2,11 @@ package dev.ngb.core_billing.money.domain.wallet;
 
 import dev.ngb.core_billing.money.api.wallet.InsufficientFundsException;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
-import dev.ngb.core_billing.sharedkernel.Currency;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.TenantId;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
 import java.util.Objects;
 

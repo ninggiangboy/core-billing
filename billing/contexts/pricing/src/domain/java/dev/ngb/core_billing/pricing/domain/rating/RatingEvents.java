@@ -1,8 +1,7 @@
 package dev.ngb.core_billing.pricing.domain.rating;
 
-import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;

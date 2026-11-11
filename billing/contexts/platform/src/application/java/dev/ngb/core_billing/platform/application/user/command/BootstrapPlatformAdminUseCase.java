@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.platform.application.user.command;
 
 import dev.ngb.core_billing.platform.domain.role.Role;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.Locale;
 import java.util.Set;
 import dev.ngb.core_billing.platform.api.audit.Audit;

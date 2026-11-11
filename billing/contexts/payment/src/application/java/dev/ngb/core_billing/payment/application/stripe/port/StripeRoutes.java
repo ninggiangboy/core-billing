@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.application.stripe.port;
 
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.Optional;
 
 /**

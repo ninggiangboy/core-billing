@@ -16,7 +16,7 @@ import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
 import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
 import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
-import dev.ngb.core_billing.sharedkernel.Currency;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

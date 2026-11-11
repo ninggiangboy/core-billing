@@ -3,8 +3,8 @@ package dev.ngb.core_billing.usage.adapter.usage.persistence;
 import static dev.ngb.core_billing_jooq.Tables.USAGE_EVENTS;
 
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.usage.api.lookup.UsageEventId;
 import dev.ngb.core_billing.usage.application.usage.port.UsageEventRepository;
 import dev.ngb.core_billing.usage.domain.usage.UsageEvent;

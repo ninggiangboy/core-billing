@@ -5,7 +5,7 @@ import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.sum;
 
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import dev.ngb.core_billing.usage.api.lookup.UsageEventId;
 import dev.ngb.core_billing.usage.application.usage.query.UsageEventReadRepository;
 import dev.ngb.core_billing.usage.application.usage.query.UsageEventView;

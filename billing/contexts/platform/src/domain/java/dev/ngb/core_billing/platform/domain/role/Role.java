@@ -2,7 +2,7 @@ package dev.ngb.core_billing.platform.domain.role;
 
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;

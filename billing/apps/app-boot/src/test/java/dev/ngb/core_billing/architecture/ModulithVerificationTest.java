@@ -12,9 +12,10 @@ import org.springframework.modulith.docs.Documenter;
  */
 class ModulithVerificationTest {
 
-    // dev.ngb.core_billing.boot is wiring and the HTTP boundary, not a bounded context.
-    private final ApplicationModules modules =
-            ApplicationModules.of(Application.class, JavaClass.Predicates.resideInAPackage("dev.ngb.core_billing.boot.."));
+    // boot is wiring and the HTTP boundary, and sharedkernel is the shared vocabulary every context may use through
+    // its subpackages; neither is a bounded context. ArchUnit keeps the kernel independent (shared-kernel-is-independent).
+    private final ApplicationModules modules = ApplicationModules.of(Application.class,
+            JavaClass.Predicates.resideInAnyPackage("dev.ngb.core_billing.boot..", "dev.ngb.core_billing.sharedkernel.."));
 
     @Test
     void modulesAreWellFormed() {

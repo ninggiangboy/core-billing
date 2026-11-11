@@ -2,8 +2,8 @@ package dev.ngb.core_billing.boot.infrastructure.messaging;
 
 import static dev.ngb.core_billing_jooq.Tables.EVENT_INBOX;
 
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.EventInbox;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.event.EventInbox;
 import org.jooq.DSLContext;
 
 /** The primary key (tenant, consumer, event) turns a repeated event into a no-op insert. */

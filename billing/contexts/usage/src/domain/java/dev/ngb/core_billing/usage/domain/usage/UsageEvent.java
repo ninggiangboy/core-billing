@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.usage.domain.usage;
 
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.usage.api.lookup.UsageEventId;
 import java.math.BigDecimal;
 import java.time.Duration;

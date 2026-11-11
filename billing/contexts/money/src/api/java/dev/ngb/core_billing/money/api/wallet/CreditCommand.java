@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.money.api.wallet;
 
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.Objects;
 
 /** Add money to a wallet: a verified top-up, a refund of a charge, or an administrator's adjustment. */

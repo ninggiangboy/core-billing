@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.util;
 
 import java.time.Duration;
 import java.util.Objects;

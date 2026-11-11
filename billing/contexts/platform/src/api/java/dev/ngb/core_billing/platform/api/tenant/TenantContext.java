@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.platform.api.tenant;
 
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.function.Supplier;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
 

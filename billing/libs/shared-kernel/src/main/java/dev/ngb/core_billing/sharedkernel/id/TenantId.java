@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.id;
 
 import java.util.Objects;
 import java.util.UUID;

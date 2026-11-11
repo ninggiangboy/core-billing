@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.application.refund.query;
 
 import dev.ngb.core_billing.payment.domain.refund.RefundStatus;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.UUID;
 

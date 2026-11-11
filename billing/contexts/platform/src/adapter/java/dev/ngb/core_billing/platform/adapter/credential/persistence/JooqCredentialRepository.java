@@ -8,7 +8,7 @@ import dev.ngb.core_billing.platform.application.credential.port.CredentialRepos
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.credential.CredentialStatus;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.ApiCredentialsRecord;
 import java.util.Arrays;
 import java.util.List;

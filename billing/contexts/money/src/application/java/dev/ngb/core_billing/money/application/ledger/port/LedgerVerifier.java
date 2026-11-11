@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.money.application.ledger.port;
 
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.List;
 
 /** Recomputes every wallet's projection from its ledger entries and reports where they disagree. */

@@ -5,8 +5,8 @@ import dev.ngb.core_billing.invoicing.application.subscription.port.Subscription
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
 import dev.ngb.core_billing.invoicing.domain.invoice.ItemSource;
 import dev.ngb.core_billing.invoicing.domain.subscription.Subscription;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;

@@ -3,7 +3,7 @@ package dev.ngb.core_billing.payment.application.refund.port;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.refund.Refund;
 import dev.ngb.core_billing.payment.domain.refund.RefundId;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.util.Optional;
 
 /** Refunds of the current tenant. */

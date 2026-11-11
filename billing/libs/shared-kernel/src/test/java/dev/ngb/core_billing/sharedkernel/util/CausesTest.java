@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

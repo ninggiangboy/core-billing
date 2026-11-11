@@ -36,9 +36,9 @@ import dev.ngb.core_billing.payment.domain.refund.Refund;
 import dev.ngb.core_billing.payment.domain.refund.RefundStatus;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.support.EventSchemas;
 import dev.ngb.core_billing.support.FakePaymentProvider;
 import dev.ngb.core_billing.support.FakePaymentProviderConfig;
@@ -232,7 +232,7 @@ class PaymentIntegrationTest {
     void aTopUpInAnotherCurrencyThanTheWalletIsRefused() {
         PayWorld w = worlds.direct(0);
         assertThatThrownBy(() -> scopes.inTenant(w.money().tenant().id(), () -> topUp.execute(new CreateTopUpUseCase.Command(
-                w.money().wallet().id(), Money.of(100, dev.ngb.core_billing.sharedkernel.Currency.of("EUR")), "k-eur", AUDIT))))
+                w.money().wallet().id(), Money.of(100, dev.ngb.core_billing.sharedkernel.money.Currency.of("EUR")), "k-eur", AUDIT))))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

@@ -57,6 +57,7 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("domain-id-names-its-aggregate", "OrphanId");
         CULPRIT_BY_RULE_ID.put("domain-events-live-in-an-events-holder", "StandaloneEvent");
         CULPRIT_BY_RULE_ID.put("domain-features-are-free-of-cycles", "CycleAUsesB");
+        CULPRIT_BY_RULE_ID.put("shared-kernel-classes-in-a-group", "StrayKernelClass");
     }
 
     private static JavaClasses fixtures;

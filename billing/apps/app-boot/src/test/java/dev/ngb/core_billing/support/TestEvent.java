@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.support;
 
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;

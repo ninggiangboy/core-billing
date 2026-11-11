@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.money.api.wallet;
 
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.Objects;
 
 /** Take money from a wallet outside a charge, for example when a top-up is refunded. */

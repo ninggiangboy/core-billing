@@ -1,10 +1,11 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.id;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 
 class IdentifiersTest {
 

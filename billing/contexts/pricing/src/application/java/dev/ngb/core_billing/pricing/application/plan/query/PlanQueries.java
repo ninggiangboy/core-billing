@@ -2,7 +2,7 @@ package dev.ngb.core_billing.pricing.application.plan.query;
 
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import java.util.UUID;
 

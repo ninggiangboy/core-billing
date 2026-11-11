@@ -127,7 +127,8 @@ final class ArchitectureRules {
                 new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)),
                 new NamedRule("domain-id-names-its-aggregate", domainIdNamesItsAggregate(root)),
                 new NamedRule("domain-events-live-in-an-events-holder", domainEventsLiveInAnEventsHolder(root)),
-                new NamedRule("domain-features-are-free-of-cycles", domainFeaturesAreFreeOfCycles(root)));
+                new NamedRule("domain-features-are-free-of-cycles", domainFeaturesAreFreeOfCycles(root)),
+                new NamedRule("shared-kernel-classes-in-a-group", sharedKernelClassesInAGroup(root)));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -584,6 +585,15 @@ final class ArchitectureRules {
     private static ArchRule domainFeaturesAreFreeOfCycles(String root) {
         return slices().matching(root + ".(*).domain.(*)..").should().beFreeOfCycles()
                 .because("a feature of the domain that needs another and is needed by it belongs with it, or its shared type moves");
+    }
+
+    /** The kernel is grouped (id, money, event, runtime, security, util); a new class joins a group or starts one. */
+    private static ArchRule sharedKernelClassesInAGroup(String root) {
+        return classes().that().resideInAPackage(root + ".sharedkernel")
+                .and().doNotHaveSimpleName("package-info")
+                .should(never("must not sit directly in the kernel root: put it in a group such as id, money, event, runtime, security or util"))
+                .because("a growing kernel is split by what its classes are for, not extended")
+                .allowEmptyShould(true);
     }
 
     private static boolean isApiPackage(String root, String packageName) {

@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.platform.domain.tenantsystem;
 
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.Objects;
 

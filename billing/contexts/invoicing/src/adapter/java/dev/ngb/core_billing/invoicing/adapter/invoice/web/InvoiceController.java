@@ -15,7 +15,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.sharedkernel.MoneyDto;
+import dev.ngb.core_billing.sharedkernel.money.MoneyDto;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

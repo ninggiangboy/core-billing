@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.invoicing.domain.invoice;
 
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.infrastructure.security;
 
-import dev.ngb.core_billing.sharedkernel.SecretCipher;
+import dev.ngb.core_billing.sharedkernel.security.SecretCipher;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;

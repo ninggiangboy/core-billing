@@ -1,9 +1,10 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.event;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 
 /**
  * An outbox row as the in-process consumers see it. The relay rebuilds it from the stored row, so a consumer

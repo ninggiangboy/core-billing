@@ -2,7 +2,7 @@ package dev.ngb.core_billing.invoicing.adapter.invoice.messaging;
 
 import dev.ngb.core_billing.invoicing.application.cycle.command.CollectChargeUseCase;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
-import dev.ngb.core_billing.sharedkernel.EventEnvelope;
+import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
 import org.springframework.context.event.EventListener;
 
 /**

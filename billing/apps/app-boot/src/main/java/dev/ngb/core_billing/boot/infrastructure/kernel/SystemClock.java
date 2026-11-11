@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.infrastructure.kernel;
 
-import dev.ngb.core_billing.sharedkernel.Clock;
+import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 

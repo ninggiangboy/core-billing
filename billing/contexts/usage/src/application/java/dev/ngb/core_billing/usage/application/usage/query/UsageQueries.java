@@ -2,9 +2,9 @@ package dev.ngb.core_billing.usage.application.usage.query;
 
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.PageSize;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.util.PageSize;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.usage.api.lookup.UsageEventId;
 import dev.ngb.core_billing.usage.api.lookup.UsageRecord;
 import dev.ngb.core_billing.usage.api.lookup.UsageTotal;

@@ -1,9 +1,9 @@
 package dev.ngb.core_billing.payment.domain.refund;
 
 import dev.ngb.core_billing.payment.domain.payment.Payment;
-import dev.ngb.core_billing.sharedkernel.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;

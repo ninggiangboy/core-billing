@@ -8,7 +8,7 @@ import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.StripeConfigurationsRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;

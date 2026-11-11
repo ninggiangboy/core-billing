@@ -7,8 +7,8 @@ import dev.ngb.core_billing.platform.application.tenant.port.TenantDomainReposit
 import dev.ngb.core_billing.platform.domain.tenant.DomainKind;
 import dev.ngb.core_billing.platform.domain.tenant.Hostname;
 import dev.ngb.core_billing.platform.domain.tenant.TenantDomain;
-import dev.ngb.core_billing.sharedkernel.Causes;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.util.Causes;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.TenantDomainsRecord;
 import java.util.List;
 import java.util.Optional;

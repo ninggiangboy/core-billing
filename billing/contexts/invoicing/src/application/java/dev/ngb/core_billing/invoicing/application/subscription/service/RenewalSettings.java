@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.invoicing.application.subscription.service;
 
-import dev.ngb.core_billing.sharedkernel.Backoff;
+import dev.ngb.core_billing.sharedkernel.util.Backoff;
 import java.util.Objects;
 
 /**

@@ -3,8 +3,8 @@ package dev.ngb.core_billing.money.application.ledger.port;
 import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.Optional;
 
 /** The ledger can only be appended to and read. There is deliberately no update, delete or save. */

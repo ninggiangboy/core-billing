@@ -10,10 +10,10 @@ import dev.ngb.core_billing.money.application.ledger.query.LedgerReadRepository;
 import dev.ngb.core_billing.money.application.reservation.query.ReservationReadRepository;
 import dev.ngb.core_billing.money.application.reservation.query.ReservationView;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.PageSize;
-import dev.ngb.core_billing.sharedkernel.UnitOfWork;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.util.PageSize;
+import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.List;
 import java.util.UUID;
 

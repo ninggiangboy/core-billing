@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.security;
 
 /**
  * Protects a secret at rest (a Stripe key, a webhook signing secret). {@code context} is bound into the ciphertext

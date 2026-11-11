@@ -3,10 +3,10 @@ package dev.ngb.core_billing.invoicing.domain.subscription;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.sharedkernel.Currency;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.TenantId;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

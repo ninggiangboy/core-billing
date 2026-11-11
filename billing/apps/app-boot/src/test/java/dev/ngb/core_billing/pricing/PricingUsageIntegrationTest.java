@@ -30,8 +30,8 @@ import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
@@ -200,7 +200,7 @@ class PricingUsageIntegrationTest {
         assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "1", Instant.now().plus(1, ChronoUnit.HOURS))).hasMessageContaining("future");
         assertThatThrownBy(() -> worlds.record(tenant, w.customerId(), metric, "call", "1", DAY, " ")).hasMessageContaining("Idempotency-Key must be 1-255");
         assertThatThrownBy(() -> scopes.inTenant(tenant, () -> recordUsage.record(new RecordUsageUseCase.Item(
-                new dev.ngb.core_billing.sharedkernel.CustomerId(UUID.randomUUID()), metric, d("1"), "call", DAY, "k", new UsageTrace(null, null, null)))))
+                new dev.ngb.core_billing.sharedkernel.id.CustomerId(UUID.randomUUID()), metric, d("1"), "call", DAY, "k", new UsageTrace(null, null, null)))))
                 .isInstanceOf(NotFoundException.class);
         assertThat(worlds.record(tenant, w.customerId(), metric, "call", "0.000001", DAY).replayed()).as("six decimals are fine").isFalse();
     }

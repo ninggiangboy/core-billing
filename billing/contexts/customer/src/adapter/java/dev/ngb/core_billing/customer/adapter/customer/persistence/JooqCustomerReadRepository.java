@@ -11,7 +11,7 @@ import dev.ngb.core_billing.customer.application.customer.query.CustomerIdentity
 import dev.ngb.core_billing.customer.application.customer.query.CustomerReadRepository;
 import dev.ngb.core_billing.customer.application.customer.query.CustomerView;
 import dev.ngb.core_billing.customer.domain.customer.CustomerStatus;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import dev.ngb.core_billing_jooq.tables.records.CustomersRecord;
 import java.util.ArrayList;
 import java.util.HashMap;

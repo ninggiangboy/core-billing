@@ -3,9 +3,9 @@ package dev.ngb.core_billing.invoicing.application.invoice.query;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceOrigin;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceStatus;
 import dev.ngb.core_billing.invoicing.domain.invoice.Settlement;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.time.Instant;
 import java.util.UUID;
 

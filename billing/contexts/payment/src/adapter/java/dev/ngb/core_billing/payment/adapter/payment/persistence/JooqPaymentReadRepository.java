@@ -8,10 +8,10 @@ import dev.ngb.core_billing.payment.application.payment.query.PaymentAttemptView
 import dev.ngb.core_billing.payment.application.payment.query.PaymentReadRepository;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentView;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
-import dev.ngb.core_billing.sharedkernel.Currency;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
-import dev.ngb.core_billing.sharedkernel.Money;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing_jooq.tables.records.PaymentsRecord;
 import java.util.List;
 import java.util.Optional;

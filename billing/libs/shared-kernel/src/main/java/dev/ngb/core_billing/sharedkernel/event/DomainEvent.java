@@ -1,8 +1,9 @@
-package dev.ngb.core_billing.sharedkernel;
+package dev.ngb.core_billing.sharedkernel.event;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 
 /** A fact that happened inside a bounded context; delivered through the transactional outbox. */
 public interface DomainEvent {

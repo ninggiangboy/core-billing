@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.pricing.api.plan;
 
-import dev.ngb.core_billing.sharedkernel.Currency;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
 import java.util.Objects;
 import java.util.UUID;
 

@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.customer.application.customer.query;
 
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

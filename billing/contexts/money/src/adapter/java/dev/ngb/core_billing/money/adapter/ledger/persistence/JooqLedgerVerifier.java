@@ -4,7 +4,7 @@ import static dev.ngb.core_billing_jooq.Tables.LEDGER_ENTRIES;
 import static dev.ngb.core_billing_jooq.Tables.WALLETS;
 
 import dev.ngb.core_billing.money.application.ledger.port.LedgerVerifier;
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;

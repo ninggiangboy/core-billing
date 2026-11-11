@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.payment.domain.incident;
 
-import dev.ngb.core_billing.sharedkernel.TenantId;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.UUID;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;

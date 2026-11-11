@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.money.application.ledger.query;
 
-import dev.ngb.core_billing.sharedkernel.WalletId;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.List;
 
 /** Read-only projection of a wallet's ledger statement. */

@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.customer.application.customer.query;
 
 import dev.ngb.core_billing.customer.domain.customer.CustomerStatus;
-import dev.ngb.core_billing.sharedkernel.CustomerId;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import java.time.Instant;
 import java.util.List;
 

@@ -31,7 +31,7 @@ import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderUnavailableException;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
-import dev.ngb.core_billing.sharedkernel.Money;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;

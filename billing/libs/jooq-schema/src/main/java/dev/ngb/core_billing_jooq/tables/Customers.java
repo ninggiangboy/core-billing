@@ -6,8 +6,10 @@ package dev.ngb.core_billing_jooq.tables;
 
 import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.Public;
+import dev.ngb.core_billing_jooq.tables.BillingSessions.BillingSessionsPath;
 import dev.ngb.core_billing_jooq.tables.CustomerMappings.CustomerMappingsPath;
 import dev.ngb.core_billing_jooq.tables.Invoices.InvoicesPath;
+import dev.ngb.core_billing_jooq.tables.StripeCustomers.StripeCustomersPath;
 import dev.ngb.core_billing_jooq.tables.Subscriptions.SubscriptionsPath;
 import dev.ngb.core_billing_jooq.tables.Tenants.TenantsPath;
 import dev.ngb.core_billing_jooq.tables.UsageEvents.UsageEventsPath;
@@ -200,6 +202,19 @@ public class Customers extends TableImpl<CustomersRecord> {
         return _tenants;
     }
 
+    private transient BillingSessionsPath _billingSessions;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.billing_sessions</code> table
+     */
+    public BillingSessionsPath billingSessions() {
+        if (_billingSessions == null)
+            _billingSessions = new BillingSessionsPath(this, null, Keys.BILLING_SESSIONS__BILLING_SESSIONS_TENANT_ID_CUSTOMER_ID_FKEY.getInverseKey());
+
+        return _billingSessions;
+    }
+
     private transient CustomerMappingsPath _customerMappings;
 
     /**
@@ -224,6 +239,19 @@ public class Customers extends TableImpl<CustomersRecord> {
             _invoices = new InvoicesPath(this, null, Keys.INVOICES__INVOICES_TENANT_ID_CUSTOMER_ID_FKEY.getInverseKey());
 
         return _invoices;
+    }
+
+    private transient StripeCustomersPath _stripeCustomers;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.stripe_customers</code> table
+     */
+    public StripeCustomersPath stripeCustomers() {
+        if (_stripeCustomers == null)
+            _stripeCustomers = new StripeCustomersPath(this, null, Keys.STRIPE_CUSTOMERS__STRIPE_CUSTOMERS_TENANT_ID_CUSTOMER_ID_FKEY.getInverseKey());
+
+        return _stripeCustomers;
     }
 
     private transient SubscriptionsPath _subscriptions;

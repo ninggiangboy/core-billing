@@ -3,7 +3,10 @@ package dev.ngb.core_billing.payment.application.refund.query;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentReadRepository;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
+import dev.ngb.core_billing.sharedkernel.id.CustomerId;
 import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.util.PageSize;
+import java.util.List;
 import java.util.UUID;
 
 /** Reads refunds for the GET handler. */
@@ -24,6 +27,11 @@ public class RefundQueries {
 
     public RefundView get(UUID id) {
         return get(id, null);
+    }
+
+    /** Refunds of one customer's payments, newest first, for the portal principal that is fixed to that customer. */
+    public List<RefundView> listForCustomer(CustomerId customerId, UUID before, int limit) {
+        return unitOfWork.transactional(() -> refunds.listByCustomer(customerId.value(), before, PageSize.of(limit)));
     }
 
     public RefundView get(UUID id, UUID caller) {

@@ -127,6 +127,7 @@ The directories under `billing/` group the modules by the role they play, and ea
 | | `usage` | Usage metering |
 | | `invoicing` | Invoices, subscriptions and the billing cycle |
 | | `payment` | Payments, refunds, Stripe configuration and incidents |
+| | `session` | Billing Sessions and the Customer Portal: the session aggregate, scoped portal permissions and the single-use token exchange. The portal's read composition sits at the HTTP edge in `app-boot` |
 | | `webhook` | Webhook endpoints and delivery |
 | `libs/` | `shared-kernel` | Value objects and framework-free helpers |
 | | `jooq-schema` | jOOQ classes generated from the migrations and committed |

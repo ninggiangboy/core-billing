@@ -60,6 +60,10 @@ A Tenant System is a third party that self-serves and does not share the Platfor
 - Billing → Tenant System Webhooks are signed with a secret separate from the API credential, see [webhooks-and-events.md](webhooks-and-events.md).
 - Rejected: a Keycloak client per Tenant System, inbound HMAC on every request, and reuse of the API credential as the Webhook signing secret.
 
+## Billing Session (Customer Portal)
+
+The Customer Portal has no Billing login. A Tenant System issues a Billing Session for one mapped Customer through `POST /api/v1/billing-sessions` (`billing-session:create`). The single-use token in the portal URL is exchanged for an HttpOnly, Secure, SameSite cookie; the session principal carries the Tenant, that Customer and the session permissions only. Every portal query takes the Customer from the principal, and a session issued in one Tenant is not usable in another. State-changing calls use a double-submit CSRF token, and CORS is limited to the tenant hostname. See [billing-session-and-portal.md](billing-session-and-portal.md).
+
 ## Token and session checks
 
 The token checks (issuer, audience, expiry, subject) and the rule that a session from one Tenant cannot be used in another are listed in [security-and-reliability.md](security-and-reliability.md).

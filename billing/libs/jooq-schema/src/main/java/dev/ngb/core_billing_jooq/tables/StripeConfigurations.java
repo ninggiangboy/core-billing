@@ -7,6 +7,7 @@ package dev.ngb.core_billing_jooq.tables;
 import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.Public;
 import dev.ngb.core_billing_jooq.tables.Payments.PaymentsPath;
+import dev.ngb.core_billing_jooq.tables.StripeCustomers.StripeCustomersPath;
 import dev.ngb.core_billing_jooq.tables.StripeEvents.StripeEventsPath;
 import dev.ngb.core_billing_jooq.tables.StripeIncidents.StripeIncidentsPath;
 import dev.ngb.core_billing_jooq.tables.Tenants.TenantsPath;
@@ -248,6 +249,19 @@ public class StripeConfigurations extends TableImpl<StripeConfigurationsRecord> 
             _payments = new PaymentsPath(this, null, Keys.PAYMENTS__PAYMENTS_TENANT_ID_CONFIGURATION_ID_FKEY.getInverseKey());
 
         return _payments;
+    }
+
+    private transient StripeCustomersPath _stripeCustomers;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.stripe_customers</code> table
+     */
+    public StripeCustomersPath stripeCustomers() {
+        if (_stripeCustomers == null)
+            _stripeCustomers = new StripeCustomersPath(this, null, Keys.STRIPE_CUSTOMERS__STRIPE_CUSTOMERS_TENANT_ID_CONFIGURATION_ID_FKEY.getInverseKey());
+
+        return _stripeCustomers;
     }
 
     private transient StripeEventsPath _stripeEvents;

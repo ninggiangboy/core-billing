@@ -858,7 +858,7 @@ paths:
     get:
       tags:
       - "customer-controller"
-      operationId: "list_4"
+      operationId: "list_5"
       responses:
         "200":
           description: "OK"
@@ -976,6 +976,61 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChargeResponse"
       x-required-permission: "charge:create"
+      x-allowed-callers:
+      - "tenant-user"
+      - "tenant-system"
+      security:
+      - apiKey: []
+  /api/v1/billing-sessions:
+    post:
+      tags:
+      - "billing-session-controller"
+      operationId: "create_5"
+      parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequest"
+        required: true
+      responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CreateResponse"
+      x-required-permission: "billing-session:create"
+      x-allowed-callers:
+      - "tenant-user"
+      - "tenant-system"
+      security:
+      - apiKey: []
+  /api/v1/billing-sessions/{id}/revoke:
+    post:
+      tags:
+      - "billing-session-controller"
+      operationId: "revoke"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      - name: "X-Request-Id"
+        in: "header"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "OK"
+      x-required-permission: "billing-session:create"
       x-allowed-callers:
       - "tenant-user"
       - "tenant-system"
@@ -1110,7 +1165,7 @@ paths:
     get:
       tags:
       - "wallet-controller"
-      operationId: "wallet"
+      operationId: "wallet_1"
       parameters:
       - name: "id"
         in: "path"
@@ -1134,7 +1189,7 @@ paths:
     get:
       tags:
       - "ledger-controller"
-      operationId: "ledger"
+      operationId: "ledger_1"
       parameters:
       - name: "id"
         in: "path"
@@ -1219,7 +1274,7 @@ paths:
     get:
       tags:
       - "subscription-controller"
-      operationId: "subscription"
+      operationId: "subscription_1"
       parameters:
       - name: "id"
         in: "path"
@@ -1339,7 +1394,7 @@ paths:
     get:
       tags:
       - "payment-controller"
-      operationId: "payments"
+      operationId: "payments_1"
       parameters:
       - name: "walletId"
         in: "query"
@@ -1382,7 +1437,7 @@ paths:
     get:
       tags:
       - "payment-controller"
-      operationId: "payment"
+      operationId: "payment_1"
       parameters:
       - name: "id"
         in: "path"
@@ -1424,7 +1479,7 @@ paths:
     get:
       tags:
       - "invoice-controller"
-      operationId: "invoice"
+      operationId: "invoice_1"
       parameters:
       - name: "id"
         in: "path"
@@ -1594,6 +1649,13 @@ components:
         createdAt:
           type: "string"
           format: "date-time"
+    ReplaceRequest:
+      type: "object"
+      properties:
+        urls:
+          type: "array"
+          items:
+            type: "string"
     UpdateCustomerRequest:
       type: "object"
       properties:
@@ -1625,6 +1687,68 @@ components:
         tenantSystemId:
           type: "string"
         externalUserId:
+          type: "string"
+    TopUpRequest:
+      type: "object"
+      properties:
+        walletId:
+          type: "string"
+        amount:
+          type: "integer"
+          format: "int64"
+        currency:
+          type: "string"
+    MoneyDto:
+      type: "object"
+      properties:
+        amount:
+          type: "integer"
+          format: "int64"
+        currency:
+          type: "string"
+    TopUpResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        status:
+          type: "string"
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        checkoutUrl:
+          type: "string"
+    ExchangeRequest:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+    ExchangeResponse:
+      type: "object"
+      properties:
+        session:
+          $ref: "#/components/schemas/SessionResponse"
+        csrfToken:
+          type: "string"
+        returnUrl:
+          type: "string"
+    SessionResponse:
+      type: "object"
+      properties:
+        sessionId:
+          type: "string"
+        customerId:
+          type: "string"
+        permissions:
+          type: "array"
+          items:
+            type: "string"
+        expiresAt:
+          type: "string"
+          format: "date-time"
+    HostedPageResponse:
+      type: "object"
+      properties:
+        url:
           type: "string"
     CreateEndpointRequest:
       type: "object"
@@ -1714,14 +1838,6 @@ components:
         creditLimit:
           type: "integer"
           format: "int64"
-    MoneyDto:
-      type: "object"
-      properties:
-        amount:
-          type: "integer"
-          format: "int64"
-        currency:
-          type: "string"
     WalletResponse:
       type: "object"
       properties:
@@ -2455,16 +2571,6 @@ components:
         completedAt:
           type: "string"
           format: "date-time"
-    TopUpRequest:
-      type: "object"
-      properties:
-        walletId:
-          type: "string"
-        amount:
-          type: "integer"
-          format: "int64"
-        currency:
-          type: "string"
     PaymentResponse:
       type: "object"
       properties:
@@ -2696,6 +2802,36 @@ components:
           type: "string"
         reference:
           type: "string"
+    CreateRequest:
+      type: "object"
+      properties:
+        customerId:
+          type: "string"
+        returnUrl:
+          type: "string"
+        permissions:
+          type: "array"
+          items:
+            type: "string"
+        expiresInSeconds:
+          type: "integer"
+          format: "int64"
+    CreateResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        customerId:
+          type: "string"
+        portalUrl:
+          type: "string"
+        permissions:
+          type: "array"
+          items:
+            type: "string"
+        expiresAt:
+          type: "string"
+          format: "date-time"
     UpdateEndpointRequest:
       type: "object"
       properties:
@@ -2709,25 +2845,41 @@ components:
             type: "string"
         status:
           type: "string"
+    UsageTotalResponse:
+      type: "object"
+      properties:
+        metric:
+          type: "string"
+        unit:
+          type: "string"
+        quantity:
+          type: "string"
+        events:
+          type: "integer"
+          format: "int64"
     AttemptResponse:
       type: "object"
       properties:
-        attemptNo:
-          type: "integer"
-          format: "int32"
-        statusCode:
-          type: "integer"
-          format: "int32"
-        error:
+        failureCode:
           type: "string"
-        responseExcerpt:
+        failureMessage:
           type: "string"
-        latencyMs:
-          type: "integer"
-          format: "int64"
-        attemptedAt:
+        occurredAt:
           type: "string"
           format: "date-time"
+    PaymentDetailResponse:
+      type: "object"
+      properties:
+        payment:
+          $ref: "#/components/schemas/PaymentResponse"
+        refunds:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RefundResponse"
+        failedAttempts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AttemptResponse"
     DeliveryDetailResponse:
       type: "object"
       properties:
@@ -2774,19 +2926,6 @@ components:
         resolvedAt:
           type: "string"
           format: "date-time"
-    PaymentDetailResponse:
-      type: "object"
-      properties:
-        payment:
-          $ref: "#/components/schemas/PaymentResponse"
-        refunds:
-          type: "array"
-          items:
-            $ref: "#/components/schemas/RefundResponse"
-        failedAttempts:
-          type: "array"
-          items:
-            $ref: "#/components/schemas/AttemptResponse"
     MeResponse:
       type: "object"
       properties:
@@ -2811,3 +2950,9 @@ components:
       description: "Tenant System credential issued by Billing"
       scheme: "bearer"
       bearerFormat: "cbk_<key-id>_<secret>"
+    portalSession:
+      type: "apiKey"
+      description: "Billing Session cookie, obtained by exchanging the single-use\
+        \ portal token"
+      name: "billing_portal"
+      in: "cookie"

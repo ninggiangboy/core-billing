@@ -8,6 +8,7 @@ import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.Public;
 import dev.ngb.core_billing_jooq.tables.ApiCredentials.ApiCredentialsPath;
 import dev.ngb.core_billing_jooq.tables.AuditLog.AuditLogPath;
+import dev.ngb.core_billing_jooq.tables.BillingSessions.BillingSessionsPath;
 import dev.ngb.core_billing_jooq.tables.BillingUsers.BillingUsersPath;
 import dev.ngb.core_billing_jooq.tables.Charges.ChargesPath;
 import dev.ngb.core_billing_jooq.tables.Customers.CustomersPath;
@@ -20,6 +21,7 @@ import dev.ngb.core_billing_jooq.tables.LedgerEntries.LedgerEntriesPath;
 import dev.ngb.core_billing_jooq.tables.Outbox.OutboxPath;
 import dev.ngb.core_billing_jooq.tables.PaymentAttempts.PaymentAttemptsPath;
 import dev.ngb.core_billing_jooq.tables.Payments.PaymentsPath;
+import dev.ngb.core_billing_jooq.tables.PortalReturnUrls.PortalReturnUrlsPath;
 import dev.ngb.core_billing_jooq.tables.PricingMetrics.PricingMetricsPath;
 import dev.ngb.core_billing_jooq.tables.PricingPlanVersions.PricingPlanVersionsPath;
 import dev.ngb.core_billing_jooq.tables.PricingPlans.PricingPlansPath;
@@ -27,6 +29,7 @@ import dev.ngb.core_billing_jooq.tables.Refunds.RefundsPath;
 import dev.ngb.core_billing_jooq.tables.Reservations.ReservationsPath;
 import dev.ngb.core_billing_jooq.tables.Roles.RolesPath;
 import dev.ngb.core_billing_jooq.tables.StripeConfigurations.StripeConfigurationsPath;
+import dev.ngb.core_billing_jooq.tables.StripeCustomers.StripeCustomersPath;
 import dev.ngb.core_billing_jooq.tables.StripeEventAttempts.StripeEventAttemptsPath;
 import dev.ngb.core_billing_jooq.tables.StripeEvents.StripeEventsPath;
 import dev.ngb.core_billing_jooq.tables.StripeIncidents.StripeIncidentsPath;
@@ -223,6 +226,19 @@ public class Tenants extends TableImpl<TenantsRecord> {
         return _auditLog;
     }
 
+    private transient BillingSessionsPath _billingSessions;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.billing_sessions</code> table
+     */
+    public BillingSessionsPath billingSessions() {
+        if (_billingSessions == null)
+            _billingSessions = new BillingSessionsPath(this, null, Keys.BILLING_SESSIONS__BILLING_SESSIONS_TENANT_ID_FKEY.getInverseKey());
+
+        return _billingSessions;
+    }
+
     private transient BillingUsersPath _billingUsers;
 
     /**
@@ -379,6 +395,19 @@ public class Tenants extends TableImpl<TenantsRecord> {
         return _payments;
     }
 
+    private transient PortalReturnUrlsPath _portalReturnUrls;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.portal_return_urls</code> table
+     */
+    public PortalReturnUrlsPath portalReturnUrls() {
+        if (_portalReturnUrls == null)
+            _portalReturnUrls = new PortalReturnUrlsPath(this, null, Keys.PORTAL_RETURN_URLS__PORTAL_RETURN_URLS_TENANT_ID_FKEY.getInverseKey());
+
+        return _portalReturnUrls;
+    }
+
     private transient PricingMetricsPath _pricingMetrics;
 
     /**
@@ -467,6 +496,19 @@ public class Tenants extends TableImpl<TenantsRecord> {
             _stripeConfigurations = new StripeConfigurationsPath(this, null, Keys.STRIPE_CONFIGURATIONS__STRIPE_CONFIGURATIONS_TENANT_ID_FKEY.getInverseKey());
 
         return _stripeConfigurations;
+    }
+
+    private transient StripeCustomersPath _stripeCustomers;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.stripe_customers</code> table
+     */
+    public StripeCustomersPath stripeCustomers() {
+        if (_stripeCustomers == null)
+            _stripeCustomers = new StripeCustomersPath(this, null, Keys.STRIPE_CUSTOMERS__STRIPE_CUSTOMERS_TENANT_ID_FKEY.getInverseKey());
+
+        return _stripeCustomers;
     }
 
     private transient StripeEventAttemptsPath _stripeEventAttempts;

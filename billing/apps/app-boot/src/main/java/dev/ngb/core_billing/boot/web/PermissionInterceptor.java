@@ -4,6 +4,8 @@ import dev.ngb.core_billing.platform.api.actor.Authenticated;
 import dev.ngb.core_billing.platform.api.actor.Authorizer;
 import dev.ngb.core_billing.platform.api.actor.PublicEndpoint;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
+import dev.ngb.core_billing.session.api.portal.PortalAuthorizer;
+import dev.ngb.core_billing.session.api.portal.RequiresPortalPermission;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.method.HandlerMethod;
@@ -17,14 +19,21 @@ import org.springframework.web.servlet.HandlerInterceptor;
 class PermissionInterceptor implements HandlerInterceptor {
 
     private final Authorizer authorizer;
+    private final PortalAuthorizer portalAuthorizer;
 
-    PermissionInterceptor(Authorizer authorizer) {
+    PermissionInterceptor(Authorizer authorizer, PortalAuthorizer portalAuthorizer) {
         this.authorizer = authorizer;
+        this.portalAuthorizer = portalAuthorizer;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (!(handler instanceof HandlerMethod method) || isInfrastructure(method)) {
+            return true;
+        }
+        RequiresPortalPermission portal = method.getMethodAnnotation(RequiresPortalPermission.class);
+        if (portal != null) {
+            portalAuthorizer.require(portal.value());
             return true;
         }
         RequiresPermission required = method.getMethodAnnotation(RequiresPermission.class);

@@ -1,6 +1,8 @@
 package dev.ngb.core_billing.payment.adapter.refund.persistence;
 
+import static dev.ngb.core_billing_jooq.Tables.PAYMENTS;
 import static dev.ngb.core_billing_jooq.Tables.REFUNDS;
+import static org.jooq.impl.DSL.noCondition;
 
 import dev.ngb.core_billing.payment.application.refund.query.RefundReadRepository;
 import dev.ngb.core_billing.payment.application.refund.query.RefundView;
@@ -35,6 +37,21 @@ public class JooqRefundReadRepository implements RefundReadRepository {
         return dsl.selectFrom(REFUNDS)
                 .where(REFUNDS.ID.eq(id))
                 .fetchOptional(JooqRefundReadRepository::toView);
+    }
+
+    @Override
+    public List<RefundView> listByCustomer(UUID customerId, UUID before, int limit) {
+        return dsl.select(REFUNDS.fields())
+                .from(REFUNDS)
+                .join(PAYMENTS).on(PAYMENTS.ID.eq(REFUNDS.PAYMENT_ID))
+                .where(PAYMENTS.CUSTOMER_ID.eq(customerId))
+                .and(before == null ? noCondition() : REFUNDS.ID.lt(before))
+                .orderBy(REFUNDS.ID.desc())
+                .limit(limit)
+                .fetchInto(REFUNDS)
+                .stream()
+                .map(JooqRefundReadRepository::toView)
+                .toList();
     }
 
     private static RefundView toView(RefundsRecord row) {

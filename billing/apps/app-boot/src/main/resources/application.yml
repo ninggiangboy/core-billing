@@ -78,6 +78,17 @@ billing:
     read-timeout: PT10S
     deadline: PT15S
 
+  portal:
+    # Set to false to roll the session and portal endpoints out of service; no financial data depends on them.
+    enabled: ${BILLING_PORTAL_ENABLED:true}
+    # A Billing Session lifetime is chosen by the Tenant System between these bounds.
+    session-default-ttl: PT1H
+    session-min-ttl: PT1M
+    session-max-ttl: P1D
+    # The session cookie is always HttpOnly and SameSite=Lax; Secure is the production default. A local
+    # deployment over plain http sets this to false so the browser still sends the cookie.
+    secure-cookie: ${BILLING_PORTAL_SECURE_COOKIE:true}
+
   invoicing:
     # How Postpaid charges are grouped into invoices: calendar periods in UTC (DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY).
     postpaid-cycle: MONTHLY

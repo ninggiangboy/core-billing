@@ -8,6 +8,8 @@ import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.actor.PublicEndpoint;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.idempotency.RepeatableCreate;
+import dev.ngb.core_billing.session.api.portal.PortalAuthorizer;
+import dev.ngb.core_billing.session.api.portal.RequiresPortalPermission;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -29,14 +31,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 class WebConfiguration implements WebMvcConfigurer {
 
     private final Authorizer authorizer;
+    private final PortalAuthorizer portalAuthorizer;
 
-    WebConfiguration(Authorizer authorizer) {
+    WebConfiguration(Authorizer authorizer, PortalAuthorizer portalAuthorizer) {
         this.authorizer = authorizer;
+        this.portalAuthorizer = portalAuthorizer;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new PermissionInterceptor(authorizer));
+        registry.addInterceptor(new PermissionInterceptor(authorizer, portalAuthorizer));
     }
 
     @Bean
@@ -53,7 +57,10 @@ class WebConfiguration implements WebMvcConfigurer {
                         .addSecuritySchemes("oidc", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
                                 .description("Billing User signed in through Keycloak"))
                         .addSecuritySchemes("apiKey", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("cbk_<key-id>_<secret>")
-                                .description("Tenant System credential issued by Billing")));
+                                .description("Tenant System credential issued by Billing"))
+                        .addSecuritySchemes("portalSession", new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.COOKIE)
+                                .name("billing_portal")
+                                .description("Billing Session cookie, obtained by exchanging the single-use portal token")));
     }
 
     /** Documents the permission each operation requires, straight from the annotation that enforces it. */
@@ -63,6 +70,10 @@ class WebConfiguration implements WebMvcConfigurer {
             RequiresPermission required = handlerMethod.getMethodAnnotation(RequiresPermission.class);
             if (required != null) {
                 operation.addExtension("x-required-permission", required.value().code());
+            }
+            RequiresPortalPermission portal = handlerMethod.getMethodAnnotation(RequiresPortalPermission.class);
+            if (portal != null) {
+                operation.addExtension("x-required-portal-permission", portal.value().code());
             }
             return operation;
         };
@@ -98,6 +109,10 @@ class WebConfiguration implements WebMvcConfigurer {
     @Bean
     OperationCustomizer allowedCallers() {
         return (operation, handlerMethod) -> {
+            if (handlerMethod.hasMethodAnnotation(RequiresPortalPermission.class)) {
+                operation.addExtension("x-allowed-callers", List.of("portal-session"));
+                return operation;
+            }
             RequiresPermission required = handlerMethod.getMethodAnnotation(RequiresPermission.class);
             if (required != null) {
                 List<String> callers = new java.util.ArrayList<>();

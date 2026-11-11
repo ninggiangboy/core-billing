@@ -141,6 +141,51 @@ paths:
       x-allowed-callers:
       - platform-user
       - tenant-user
+  /api/v1/portal/return-urls:
+    get:
+      tags:
+      - portal-settings-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+      x-required-permission: portal-settings:manage
+      x-allowed-callers:
+      - tenant-user
+    put:
+      tags:
+      - portal-settings-controller
+      operationId: replace
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplaceRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+      x-required-permission: portal-settings:manage
+      x-allowed-callers:
+      - tenant-user
   /api/v1/customers/{id}:
     get:
       tags:
@@ -244,6 +289,86 @@ paths:
                   type: string
       x-allowed-callers:
       - public
+  /portal/api/top-ups:
+    post:
+      tags:
+      - portal-money-controller
+      operationId: topUp
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopUpRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TopUpResponse"
+        "200":
+          description: An earlier identical request already created it; that resource
+            is returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TopUpResponse"
+      x-required-portal-permission: top-up:create
+      x-allowed-callers:
+      - portal-session
+  /portal/api/session/exchange:
+    post:
+      tags:
+      - portal-session-controller
+      operationId: exchange
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ExchangeResponse"
+      x-allowed-callers:
+      - public
+  /portal/api/payment-methods:
+    post:
+      tags:
+      - portal-payment-controller
+      operationId: paymentMethods
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HostedPageResponse"
+      x-required-portal-permission: payment-method:manage
+      x-allowed-callers:
+      - portal-session
   /api/v1/webhook-endpoints:
     get:
       tags:
@@ -398,7 +523,7 @@ paths:
     get:
       tags:
       - user-controller
-      operationId: list
+      operationId: list_1
       responses:
         "200":
           description: OK
@@ -540,7 +665,7 @@ paths:
     get:
       tags:
       - tenant-controller
-      operationId: list_1
+      operationId: list_2
       responses:
         "200":
           description: OK
@@ -647,7 +772,7 @@ paths:
     get:
       tags:
       - tenant-system-controller
-      operationId: list_2
+      operationId: list_3
       responses:
         "200":
           description: OK
@@ -997,7 +1122,7 @@ paths:
     get:
       tags:
       - role-controller
-      operationId: list_3
+      operationId: list_4
       responses:
         "200":
           description: OK
@@ -1614,7 +1739,7 @@ paths:
     get:
       tags:
       - customer-controller
-      operationId: list_4
+      operationId: list_5
       responses:
         "200":
           description: OK
@@ -1729,6 +1854,57 @@ paths:
       x-allowed-callers:
       - tenant-user
       - tenant-system
+  /api/v1/billing-sessions:
+    post:
+      tags:
+      - billing-session-controller
+      operationId: create_5
+      parameters:
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CreateResponse"
+      x-required-permission: billing-session:create
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
+  /api/v1/billing-sessions/{id}/revoke:
+    post:
+      tags:
+      - billing-session-controller
+      operationId: revoke
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Request-Id
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      x-required-permission: billing-session:create
+      x-allowed-callers:
+      - tenant-user
+      - tenant-system
   /api/v1/webhook-endpoints/{id}:
     get:
       tags:
@@ -1783,6 +1959,406 @@ paths:
       x-allowed-callers:
       - tenant-user
       - tenant-system
+  /portal/api/wallets:
+    get:
+      tags:
+      - portal-money-controller
+      operationId: wallets_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WalletResponse"
+      x-required-portal-permission: wallet:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/wallets/{id}:
+    get:
+      tags:
+      - portal-money-controller
+      operationId: wallet
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+      x-required-portal-permission: wallet:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/wallets/{id}/ledger:
+    get:
+      tags:
+      - portal-money-controller
+      operationId: ledger
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: afterSequence
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LedgerEntryResponse"
+      x-required-portal-permission: ledger:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/usage/totals:
+    get:
+      tags:
+      - portal-usage-controller
+      operationId: totals
+      parameters:
+      - name: metric
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageTotalResponse"
+      x-required-portal-permission: usage:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/usage/history:
+    get:
+      tags:
+      - portal-usage-controller
+      operationId: history_1
+      parameters:
+      - name: metric
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageEventResponse"
+      x-required-portal-permission: usage:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/subscriptions:
+    get:
+      tags:
+      - portal-invoicing-controller
+      operationId: subscriptions_1
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionResponse"
+      x-required-portal-permission: subscription:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/subscriptions/{id}:
+    get:
+      tags:
+      - portal-invoicing-controller
+      operationId: subscription
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubscriptionDetailResponse"
+      x-required-portal-permission: subscription:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/session:
+    get:
+      tags:
+      - portal-session-controller
+      operationId: session
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+      x-required-portal-permission: session:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/refunds:
+    get:
+      tags:
+      - portal-payment-controller
+      operationId: refunds
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RefundResponse"
+      x-required-portal-permission: refund:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/payments:
+    get:
+      tags:
+      - portal-payment-controller
+      operationId: payments
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentResponse"
+      x-required-portal-permission: payment:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/payments/{id}:
+    get:
+      tags:
+      - portal-payment-controller
+      operationId: payment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentDetailResponse"
+      x-required-portal-permission: payment:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/invoices:
+    get:
+      tags:
+      - portal-invoicing-controller
+      operationId: invoices_1
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvoiceResponse"
+      x-required-portal-permission: invoice:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/invoices/{id}:
+    get:
+      tags:
+      - portal-invoicing-controller
+      operationId: invoice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvoiceDetailResponse"
+      x-required-portal-permission: invoice:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/customer:
+    get:
+      tags:
+      - portal-customer-controller
+      operationId: customer
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+      x-required-portal-permission: customer:view
+      x-allowed-callers:
+      - portal-session
+  /portal/api/charges:
+    get:
+      tags:
+      - portal-money-controller
+      operationId: charges
+      parameters:
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChargeResponse"
+      x-required-portal-permission: charge:view
+      x-allowed-callers:
+      - portal-session
   /api/v1/webhook-deliveries:
     get:
       tags:
@@ -1850,7 +2426,7 @@ paths:
     get:
       tags:
       - wallet-controller
-      operationId: wallet
+      operationId: wallet_1
       parameters:
       - name: id
         in: path
@@ -1872,7 +2448,7 @@ paths:
     get:
       tags:
       - ledger-controller
-      operationId: ledger
+      operationId: ledger_1
       parameters:
       - name: id
         in: path
@@ -2017,7 +2593,7 @@ paths:
     get:
       tags:
       - subscription-controller
-      operationId: subscription
+      operationId: subscription_1
       parameters:
       - name: id
         in: path
@@ -2285,7 +2861,7 @@ paths:
     get:
       tags:
       - payment-controller
-      operationId: payments
+      operationId: payments_1
       parameters:
       - name: walletId
         in: query
@@ -2326,7 +2902,7 @@ paths:
     get:
       tags:
       - payment-controller
-      operationId: payment
+      operationId: payment_1
       parameters:
       - name: id
         in: path
@@ -2364,7 +2940,7 @@ paths:
     get:
       tags:
       - invoice-controller
-      operationId: invoice
+      operationId: invoice_1
       parameters:
       - name: id
         in: path
@@ -2435,7 +3011,7 @@ paths:
     delete:
       tags:
       - tenant-system-controller
-      operationId: revoke
+      operationId: revoke_1
       parameters:
       - name: systemId
         in: path
@@ -2554,6 +3130,13 @@ components:
         createdAt:
           type: string
           format: date-time
+    ReplaceRequest:
+      type: object
+      properties:
+        urls:
+          type: array
+          items:
+            type: string
     UpdateCustomerRequest:
       type: object
       properties:
@@ -2585,6 +3168,68 @@ components:
         tenantSystemId:
           type: string
         externalUserId:
+          type: string
+    TopUpRequest:
+      type: object
+      properties:
+        walletId:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    MoneyDto:
+      type: object
+      properties:
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+    TopUpResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        amount:
+          $ref: "#/components/schemas/MoneyDto"
+        checkoutUrl:
+          type: string
+    ExchangeRequest:
+      type: object
+      properties:
+        token:
+          type: string
+    ExchangeResponse:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/SessionResponse"
+        csrfToken:
+          type: string
+        returnUrl:
+          type: string
+    SessionResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        customerId:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    HostedPageResponse:
+      type: object
+      properties:
+        url:
           type: string
     CreateEndpointRequest:
       type: object
@@ -2674,14 +3319,6 @@ components:
         creditLimit:
           type: integer
           format: int64
-    MoneyDto:
-      type: object
-      properties:
-        amount:
-          type: integer
-          format: int64
-        currency:
-          type: string
     WalletResponse:
       type: object
       properties:
@@ -3415,16 +4052,6 @@ components:
         completedAt:
           type: string
           format: date-time
-    TopUpRequest:
-      type: object
-      properties:
-        walletId:
-          type: string
-        amount:
-          type: integer
-          format: int64
-        currency:
-          type: string
     PaymentResponse:
       type: object
       properties:
@@ -3656,6 +4283,36 @@ components:
           type: string
         reference:
           type: string
+    CreateRequest:
+      type: object
+      properties:
+        customerId:
+          type: string
+        returnUrl:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+    CreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        portalUrl:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
     UpdateEndpointRequest:
       type: object
       properties:
@@ -3669,25 +4326,41 @@ components:
             type: string
         status:
           type: string
+    UsageTotalResponse:
+      type: object
+      properties:
+        metric:
+          type: string
+        unit:
+          type: string
+        quantity:
+          type: string
+        events:
+          type: integer
+          format: int64
     AttemptResponse:
       type: object
       properties:
-        attemptNo:
-          type: integer
-          format: int32
-        statusCode:
-          type: integer
-          format: int32
-        error:
+        failureCode:
           type: string
-        responseExcerpt:
+        failureMessage:
           type: string
-        latencyMs:
-          type: integer
-          format: int64
-        attemptedAt:
+        occurredAt:
           type: string
           format: date-time
+    PaymentDetailResponse:
+      type: object
+      properties:
+        payment:
+          $ref: "#/components/schemas/PaymentResponse"
+        refunds:
+          type: array
+          items:
+            $ref: "#/components/schemas/RefundResponse"
+        failedAttempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptResponse"
     DeliveryDetailResponse:
       type: object
       properties:
@@ -3734,19 +4407,6 @@ components:
         resolvedAt:
           type: string
           format: date-time
-    PaymentDetailResponse:
-      type: object
-      properties:
-        payment:
-          $ref: "#/components/schemas/PaymentResponse"
-        refunds:
-          type: array
-          items:
-            $ref: "#/components/schemas/RefundResponse"
-        failedAttempts:
-          type: array
-          items:
-            $ref: "#/components/schemas/AttemptResponse"
     MeResponse:
       type: object
       properties:
@@ -3776,3 +4436,9 @@ components:
       description: Tenant System credential issued by Billing
       scheme: bearer
       bearerFormat: cbk_<key-id>_<secret>
+    portalSession:
+      type: apiKey
+      description: "Billing Session cookie, obtained by exchanging the single-use\
+        \ portal token"
+      name: billing_portal
+      in: cookie

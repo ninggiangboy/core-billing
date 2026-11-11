@@ -9,6 +9,7 @@ import dev.ngb.core_billing.money.api.wallet.InsufficientFundsException;
 import dev.ngb.core_billing.platform.api.error.AccessDeniedException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.application.auth.exception.RateLimitExceededException;
+import dev.ngb.core_billing.session.application.portal.exception.InvalidPortalSessionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -77,6 +78,12 @@ class ApiExceptionHandler {
     @ExceptionHandler(RateLimitExceededException.class)
     ProblemDetail rateLimited(RateLimitExceededException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, "Too many requests.");
+    }
+
+    /** An unknown, already used, revoked or expired session token; the answer does not say which. */
+    @ExceptionHandler(InvalidPortalSessionException.class)
+    ProblemDetail invalidPortalSession(InvalidPortalSessionException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
     /**

@@ -25,6 +25,11 @@ public enum Permission {
     CUSTOMER_READ("customer:read", false, true, true),
     CUSTOMER_WRITE("customer:write", false, true, true),
 
+    /** Creates and revokes a Billing Session for one Customer. A Tenant System may hold it. */
+    BILLING_SESSION_CREATE("billing-session:create", false, true, true),
+    /** Manages the return URLs a Billing Session may point back to. Administrators only. */
+    PORTAL_SETTINGS_MANAGE("portal-settings:manage", false, true, false),
+
     WALLET_READ("wallet:read", false, true, true),
     WALLET_MANAGE("wallet:manage", false, true, true),
     RESERVATION_MANAGE("reservation:manage", false, true, true),

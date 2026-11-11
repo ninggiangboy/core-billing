@@ -37,6 +37,9 @@ public class FakePaymentProvider implements PaymentProvider {
     public final AtomicInteger checkoutSessions = new AtomicInteger();
     public final List<RefundCall> refunds = new CopyOnWriteArrayList<>();
     public final List<String> keysVerified = new CopyOnWriteArrayList<>();
+    /** Provider customers created for the hosted payment-method flow, keyed by their idempotency key. */
+    public final Map<String, String> customersByKey = new ConcurrentHashMap<>();
+    public final List<String> portalReturnUrls = new CopyOnWriteArrayList<>();
     public final Map<String, Intent> intents = new ConcurrentHashMap<>();
     public final List<Checkout> recentCheckouts = new CopyOnWriteArrayList<>();
     public final List<RefundObject> recentRefunds = new CopyOnWriteArrayList<>();
@@ -53,6 +56,8 @@ public class FakePaymentProvider implements PaymentProvider {
         checkoutSessions.set(0);
         refunds.clear();
         keysVerified.clear();
+        customersByKey.clear();
+        portalReturnUrls.clear();
         intents.clear();
         recentCheckouts.clear();
         recentRefunds.clear();
@@ -98,6 +103,17 @@ public class FakePaymentProvider implements PaymentProvider {
     @Override
     public AccountState retrieveAccount(String platformSecretKey, String accountId) {
         return new AccountState(cardPaymentsActive);
+    }
+
+    @Override
+    public String createCustomer(Access access, String reference, String name, String email, String idempotencyKey) {
+        return customersByKey.computeIfAbsent(idempotencyKey, key -> "cus_fake_" + RUN + "_" + counter.incrementAndGet());
+    }
+
+    @Override
+    public String createBillingPortalSession(Access access, String customerId, String returnUrl) {
+        portalReturnUrls.add(returnUrl);
+        return "https://billing.stripe.test/session/" + customerId + "/" + counter.incrementAndGet();
     }
 
     @Override

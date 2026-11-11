@@ -12,6 +12,7 @@ import com.stripe.exception.PermissionException;
 import com.stripe.exception.RateLimitException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
@@ -19,6 +20,7 @@ import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import com.stripe.net.StripeResponse;
 import com.stripe.net.Webhook;
+import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.RefundCreateParams;
 import com.stripe.param.RefundListParams;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -194,6 +196,39 @@ public class StripePaymentProvider implements PaymentProvider {
                     && account.getConfiguration().getMerchant().getCapabilities().getCardPayments() != null
                     && "active".equals(account.getConfiguration().getMerchant().getCapabilities().getCardPayments().getStatus());
             return new AccountState(active);
+        } catch (StripeException e) {
+            throw translate(e);
+        }
+    }
+
+    @Override
+    public String createCustomer(Access access, String reference, String name, String email, String idempotencyKey) {
+        CustomerCreateParams.Builder params = CustomerCreateParams.builder()
+                .setName(name)
+                .putMetadata("billing_customer", reference);
+        if (email != null && !email.isBlank()) {
+            params.setEmail(email);
+        }
+        try {
+            Customer customer = client(access.secretKey()).v1().customers().create(params.build(), options(idempotencyKey, access.connectedAccountId()));
+            return customer.getId();
+        } catch (StripeException e) {
+            throw translate(e);
+        }
+    }
+
+    @Override
+    public String createBillingPortalSession(Access access, String customerId, String returnUrl) {
+        com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams.builder()
+                .setCustomer(customerId)
+                .setReturnUrl(returnUrl)
+                .build();
+        try {
+            var session = client(access.secretKey()).v1().billingPortal().sessions().create(params, options(null, access.connectedAccountId()));
+            if (session.getUrl() == null) {
+                throw new ProviderRejectedException("Stripe created the portal session without a hosted page");
+            }
+            return session.getUrl();
         } catch (StripeException e) {
             throw translate(e);
         }

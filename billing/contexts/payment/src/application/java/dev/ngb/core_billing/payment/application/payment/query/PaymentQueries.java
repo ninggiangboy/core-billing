@@ -52,6 +52,19 @@ public class PaymentQueries {
         return payment(id, null);
     }
 
+    /** Payments of one customer, newest first, for the portal principal that is fixed to that customer. */
+    public List<PaymentView> listForCustomer(CustomerId customerId, UUID before, int limit) {
+        return unitOfWork.transactional(() -> payments.list(null, null, before, PageSize.of(limit), List.of(customerId.value())));
+    }
+
+    /** The payment only when it belongs to {@code customerId}. */
+    public PaymentDetail paymentForCustomer(UUID id, CustomerId customerId) {
+        return unitOfWork.transactional(() -> payments.findById(id)
+                .filter(payment -> payment.customerId().equals(customerId))
+                .map(payment -> new PaymentDetail(payment, refunds.byPayment(id), payments.attempts(id)))
+                .orElseThrow(() -> new NotFoundException("payment not found")));
+    }
+
     public PaymentDetail payment(UUID id, UUID caller) {
         return unitOfWork.transactional(() -> payments.findById(id)
                 .map(payment -> {

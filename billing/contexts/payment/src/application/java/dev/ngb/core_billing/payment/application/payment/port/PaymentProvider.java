@@ -83,6 +83,12 @@ public interface PaymentProvider {
 
     AccountState retrieveAccount(String platformSecretKey, String accountId);
 
+    /** Creates (or returns, under {@code idempotencyKey}) the provider customer that can hold payment methods. */
+    String createCustomer(Access access, String reference, String name, String email, String idempotencyKey);
+
+    /** A hosted page where the customer adds, removes or selects payment methods. */
+    String createBillingPortalSession(Access access, String customerId, String returnUrl);
+
     CreatedCheckout createCheckout(Access access, CheckoutRequest request, String idempotencyKey);
 
     Intent retrievePayment(Access access, String paymentIntentId);

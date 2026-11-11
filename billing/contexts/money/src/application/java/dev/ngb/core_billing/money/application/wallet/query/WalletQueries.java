@@ -63,6 +63,14 @@ public class WalletQueries {
         return ledger(walletId, afterSequence, limit, null);
     }
 
+    /** Charges of the given wallets, newest first; the caller has already established that they belong to the customer. */
+    public List<ChargeView> charges(List<WalletId> walletIds, UUID before, int limit) {
+        if (walletIds.isEmpty()) {
+            return List.of();
+        }
+        return unitOfWork.transactional(() -> charges.list(walletIds.stream().map(WalletId::value).toList(), before, PageSize.of(limit)));
+    }
+
     public List<LedgerEntryView> ledger(WalletId walletId, long afterSequence, int limit, UUID caller) {
         if (afterSequence < 0) {
             throw new IllegalArgumentException("afterSequence must not be negative");

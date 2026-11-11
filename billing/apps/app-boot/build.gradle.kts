@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":contexts:pricing"))
     implementation(project(":contexts:payment"))
     implementation(project(":contexts:invoicing"))
+    implementation(project(":contexts:session"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

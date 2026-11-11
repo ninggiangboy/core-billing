@@ -62,7 +62,7 @@ final class ArchitectureRules {
         }
         for (String table : List.of(
                 "Payments", "PaymentAttempts", "Refunds", "StripeConfigurations", "StripeEvents", "StripeEventAttempts", "StripeIncidents",
-                "StripeRoutes")) {
+                "StripeRoutes", "StripeCustomers")) {
             TABLE_OWNER.put(table, "payment");
         }
         for (String table : List.of("Invoices", "InvoiceItems", "InvoicePayments", "InvoiceCounters", "Subscriptions", "SubscriptionEvents")) {
@@ -70,6 +70,9 @@ final class ArchitectureRules {
         }
         for (String table : List.of("Wallets", "LedgerEntries", "Reservations", "Charges")) {
             TABLE_OWNER.put(table, "money");
+        }
+        for (String table : List.of("BillingSessions", "PortalReturnUrls")) {
+            TABLE_OWNER.put(table, "session");
         }
         for (String table : List.of("Outbox", "EventInbox", "AuditLog", "JobLeases", "JobRuns", "RateLimitBuckets")) {
             TABLE_OWNER.put(table, "boot");

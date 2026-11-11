@@ -7,6 +7,7 @@ package dev.ngb.core_billing_jooq.tables;
 import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.Public;
 import dev.ngb.core_billing_jooq.tables.ApiCredentials.ApiCredentialsPath;
+import dev.ngb.core_billing_jooq.tables.BillingSessions.BillingSessionsPath;
 import dev.ngb.core_billing_jooq.tables.CustomerMappings.CustomerMappingsPath;
 import dev.ngb.core_billing_jooq.tables.Tenants.TenantsPath;
 import dev.ngb.core_billing_jooq.tables.WebhookEndpoints.WebhookEndpointsPath;
@@ -193,6 +194,19 @@ public class TenantSystems extends TableImpl<TenantSystemsRecord> {
             _apiCredentials = new ApiCredentialsPath(this, null, Keys.API_CREDENTIALS__API_CREDENTIALS_TENANT_ID_TENANT_SYSTEM_ID_FKEY.getInverseKey());
 
         return _apiCredentials;
+    }
+
+    private transient BillingSessionsPath _billingSessions;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.billing_sessions</code> table
+     */
+    public BillingSessionsPath billingSessions() {
+        if (_billingSessions == null)
+            _billingSessions = new BillingSessionsPath(this, null, Keys.BILLING_SESSIONS__BILLING_SESSIONS_TENANT_ID_TENANT_SYSTEM_ID_FKEY.getInverseKey());
+
+        return _billingSessions;
     }
 
     private transient CustomerMappingsPath _customerMappings;

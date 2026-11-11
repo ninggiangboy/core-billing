@@ -6,6 +6,7 @@ package dev.ngb.core_billing_jooq;
 
 import dev.ngb.core_billing_jooq.tables.ApiCredentials;
 import dev.ngb.core_billing_jooq.tables.AuditLog;
+import dev.ngb.core_billing_jooq.tables.BillingSessions;
 import dev.ngb.core_billing_jooq.tables.BillingUsers;
 import dev.ngb.core_billing_jooq.tables.Charges;
 import dev.ngb.core_billing_jooq.tables.CustomerMappings;
@@ -22,6 +23,7 @@ import dev.ngb.core_billing_jooq.tables.Outbox;
 import dev.ngb.core_billing_jooq.tables.PaymentAttempts;
 import dev.ngb.core_billing_jooq.tables.Payments;
 import dev.ngb.core_billing_jooq.tables.Permissions;
+import dev.ngb.core_billing_jooq.tables.PortalReturnUrls;
 import dev.ngb.core_billing_jooq.tables.PricingMetrics;
 import dev.ngb.core_billing_jooq.tables.PricingPlanVersions;
 import dev.ngb.core_billing_jooq.tables.PricingPlans;
@@ -32,6 +34,7 @@ import dev.ngb.core_billing_jooq.tables.RoleAssignments;
 import dev.ngb.core_billing_jooq.tables.RolePermissions;
 import dev.ngb.core_billing_jooq.tables.Roles;
 import dev.ngb.core_billing_jooq.tables.StripeConfigurations;
+import dev.ngb.core_billing_jooq.tables.StripeCustomers;
 import dev.ngb.core_billing_jooq.tables.StripeEventAttempts;
 import dev.ngb.core_billing_jooq.tables.StripeEvents;
 import dev.ngb.core_billing_jooq.tables.StripeIncidents;
@@ -81,6 +84,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.audit_log</code>.
      */
     public final AuditLog AUDIT_LOG = AuditLog.AUDIT_LOG;
+
+    /**
+     * The table <code>public.billing_sessions</code>.
+     */
+    public final BillingSessions BILLING_SESSIONS = BillingSessions.BILLING_SESSIONS;
 
     /**
      * The table <code>public.billing_users</code>.
@@ -163,6 +171,11 @@ public class Public extends SchemaImpl {
     public final Permissions PERMISSIONS = Permissions.PERMISSIONS;
 
     /**
+     * The table <code>public.portal_return_urls</code>.
+     */
+    public final PortalReturnUrls PORTAL_RETURN_URLS = PortalReturnUrls.PORTAL_RETURN_URLS;
+
+    /**
      * The table <code>public.pricing_metrics</code>.
      */
     public final PricingMetrics PRICING_METRICS = PricingMetrics.PRICING_METRICS;
@@ -211,6 +224,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.stripe_configurations</code>.
      */
     public final StripeConfigurations STRIPE_CONFIGURATIONS = StripeConfigurations.STRIPE_CONFIGURATIONS;
+
+    /**
+     * The table <code>public.stripe_customers</code>.
+     */
+    public final StripeCustomers STRIPE_CUSTOMERS = StripeCustomers.STRIPE_CUSTOMERS;
 
     /**
      * The table <code>public.stripe_event_attempts</code>.
@@ -315,6 +333,7 @@ public class Public extends SchemaImpl {
         return Arrays.asList(
             ApiCredentials.API_CREDENTIALS,
             AuditLog.AUDIT_LOG,
+            BillingSessions.BILLING_SESSIONS,
             BillingUsers.BILLING_USERS,
             Charges.CHARGES,
             CustomerMappings.CUSTOMER_MAPPINGS,
@@ -331,6 +350,7 @@ public class Public extends SchemaImpl {
             PaymentAttempts.PAYMENT_ATTEMPTS,
             Payments.PAYMENTS,
             Permissions.PERMISSIONS,
+            PortalReturnUrls.PORTAL_RETURN_URLS,
             PricingMetrics.PRICING_METRICS,
             PricingPlanVersions.PRICING_PLAN_VERSIONS,
             PricingPlans.PRICING_PLANS,
@@ -341,6 +361,7 @@ public class Public extends SchemaImpl {
             RolePermissions.ROLE_PERMISSIONS,
             Roles.ROLES,
             StripeConfigurations.STRIPE_CONFIGURATIONS,
+            StripeCustomers.STRIPE_CUSTOMERS,
             StripeEventAttempts.STRIPE_EVENT_ATTEMPTS,
             StripeEvents.STRIPE_EVENTS,
             StripeIncidents.STRIPE_INCIDENTS,

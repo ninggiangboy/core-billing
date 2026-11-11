@@ -8,6 +8,7 @@ import dev.ngb.core_billing.money.api.reservation.ReserveBudget;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.payment.adapter.incident.persistence.JooqIncidentRepository;
 import dev.ngb.core_billing.payment.adapter.payment.persistence.JooqPaymentRepository;
+import dev.ngb.core_billing.payment.adapter.payment.persistence.JooqStripeCustomerRepository;
 import dev.ngb.core_billing.payment.adapter.refund.persistence.JooqRefundRepository;
 import dev.ngb.core_billing.payment.adapter.stripe.persistence.JooqStripeConfigurationRepository;
 import dev.ngb.core_billing.payment.adapter.stripe.persistence.JooqStripeEventRepository;
@@ -21,6 +22,8 @@ import dev.ngb.core_billing.payment.adapter.stripe.provider.StripePaymentProvide
 import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 import dev.ngb.core_billing.payment.application.payment.command.CreateInvoicePaymentUseCase;
 import dev.ngb.core_billing.payment.application.payment.command.CreateTopUpUseCase;
+import dev.ngb.core_billing.payment.application.payment.command.OpenPaymentMethodsUseCase;
+import dev.ngb.core_billing.payment.application.payment.port.StripeCustomerRepository;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.query.PaymentQueries;
@@ -106,6 +109,11 @@ class PaymentConfiguration {
     @Bean
     StripeConfigurationRepository stripeConfigurationRepository(DSLContext dsl) {
         return new JooqStripeConfigurationRepository(dsl);
+    }
+
+    @Bean
+    StripeCustomerRepository stripeCustomerRepository(DSLContext dsl) {
+        return new JooqStripeCustomerRepository(dsl);
     }
 
     @Bean
@@ -213,6 +221,13 @@ class PaymentConfiguration {
             UnitOfWork unitOfWork, StripeConfigurationRepository configurations, PaymentRepository payments, WalletLookup wallets,
             CustomerLookup customers, CheckoutOpener checkouts, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
         return new CreateTopUpUseCase(unitOfWork, configurations, payments, wallets, customers, checkouts, auditLog, tenantContext, ids, clock);
+    }
+
+    @Bean
+    OpenPaymentMethodsUseCase openPaymentMethodsUseCase(
+            UnitOfWork unitOfWork, StripeConfigurationRepository configurations, StripeCustomerRepository stripeCustomers,
+            CustomerLookup customers, PaymentProvider provider, ProviderAccess access, TenantContext tenantContext, Clock clock) {
+        return new OpenPaymentMethodsUseCase(unitOfWork, configurations, stripeCustomers, customers, provider, access, tenantContext, clock);
     }
 
     @Bean

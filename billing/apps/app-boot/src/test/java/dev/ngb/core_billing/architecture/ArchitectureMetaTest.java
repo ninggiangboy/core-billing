@@ -56,6 +56,7 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("web-does-not-depend-on-persistence", "WebReachesPersistence");
         CULPRIT_BY_RULE_ID.put("domain-id-names-its-aggregate", "OrphanId");
         CULPRIT_BY_RULE_ID.put("domain-events-live-in-an-events-holder", "StandaloneEvent");
+        CULPRIT_BY_RULE_ID.put("domain-features-are-free-of-cycles", "CycleAUsesB");
     }
 
     private static JavaClasses fixtures;

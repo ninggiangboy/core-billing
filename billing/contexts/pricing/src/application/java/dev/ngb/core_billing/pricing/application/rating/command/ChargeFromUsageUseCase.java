@@ -13,11 +13,11 @@ import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.pricing.domain.metric.Measure;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
-import dev.ngb.core_billing.pricing.domain.plan.PricingEvents;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
-import dev.ngb.core_billing.pricing.domain.rating.Quote;
+import dev.ngb.core_billing.pricing.domain.plan.Quote;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRatingId;
 import dev.ngb.core_billing.pricing.domain.rating.RatingStatus;
+import dev.ngb.core_billing.pricing.domain.rating.RatingEvents;
 import dev.ngb.core_billing.pricing.domain.rating.UsageRating;
 import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
 import dev.ngb.core_billing.sharedkernel.Clock;
@@ -182,7 +182,7 @@ public class ChargeFromUsageUseCase {
             if (ratings.link(ratingId, open.stream().map(r -> r.id().value()).toList()) != open.size()) {
                 throw new RatedConcurrently();
             }
-            events.publish(new PricingEvents.UsageRated(ids.newId(), rating, now));
+            events.publish(new RatingEvents.UsageRated(ids.newId(), rating, now));
         }
         return new Result(outcome(rating), rating, false);
     }

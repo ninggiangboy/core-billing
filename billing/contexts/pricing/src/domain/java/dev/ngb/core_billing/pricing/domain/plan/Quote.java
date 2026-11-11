@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.pricing.domain.rating;
+package dev.ngb.core_billing.pricing.domain.plan;
 
 import dev.ngb.core_billing.sharedkernel.Money;
 import java.math.BigDecimal;

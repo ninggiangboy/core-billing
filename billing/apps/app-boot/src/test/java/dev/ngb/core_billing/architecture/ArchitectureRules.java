@@ -3,6 +3,7 @@ package dev.ngb.core_billing.architecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
+import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
@@ -125,7 +126,8 @@ final class ArchitectureRules {
                 new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)),
                 new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)),
                 new NamedRule("domain-id-names-its-aggregate", domainIdNamesItsAggregate(root)),
-                new NamedRule("domain-events-live-in-an-events-holder", domainEventsLiveInAnEventsHolder(root)));
+                new NamedRule("domain-events-live-in-an-events-holder", domainEventsLiveInAnEventsHolder(root)),
+                new NamedRule("domain-features-are-free-of-cycles", domainFeaturesAreFreeOfCycles(root)));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -573,6 +575,15 @@ final class ArchitectureRules {
                     }
                 })
                 .because("one place per feature lists what it announces");
+    }
+
+    /**
+     * The features of a domain depend on one another in one direction. A cycle means a type sits in the wrong
+     * feature. The application layer is not held to this: the money path legitimately crosses its features.
+     */
+    private static ArchRule domainFeaturesAreFreeOfCycles(String root) {
+        return slices().matching(root + ".(*).domain.(*)..").should().beFreeOfCycles()
+                .because("a feature of the domain that needs another and is needed by it belongs with it, or its shared type moves");
     }
 
     private static boolean isApiPackage(String root, String packageName) {

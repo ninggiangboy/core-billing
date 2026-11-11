@@ -14,7 +14,6 @@ import java.util.Objects;
 import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
 import dev.ngb.core_billing.pricing.domain.rule.Hybrid;
 import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
-import dev.ngb.core_billing.pricing.domain.rating.Quote;
 import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
 import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 import dev.ngb.core_billing.pricing.domain.rule.PriceLine;

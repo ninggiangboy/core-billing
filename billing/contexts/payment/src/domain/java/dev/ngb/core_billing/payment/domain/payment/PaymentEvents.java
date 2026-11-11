@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import dev.ngb.core_billing.payment.domain.refund.Refund;
 
 /**
  * What the payment context announces, written to the outbox in the transaction of the change it reports.
@@ -83,32 +82,6 @@ public final class PaymentEvents {
             return PaymentEvents.payload("paymentId", payment.id().toString(), "walletId", payment.walletId().toString(), "customerId",
                     payment.customerId().toString(), "amount", money(payment.amount()), "reason", payment.failureReason(), "invoiceId",
                     payment.invoiceId() == null ? null : payment.invoiceId().toString());
-        }
-    }
-
-    /** Money went back to the customer's card and the wallet was debited for it. */
-    public record RefundSucceeded(UUID eventId, Refund refund, Payment payment, Instant occurredAt) implements DomainEvent {
-        public static final String TYPE = "refund.succeeded";
-
-        @Override
-        public TenantId tenantId() {
-            return refund.tenantId();
-        }
-
-        @Override
-        public String type() {
-            return TYPE;
-        }
-
-        @Override
-        public String aggregate() {
-            return "payment/" + refund.paymentId();
-        }
-
-        @Override
-        public Map<String, Object> payload() {
-            return PaymentEvents.payload("refundId", refund.id().toString(), "paymentId", refund.paymentId().toString(), "walletId",
-                    payment.walletId().toString(), "amount", money(refund.amount()), "ledgerEntryId", refund.ledgerEntryId().toString());
         }
     }
 }

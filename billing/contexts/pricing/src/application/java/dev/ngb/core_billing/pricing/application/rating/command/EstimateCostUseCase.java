@@ -7,7 +7,7 @@ import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
-import dev.ngb.core_billing.pricing.domain.rating.Quote;
+import dev.ngb.core_billing.pricing.domain.plan.Quote;
 import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;

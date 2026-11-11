@@ -11,6 +11,7 @@ import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
 import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentAttempt;
 import dev.ngb.core_billing.payment.domain.payment.PaymentEvents;
+import dev.ngb.core_billing.payment.domain.refund.RefundEvents;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.refund.Refund;
 import dev.ngb.core_billing.payment.domain.refund.RefundId;
@@ -189,7 +190,7 @@ public class PaymentSettlement {
                 payment.addRefunded(refund.amount(), now);
                 refunds.update(refund);
                 payments.update(payment);
-                events.publish(new PaymentEvents.RefundSucceeded(ids.newId(), refund, payment, now));
+                events.publish(new RefundEvents.RefundSucceeded(ids.newId(), refund, payment, now));
                 return Result.applied("refund succeeded; the wallet was debited");
             case FAILED:
             case CANCELED:

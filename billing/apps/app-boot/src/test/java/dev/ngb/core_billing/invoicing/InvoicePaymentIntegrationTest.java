@@ -15,10 +15,13 @@ import dev.ngb.core_billing.money.api.charge.ChargeWallet;
 import dev.ngb.core_billing.payment.PaymentTestWorld;
 import dev.ngb.core_billing.payment.PaymentTestWorld.PayWorld;
 import dev.ngb.core_billing.payment.application.refund.command.RequestRefundUseCase;
+import dev.ngb.core_billing.payment.api.invoice.StartInvoicePayment;
+import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentCommand;
 import dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebhookUseCase;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.support.FakePaymentProvider;
 import dev.ngb.core_billing.support.FakePaymentProviderConfig;
@@ -59,6 +62,7 @@ class InvoicePaymentIntegrationTest {
     @Autowired CloseBillingCycleUseCase closeCycle;
     @Autowired PayInvoiceUseCase payInvoice;
     @Autowired RequestRefundUseCase refund;
+    @Autowired StartInvoicePayment invoicePayments;
     @Autowired ReceiveStripeWebhookUseCase webhooks;
     @Autowired FakePaymentProvider stripe;
     @Autowired ScopeTestSupport scopes;
@@ -195,6 +199,17 @@ class InvoicePaymentIntegrationTest {
         assertThat(again.payment().replayed()).isTrue();
         assertThat(owner.count("select count(*) from payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
         assertThat(stripe.checkouts).hasSize(1);
+    }
+
+    @Test
+    void theSameKeyOnAnotherRequestForTheInvoiceIsAConflict() {
+        Debt debt = invoicedDebt();
+        pay(debt, "pay-1");
+
+        assertThatThrownBy(() -> scopes.inTenant(debt.money().tenant().id(), () -> invoicePayments.start(new StartInvoicePaymentCommand(
+                debt.invoice().value(), debt.money().wallet().id(), debt.money().customerId(), Money.of(1, MoneyTestWorld.USD), "Other amount", "pay-1"))))
+                .isInstanceOf(IdempotencyConflictException.class);
+        assertThat(owner.count("select count(*) from payments where invoice_id = ?", debt.invoice().value())).isEqualTo(1);
     }
 
     @Test

@@ -16,8 +16,11 @@ spring:
       connection-init-sql: "SET lock_timeout = '5s'; SET idle_in_transaction_session_timeout = '60s'"
   task:
     scheduling:
+      # One thread per scheduled method (nine today), so a long round such as ledger verification or Stripe
+      # reconciliation cannot hold up the outbox relay or the webhook sender behind it. Concurrency against the
+      # database is still bounded by billing.jobs.tenant-parallelism below, not by this pool.
       pool:
-        size: ${BILLING_WORKER_SCHEDULER_POOL_SIZE:4}
+        size: ${BILLING_WORKER_SCHEDULER_POOL_SIZE:9}
       shutdown:
         await-termination: true
         await-termination-period: 30s

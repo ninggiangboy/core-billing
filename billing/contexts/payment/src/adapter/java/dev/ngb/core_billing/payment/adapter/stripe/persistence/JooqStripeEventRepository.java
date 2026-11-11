@@ -12,12 +12,13 @@ import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
 import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.util.Text;
 import dev.ngb.core_billing_jooq.tables.records.StripeEventsRecord;
+import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
 
 public class JooqStripeEventRepository implements StripeEventRepository {
 
@@ -67,6 +68,9 @@ public class JooqStripeEventRepository implements StripeEventRepository {
                 .set(STRIPE_EVENTS.LAST_ERROR, e.lastError())
                 .set(STRIPE_EVENTS.RECEIVED_AT, e.receivedAt())
                 .set(STRIPE_EVENTS.PROCESSED_AT, e.processedAt())
+                // The attempt is over, so the claim goes with it: a short backoff must be able to come due again
+                // before another worker's claim deadline would have run out.
+                .set(STRIPE_EVENTS.CLAIMED_UNTIL, (Instant) null)
                 .where(STRIPE_EVENTS.ID.eq(e.id().value()))
                 .execute();
     }
@@ -87,14 +91,26 @@ public class JooqStripeEventRepository implements StripeEventRepository {
     }
 
     @Override
-    public List<StripeEventId> due(Instant now, Instant receivedBefore, int limit) {
-        return dsl.select(STRIPE_EVENTS.ID)
-                .from(STRIPE_EVENTS)
-                .where(STRIPE_EVENTS.STATUS.eq("FAILED").and(STRIPE_EVENTS.NEXT_ATTEMPT_AT.le(now))
-                        .or(STRIPE_EVENTS.STATUS.eq("RECEIVED").and(STRIPE_EVENTS.RECEIVED_AT.le(receivedBefore))))
-                .orderBy(DSL.coalesce(STRIPE_EVENTS.NEXT_ATTEMPT_AT, STRIPE_EVENTS.RECEIVED_AT), STRIPE_EVENTS.ID)
-                .limit(limit)
-                .fetch(STRIPE_EVENTS.ID)
+    public List<StripeEventId> claimDue(Instant now, Instant receivedBefore, Duration lease, int limit) {
+        // Finding and claiming are one statement: skip locked makes a row another worker is holding invisible here,
+        // and the deadline makes it invisible until the holder finishes or is given up on.
+        return dsl.fetch("""
+                        with due as (
+                            select id from stripe_events
+                            where ((status = 'FAILED' and next_attempt_at <= ?)
+                                or (status = 'RECEIVED' and received_at <= ?))
+                              and (claimed_until is null or claimed_until <= ?)
+                            order by coalesce(next_attempt_at, received_at), id
+                            limit ?
+                            for update skip locked
+                        )
+                        update stripe_events s
+                        set claimed_until = ?
+                        from due where s.id = due.id
+                        returning s.id
+                        """,
+                        Timestamp.from(now), Timestamp.from(receivedBefore), Timestamp.from(now), limit, Timestamp.from(now.plus(lease)))
+                .getValues(STRIPE_EVENTS.ID)
                 .stream()
                 .map(StripeEventId::new)
                 .toList();

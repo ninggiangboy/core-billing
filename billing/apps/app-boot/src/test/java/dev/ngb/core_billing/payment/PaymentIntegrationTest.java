@@ -27,8 +27,10 @@ import dev.ngb.core_billing.payment.application.stripe.command.ReceiveStripeWebh
 import dev.ngb.core_billing.payment.application.stripe.command.ReconcileStripeUseCase;
 import dev.ngb.core_billing.payment.application.refund.command.RequestRefundUseCase;
 import dev.ngb.core_billing.payment.application.stripe.command.RetryStripeEventsUseCase;
+import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
 import dev.ngb.core_billing.payment.application.stripe.command.ManageStripeEventUseCase;
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
@@ -38,6 +40,7 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.support.EventSchemas;
 import dev.ngb.core_billing.support.FakePaymentProvider;
@@ -46,6 +49,9 @@ import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.StripeEvents;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +95,7 @@ class PaymentIntegrationTest {
     @Autowired RequestRefundUseCase refund;
     @Autowired ReceiveStripeWebhookUseCase webhooks;
     @Autowired RetryStripeEventsUseCase retry;
+    @Autowired StripeEventRepository stripeEvents;
     @Autowired ReconcileStripeUseCase reconcile;
     @Autowired dev.ngb.core_billing.payment.application.stripe.service.StripeConfigurationService configService;
     @Autowired dev.ngb.core_billing.money.application.reservation.command.ExpireReservationsUseCase expireReservations;
@@ -619,6 +626,72 @@ class PaymentIntegrationTest {
 
         assertThat(round.processed()).isEqualTo(1);
         assertThat(balance(w)).isEqualTo(1200);
+    }
+
+    // ---- retry claims ---------------------------------------------------------------------------------------------
+
+    @Test
+    void aClaimedEventIsInvisibleToAnotherWorkerUntilTheClaimPasses() {
+        PayWorld w = worlds.direct(0);
+        TenantId tenant = w.money().tenant().id();
+        for (int i = 0; i < 2; i++) {
+            deliver(w, StripeEvents.paidCheckout(StripeEvents.newEventId(), null, "cs_claim" + i + sfx, "pi_claim" + i + sfx,
+                    UUID.randomUUID().toString(), 1000));
+        }
+        makeFailedEventsDue(tenant);
+
+        List<StripeEventId> first = claim(tenant);
+        List<StripeEventId> second = claim(tenant);
+
+        assertThat(first).hasSize(2);
+        assertThat(second).as("another worker takes nothing while the claim holds").isEmpty();
+        assertThat(owner.count("select count(*) from stripe_events where tenant_id = ? and status = 'FAILED' and next_attempt_at <= now()",
+                tenant.value())).as("taking a claim does not move the retry schedule").isEqualTo(2);
+
+        owner.jdbc().update("update stripe_events set claimed_until = now() - interval '1 second' where tenant_id = ?", tenant.value());
+
+        assertThat(claim(tenant)).as("a worker that died hands its events back").containsExactlyInAnyOrderElementsOf(first);
+    }
+
+    @Test
+    void severalWorkersRetryingAtOnceNeverTryTheSameEventTwice() throws Exception {
+        PayWorld w = worlds.direct(0);
+        TenantId tenant = w.money().tenant().id();
+        int events = 12;
+        for (int i = 0; i < events; i++) {
+            deliver(w, StripeEvents.paidCheckout(StripeEvents.newEventId(), null, "cs_many" + i + sfx, "pi_many" + i + sfx,
+                    UUID.randomUUID().toString(), 1000));
+        }
+        makeFailedEventsDue(tenant);
+
+        ExecutorService pool = Executors.newFixedThreadPool(4);
+        int tried = 0;
+        try {
+            List<CompletableFuture<Integer>> workers = new ArrayList<>();
+            for (int worker = 0; worker < 4; worker++) {
+                workers.add(CompletableFuture.supplyAsync(() -> scopes.inTenant(tenant, retry::runOnce).tried(), pool));
+            }
+            for (CompletableFuture<Integer> worker : workers) {
+                tried += worker.get(60, TimeUnit.SECONDS);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+
+        assertThat(tried).as("every event is claimed by exactly one worker").isEqualTo(events);
+        assertThat(owner.count("select count(*) from stripe_event_attempts where tenant_id = ?", tenant.value()))
+                .as("one stored attempt and exactly one retry attempt per event").isEqualTo(2 * events);
+    }
+
+    private void makeFailedEventsDue(TenantId tenant) {
+        owner.jdbc().update("update stripe_events set next_attempt_at = now() - interval '1 second' where tenant_id = ? and status = 'FAILED'",
+                tenant.value());
+    }
+
+    private List<StripeEventId> claim(TenantId tenant) {
+        Instant now = Instant.now();
+        return scopes.inTenant(tenant, () -> unitOfWork.transactional(
+                () -> stripeEvents.claimDue(now, now.minus(Duration.ofMinutes(2)), Duration.ofMinutes(2), 10)));
     }
 
     // ---- hold expiry ----------------------------------------------------------------------------------------------

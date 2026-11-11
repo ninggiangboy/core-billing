@@ -35,9 +35,12 @@ as the unprivileged application role with Flyway switched off, so a rolling star
   worker that died is taken over once it is older than the lease TTL. The platform bootstrap runs under
   the same lease, so two instances starting together do not both seed. See
   [concurrency-and-locking.md](concurrency-and-locking.md).
-- **Skip-locked jobs.** Outbox, webhook delivery, subscription renewal, billing cycle close and reservation expiry
-  already claim one row at a time with `for update skip locked`, so they stay multi-worker safe and are deliberately
-  not made singleton.
+- **Skip-locked jobs.** Outbox, webhook delivery, subscription renewal, billing cycle close, reservation expiry and
+  Stripe event retry claim their rows with `for update skip locked`, so they stay multi-worker safe and are
+  deliberately not made singleton. The Stripe event retry also takes a claim deadline of its own
+  (`stripe_events.claimed_until`), because it reads from Stripe before it opens the transaction that locks the row:
+  a claimed event is invisible to another worker until that deadline passes, and a worker that dies mid-attempt
+  hands it back instead of losing it.
 - **Rate limiting.** API-key limits live in `rate_limit_buckets`, shared by every `api` instance. A key that
   authenticates spends its own bucket; a request that does not spends one of 1024 buckets chosen by key id, so
   invented key ids cannot create unbounded rows or exhaust a real key's budget. A worker removes idle buckets in
@@ -45,9 +48,10 @@ as the unprivileged application role with Flyway switched off, so a rolling star
 - **Threading.** `api` enables virtual threads, so a wait for Stripe or Keycloak does not occupy a request thread,
   and pairs that with a 3s Hikari `connection-timeout`: the pool stays at 20, so a request that cannot get a
   connection is refused with a 503 and `Retry-After: 1` instead of queueing for 30s. `worker` deliberately stays on
-  platform threads, because enabling virtual threads there would replace the four-thread scheduler with
-  `SimpleAsyncTaskScheduler` and drop `spring.task.scheduling.pool.size`, which the worker relies on. Jobs bound
-  their own concurrency with `billing.jobs.tenant-parallelism`, not with the scheduler's thread count.
+  platform threads, because enabling virtual threads there would replace the nine-thread scheduler with
+  `SimpleAsyncTaskScheduler` and drop `spring.task.scheduling.pool.size`, which the worker relies on. The pool has one
+  thread per scheduled method, so a long round cannot hold up the pollers behind it. Jobs bound their own concurrency
+  with `billing.jobs.tenant-parallelism`, not with the scheduler's thread count.
 
 ## Settings per profile
 
@@ -58,7 +62,7 @@ as the unprivileged application role with Flyway switched off, so a rolling star
 | Hikari `connection-timeout` | 3s | default | default |
 | Virtual threads | enabled | off (platform threads) | off |
 | Tenant parallelism | not applicable | `BILLING_WORKER_TENANT_PARALLELISM` (8), below the pool | not applicable |
-| Scheduler pool | none | `BILLING_WORKER_SCHEDULER_POOL_SIZE` (4) | none |
+| Scheduler pool | none | `BILLING_WORKER_SCHEDULER_POOL_SIZE` (9, one per scheduled method) | none |
 | `lock_timeout` | 30s (waiting for a wallet is intended) | 5s (skip the tick, try again) | 3s, bounded retry |
 | `idle_in_transaction_session_timeout` | 60s | 60s | default |
 | Shutdown | graceful, 30s phase timeout | graceful, scheduler awaits up to 30s | not applicable |

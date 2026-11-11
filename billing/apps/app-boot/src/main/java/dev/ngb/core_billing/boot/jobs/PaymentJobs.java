@@ -27,7 +27,7 @@ public class PaymentJobs {
 
     private static final Logger LOG = LoggerFactory.getLogger(PaymentJobs.class);
     private static final String RECONCILE_LEASE = "stripe-reconcile";
-    private static final Duration RECONCILE_TTL = Duration.ofHours(2);
+    private static final Duration RECONCILE_TTL = Duration.ofMinutes(30);
 
     private final TenantSweep sweep;
     private final RetryStripeEventsUseCase retry;

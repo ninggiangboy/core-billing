@@ -15,9 +15,9 @@ The order is the order rows are locked, not the order endpoints are called.
 | Refund | payment, then refund, then wallet. The idempotency key is read after the payment lock |
 | Reservation expiry | wallet with `skip locked`, then reservation (the comment on the statement says why) |
 | Billing cycle close and `InvoiceChargeUseCase` | unbilled lines, then the invoice counter |
-| Stripe event | event, then payment, then refund. A wallet credit goes through `PaymentSettlement`, so the wallet is after the payment |
+| Stripe event | event, then payment, then refund. A wallet credit goes through `PaymentSettlement`, so the wallet is after the payment. The retry job claims the event in an earlier, separate transaction, because the Stripe read happens before any row lock |
 | Outbox relay | `skip locked`, so it never waits. Consumers share the relay's transaction but lock an invoice or unbilled line, never a wallet |
-| Job lease, run record, rate-limit bucket | one coordination row in its own short transaction, never inside a business transaction |
+| Job lease, run record, rate-limit bucket, Stripe event claim | one coordination row in its own short transaction, never inside a business transaction |
 
 Two consequences:
 

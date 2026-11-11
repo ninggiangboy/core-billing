@@ -27,7 +27,12 @@ import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepositor
  */
 public class StripeEventProcessor {
 
-    public record Outcome(EventStatus status, String detail) {}
+    /**
+     * Where the event stands after a call, and whether this call was the one that tried it. A call that found the
+     * event final, not due, or claimed by another worker reports {@code attempted = false}, so a caller counting
+     * outcomes never counts the same attempt twice.
+     */
+    public record Outcome(EventStatus status, String detail, boolean attempted) {}
 
     /** What an event needs from Stripe, read before the transaction opens so no row lock is held across a network call. */
     private record Prefetch(PaymentProvider.Intent intent, PaymentProvider.AccountState account) {
@@ -80,7 +85,7 @@ public class StripeEventProcessor {
 
     private Outcome currentStatus(StripeEventId id, String detail) {
         return unitOfWork.transactional(() -> events.findById(id)
-                .map(event -> new Outcome(event.status(), detail))
+                .map(event -> new Outcome(event.status(), detail, false))
                 .orElseThrow(() -> new NotFoundException("stripe event not found")));
     }
 
@@ -118,12 +123,12 @@ public class StripeEventProcessor {
     private Outcome process(StripeEventId id, Prefetch fetched) {
         StripeEvent event = events.lockById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
         if (event.status().isFinal()) {
-            return new Outcome(event.status(), "already " + event.status());
+            return new Outcome(event.status(), "already " + event.status(), false);
         }
         Instant now = clock.now();
         if (event.status() == EventStatus.FAILED && event.nextAttemptAt() != null && event.nextAttemptAt().isAfter(now)) {
             // Another worker got here first and scheduled the next try; this one is not due.
-            return new Outcome(event.status(), "not due until " + event.nextAttemptAt());
+            return new Outcome(event.status(), "not due until " + event.nextAttemptAt(), false);
         }
         int number = event.beginAttempt();
         StripeConfiguration configuration = configurations.findById(event.configurationId())
@@ -158,7 +163,7 @@ public class StripeEventProcessor {
                 break;
         }
         events.update(event);
-        return new Outcome(event.status(), result.detail());
+        return new Outcome(event.status(), result.detail(), true);
     }
 
     private PaymentSettlement.Result dispatch(StripeConfiguration configuration, PaymentProvider.ProviderEvent observed, Prefetch fetched) {
@@ -194,7 +199,7 @@ public class StripeEventProcessor {
     private Outcome recordFailure(StripeEventId id, RuntimeException failure) {
         StripeEvent event = events.lockById(id).orElseThrow(() -> new NotFoundException("stripe event not found"));
         if (event.status().isFinal()) {
-            return new Outcome(event.status(), "already " + event.status());
+            return new Outcome(event.status(), "already " + event.status(), false);
         }
         Instant now = clock.now();
         int number = event.beginAttempt();
@@ -206,7 +211,7 @@ public class StripeEventProcessor {
         if (event.status() == EventStatus.DEAD) {
             reject(event, why, now);
         }
-        return new Outcome(event.status(), why);
+        return new Outcome(event.status(), why, true);
     }
 
     private void reject(StripeEvent event, String detail, Instant now) {

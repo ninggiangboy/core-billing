@@ -132,6 +132,11 @@ public class StripeEvents extends TableImpl<StripeEventsRecord> {
      */
     public final TableField<StripeEventsRecord, Instant> PROCESSED_AT = createField(DSL.name("processed_at"), SQLDataType.INSTANT, this, "");
 
+    /**
+     * The column <code>public.stripe_events.claimed_until</code>.
+     */
+    public final TableField<StripeEventsRecord, Instant> CLAIMED_UNTIL = createField(DSL.name("claimed_until"), SQLDataType.INSTANT, this, "");
+
     private StripeEvents(Name alias, Table<StripeEventsRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

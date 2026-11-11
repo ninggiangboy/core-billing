@@ -231,6 +231,21 @@ public class StripeEventsRecord extends UpdatableRecordImpl<StripeEventsRecord> 
         return (Instant) get(13);
     }
 
+    /**
+     * Setter for <code>public.stripe_events.claimed_until</code>.
+     */
+    public StripeEventsRecord setClaimedUntil(Instant value) {
+        set(14, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>public.stripe_events.claimed_until</code>.
+     */
+    public Instant getClaimedUntil() {
+        return (Instant) get(14);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -254,7 +269,7 @@ public class StripeEventsRecord extends UpdatableRecordImpl<StripeEventsRecord> 
     /**
      * Create a detached, initialised StripeEventsRecord
      */
-    public StripeEventsRecord(UUID id, UUID tenantId, UUID configurationId, String stripeAccount, String eventId, String type, Boolean livemode, String payload, String status, Integer attempts, Instant nextAttemptAt, String lastError, Instant receivedAt, Instant processedAt) {
+    public StripeEventsRecord(UUID id, UUID tenantId, UUID configurationId, String stripeAccount, String eventId, String type, Boolean livemode, String payload, String status, Integer attempts, Instant nextAttemptAt, String lastError, Instant receivedAt, Instant processedAt, Instant claimedUntil) {
         super(StripeEvents.STRIPE_EVENTS);
 
         setId(id);
@@ -271,6 +286,7 @@ public class StripeEventsRecord extends UpdatableRecordImpl<StripeEventsRecord> 
         setLastError(lastError);
         setReceivedAt(receivedAt);
         setProcessedAt(processedAt);
+        setClaimedUntil(claimedUntil);
         resetTouchedOnNotNull();
     }
 }

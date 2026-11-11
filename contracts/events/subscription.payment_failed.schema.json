@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/subscription.payment_failed.schema.json",
+  "title": "Subscription payment failed",
+  "description": "A period of a subscription could not be paid from the customer's wallet (for example for lack of funds). The subscription is now past due. Billing retries on a bounded schedule and reports every failed attempt; it never provisions or stops anything for the Tenant System, which decides what past due means for it. When `willRetry` is false the attempts have run out and Billing stops trying on its own. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "subscriptionId",
+    "customerId",
+    "walletId",
+    "planId",
+    "planCode",
+    "periodNumber",
+    "periodStart",
+    "periodEnd",
+    "reason",
+    "attempt",
+    "willRetry"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "planId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "planCode": {
+      "type": "string"
+    },
+    "periodNumber": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "periodStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "periodEnd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "amount": {
+      "$ref": "#/$defs/money",
+      "description": "The amount the period costs. Absent when the price could not be determined."
+    },
+    "reason": {
+      "type": "string",
+      "description": "A short code such as `insufficient_funds`, `price_unavailable` or `renewal_error`."
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Which try at paying this period failed, starting at 1."
+    },
+    "willRetry": {
+      "type": "boolean"
+    },
+    "nextAttemptAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Billing tries again. Absent when `willRetry` is false."
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

@@ -1,13 +1,19 @@
 package dev.ngb.core_billing.invoicing.application.subscription.command;
 
-import java.time.Duration;
+import dev.ngb.core_billing.sharedkernel.Backoff;
+import java.util.Objects;
 
-/** How many due subscriptions one job run renews, and how long a failed renewal waits before it is tried again. */
-public record RenewalSettings(int batchSize, Duration retryDelay) {
+/**
+ * How many due subscriptions one job run renews, and the bounded schedule for a period that cannot be paid: after
+ * each failed attempt the next one waits longer (capped), and after {@code maxAttempts} Billing stops trying on its
+ * own and leaves the subscription past due for the Tenant System to decide.
+ */
+public record RenewalSettings(int batchSize, int maxAttempts, Backoff backoff) {
 
     public RenewalSettings {
-        if (batchSize < 1 || retryDelay == null || retryDelay.isNegative() || retryDelay.isZero()) {
-            throw new IllegalArgumentException("a positive batch size and retry delay are required");
+        Objects.requireNonNull(backoff, "backoff");
+        if (batchSize < 1 || maxAttempts < 1) {
+            throw new IllegalArgumentException("a positive batch size and attempt limit are required");
         }
     }
 }

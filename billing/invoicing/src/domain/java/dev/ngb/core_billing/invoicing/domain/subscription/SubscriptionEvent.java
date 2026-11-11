@@ -36,6 +36,11 @@ public record SubscriptionEvent(
                 subscription.periodEnd(periodNumber), amount, chargeId, null, now);
     }
 
+    public static SubscriptionEvent paymentFailed(UUID id, Subscription subscription, int periodNumber, Money amount, String reason, Instant now) {
+        return new SubscriptionEvent(id, subscription.tenantId(), subscription.id(), Type.PAYMENT_FAILED, periodNumber, subscription.periodStart(periodNumber),
+                subscription.periodEnd(periodNumber), amount, null, reason, now);
+    }
+
     public static SubscriptionEvent cancelRequested(UUID id, Subscription subscription, Instant now) {
         return new SubscriptionEvent(id, subscription.tenantId(), subscription.id(), Type.CANCEL_REQUESTED, null, subscription.currentPeriodStart(), subscription.currentPeriodEnd(), null,
                 null, "ends at the end of the paid period", now);

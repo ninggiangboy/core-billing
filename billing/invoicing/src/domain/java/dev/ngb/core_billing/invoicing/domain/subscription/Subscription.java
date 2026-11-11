@@ -110,7 +110,7 @@ public final class Subscription {
         return periodsCharged == 0 ? null : periodEnd(periodsCharged - 1);
     }
 
-    /** True when a period is due: the subscription is not canceled and its next renewal time has come. */
+    /** True when a period is due: the subscription is not canceled and a renewal time is set and has come. */
     public boolean dueAt(Instant now) {
         return status != SubscriptionStatus.CANCELED && nextRenewalAt != null && !nextRenewalAt.isAfter(now);
     }
@@ -138,11 +138,16 @@ public final class Subscription {
         this.updatedAt = now;
     }
 
-    /** The next period could not be charged: count the attempt and look again at {@code retryAt}. */
-    public void deferRenewal(Instant retryAt, Instant now) {
+    /**
+     * The next period could not be charged. The subscription is past due, the attempt is counted, and it is looked at
+     * again at {@code retryAt}, or never automatically when {@code retryAt} is null because the attempts ran out. It is
+     * not canceled and nothing is stopped for the Tenant: that decision stays with the Tenant System.
+     */
+    public void recordPaymentFailed(Instant retryAt, Instant now) {
         if (status == SubscriptionStatus.CANCELED) {
             throw new IllegalStateException("a canceled subscription does not renew");
         }
+        this.status = SubscriptionStatus.PAST_DUE;
         this.renewalAttempts = renewalAttempts + 1;
         this.nextRenewalAt = retryAt;
         this.updatedAt = now;

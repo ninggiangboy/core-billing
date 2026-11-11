@@ -30,7 +30,9 @@ public final class SubscriptionNotices {
         map.put("periodNumber", periodNumber);
         map.put("periodStart", subscription.periodStart(periodNumber).toString());
         map.put("periodEnd", subscription.periodEnd(periodNumber).toString());
-        map.put("amount", money(amount));
+        if (amount != null) {
+            map.put("amount", money(amount));
+        }
         return map;
     }
 
@@ -63,6 +65,44 @@ public final class SubscriptionNotices {
                 map.put("chargeId", chargeId.toString());
             }
             map.put("endsAtPeriodEnd", subscription.cancelAtPeriodEnd());
+            return map;
+        }
+    }
+
+    /**
+     * A period could not be paid. {@code nextAttemptAt} is null when the bounded attempts have run out: Billing then
+     * stops trying on its own and the Tenant System decides what the unpaid period means for it. {@code amount} is
+     * null when the price of the period could not be determined.
+     */
+    public record PaymentFailed(
+            UUID eventId, Subscription subscription, int periodNumber, Money amount, String reason, int attempt, Instant nextAttemptAt, Instant occurredAt)
+            implements DomainEvent {
+        public static final String TYPE = "subscription.payment_failed";
+
+        @Override
+        public TenantId tenantId() {
+            return subscription.tenantId();
+        }
+
+        @Override
+        public String type() {
+            return TYPE;
+        }
+
+        @Override
+        public String aggregate() {
+            return "subscription/" + subscription.id();
+        }
+
+        @Override
+        public Map<String, Object> payload() {
+            Map<String, Object> map = common(subscription, periodNumber, amount);
+            map.put("reason", reason);
+            map.put("attempt", attempt);
+            map.put("willRetry", nextAttemptAt != null);
+            if (nextAttemptAt != null) {
+                map.put("nextAttemptAt", nextAttemptAt.toString());
+            }
             return map;
         }
     }

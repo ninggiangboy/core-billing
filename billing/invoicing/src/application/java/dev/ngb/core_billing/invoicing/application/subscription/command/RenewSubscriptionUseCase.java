@@ -20,6 +20,7 @@ import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.DoubleSupplier;
 
 /**
  * Charges the next period of every due subscription, one subscription and one period per transaction.
@@ -28,8 +29,12 @@ import java.util.UUID;
  * the price is read from the plan version in force when the period starts, the wallet is charged through the money
  * context, and the new schedule, the history record and the {@code subscription.renewed} notice commit together with
  * that charge. A charge key made from the subscription, the period and the attempt, and the schedule moving forward
- * in the same transaction, mean running the job again cannot charge a period twice. A period that cannot be paid is
- * recorded as a failed attempt; it never stops anything for the Tenant.
+ * in the same transaction, mean running the job again cannot charge a period twice.
+ *
+ * <p>A period that cannot be paid (the wallet refuses the charge, or the price cannot be determined) makes the
+ * subscription past due, is announced as {@code subscription.payment_failed}, and is retried on a bounded schedule
+ * (see {@link RenewalSettings}). Billing never stops a Resource: the Tenant System decides what past due means. A
+ * success at any attempt returns the subscription to active.
  *
  * <p>A Prepaid wallet pays from its balance. A Postpaid wallet is charged the same way, which records the debt, and the
  * charge reaches the invoice for the period through the normal charge collection.
@@ -46,20 +51,33 @@ public class RenewSubscriptionUseCase {
     private final ChargeWallet money;
     private final EventPublisher events;
     private final RenewalSettings settings;
+    private final DoubleSupplier jitter;
     private final IdGenerator ids;
     private final Clock clock;
 
     public RenewSubscriptionUseCase(
             UnitOfWork unitOfWork, SubscriptionRepository subscriptions, PlanPricing pricing, ChargeWallet money, EventPublisher events, RenewalSettings settings,
-            IdGenerator ids, Clock clock) {
+            DoubleSupplier jitter, IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.subscriptions = subscriptions;
         this.pricing = pricing;
         this.money = money;
         this.events = events;
         this.settings = settings;
+        this.jitter = jitter;
         this.ids = ids;
         this.clock = clock;
+    }
+
+    /** A renewal that threw instead of failing cleanly, so the subscription can be set aside and the others still renewed. */
+    private static final class Poisoned extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        private final transient SubscriptionId id;
+
+        Poisoned(SubscriptionId id, RuntimeException cause) {
+            super(cause);
+            this.id = id;
+        }
     }
 
     /** Renews what is due now, oldest first, up to one batch. */
@@ -68,7 +86,16 @@ public class RenewSubscriptionUseCase {
         int ended = 0;
         int failed = 0;
         for (int i = 0; i < settings.batchSize(); i++) {
-            Optional<Outcome> outcome = unitOfWork.transactional(() -> subscriptions.lockNextDue(clock.now()).map(this::process));
+            Optional<Outcome> outcome;
+            try {
+                outcome = unitOfWork.transactional(() -> subscriptions.lockNextDue(clock.now()).map(this::guarded));
+            } catch (Poisoned poisoned) {
+                // Count it as a failed attempt so one broken subscription cannot starve the rest behind it.
+                unitOfWork.transactional(() -> subscriptions.lockById(poisoned.id)
+                        .ifPresent(found -> failed(found, found.periodToCharge(), null, "renewal_error", clock.now())));
+                failed++;
+                continue;
+            }
             if (outcome.isEmpty()) {
                 break;
             }
@@ -81,6 +108,14 @@ public class RenewSubscriptionUseCase {
             }
         }
         return new Report(renewed, ended, failed);
+    }
+
+    private Outcome guarded(Subscription subscription) {
+        try {
+            return process(subscription);
+        } catch (RuntimeException e) {
+            throw new Poisoned(subscription.id(), e);
+        }
     }
 
     /** Renews one subscription if it is due, for example the first period of a subscription that was just created. */
@@ -102,7 +137,7 @@ public class RenewSubscriptionUseCase {
         int number = subscription.periodToCharge();
         Optional<PeriodPrice> price = pricing.periodPrice(subscription.planId(), subscription.periodStart(number));
         if (price.isEmpty() || price.get().cycle() != subscription.cycle() || !price.get().amount().currency().equals(subscription.currency())) {
-            return deferred(subscription, now);
+            return failed(subscription, number, null, "price_unavailable", now);
         }
         Money amount = price.get().amount();
         UUID chargeId = null;
@@ -110,7 +145,7 @@ public class RenewSubscriptionUseCase {
             ChargeResult charge = money.charge(new ChargeCommand(subscription.walletId(), null, amount, null, SubscriptionCharges.reference(subscription.id(), number),
                     SubscriptionCharges.idempotencyKey(subscription.id(), number, subscription.nextAttempt())));
             if (charge.status() == ChargeStatus.FAILED) {
-                return deferred(subscription, now);
+                return failed(subscription, number, amount, charge.failureReason(), now);
             }
             chargeId = charge.id().value();
         }
@@ -121,9 +156,14 @@ public class RenewSubscriptionUseCase {
         return Outcome.RENEWED;
     }
 
-    private Outcome deferred(Subscription subscription, Instant now) {
-        subscription.deferRenewal(now.plus(settings.retryDelay()), now);
+    /** Records an unpaid period: past due, the attempt counted, the next one scheduled until the attempts run out, and the Tenant told. */
+    private Outcome failed(Subscription subscription, int number, Money amount, String reason, Instant now) {
+        int attempt = subscription.nextAttempt();
+        Instant retryAt = attempt >= settings.maxAttempts() ? null : now.plus(settings.backoff().delayAfter(attempt, jitter.getAsDouble()));
+        subscription.recordPaymentFailed(retryAt, now);
         subscriptions.update(subscription);
+        subscriptions.appendEvent(SubscriptionEvent.paymentFailed(ids.newId(), subscription, number, amount, reason, now));
+        events.publish(new SubscriptionNotices.PaymentFailed(ids.newId(), subscription, number, amount, reason, attempt, retryAt, now));
         return Outcome.FAILED;
     }
 }

@@ -58,7 +58,7 @@ class EventContractIntegrationTest {
     private static final Set<String> EMITTED_HERE = Set.of(
             "reservation.created", "reservation.released", "reservation.expired", "charge.succeeded", "charge.failed", "wallet.credited",
             "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated",
-            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created", "invoice.paid", "subscription.renewed");
+            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created", "invoice.paid", "subscription.renewed", "subscription.payment_failed");
 
     @Autowired MoneyTestWorld worlds;
     @Autowired ScopeTestSupport scopes;
@@ -188,10 +188,16 @@ class EventContractIntegrationTest {
         scopes.inTenant(tenant, () -> subscribe.execute(new dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase.Command(
                 postpaid.wallet().id(), plan.id().value(), UUID.randomUUID().toString(), PricingTestWorld.AUDIT, null)));
 
+        // A wallet with nothing in it cannot pay the first period.
+        World broke = worlds.prepaid(0);
+        var cheap = pricing.plan(broke.tenant().id(), "pro", pricing.pro(), dev.ngb.core_billing.pricing.api.plan.BillingCycle.MONTHLY, null, null);
+        scopes.inTenant(broke.tenant().id(), () -> subscribe.execute(new dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase.Command(
+                broke.wallet().id(), cheap.id().value(), UUID.randomUUID().toString(), PricingTestWorld.AUDIT, null)));
+
         List<Payload> payloads = new ArrayList<>();
-        owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {
+        owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id in (?, ?)", rs -> {
             payloads.add(new Payload(rs.getString("type"), rs.getString("payload")));
-        }, tenant.value());
+        }, tenant.value(), broke.tenant().id().value());
         return payloads;
     }
 

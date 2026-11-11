@@ -29,7 +29,9 @@ import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.sharedkernel.EventInbox;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import dev.ngb.core_billing.sharedkernel.Backoff;
 import java.time.Duration;
+import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Value;
 import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceIssuer;
 import dev.ngb.core_billing.invoicing.application.invoice.port.InvoiceRepository;
@@ -124,15 +126,16 @@ class InvoicingConfiguration {
 
     @Bean
     RenewalSettings renewalSettings(
-            @Value("${billing.invoicing.renewal-batch:100}") int batchSize, @Value("${billing.invoicing.renewal-retry-delay:PT1H}") Duration retryDelay) {
-        return new RenewalSettings(batchSize, retryDelay);
+            @Value("${billing.invoicing.renewal-batch:100}") int batchSize, @Value("${billing.invoicing.renewal-max-attempts:5}") int maxAttempts,
+            @Value("${billing.invoicing.renewal-backoff-base:PT1H}") Duration base, @Value("${billing.invoicing.renewal-backoff-cap:P1D}") Duration cap) {
+        return new RenewalSettings(batchSize, maxAttempts, new Backoff(base, cap, 0.2));
     }
 
     @Bean
     RenewSubscriptionUseCase renewSubscriptionUseCase(
             UnitOfWork unitOfWork, SubscriptionRepository subscriptions, PlanPricing plans, ChargeWallet money, EventPublisher events, RenewalSettings settings,
             IdGenerator ids, Clock clock) {
-        return new RenewSubscriptionUseCase(unitOfWork, subscriptions, plans, money, events, settings, ids, clock);
+        return new RenewSubscriptionUseCase(unitOfWork, subscriptions, plans, money, events, settings, () -> ThreadLocalRandom.current().nextDouble(), ids, clock);
     }
 
     @Bean

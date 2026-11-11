@@ -140,7 +140,7 @@ class SubscriptionRenewalIntegrationTest {
     void aRefusedChargeIsRetriedLaterAndSucceedsOnceTheWalletCanPay() {
         World world = worlds.prepaid(0);
         Subscription subscription = subscribe(world);
-        assertThat(row(subscription)).containsEntry("periods_charged", 0).containsEntry("renewal_attempts", 1);
+        assertThat(row(subscription)).containsEntry("status", "PAST_DUE").containsEntry("periods_charged", 0).containsEntry("renewal_attempts", 1);
         assertThat(events(subscription, "RENEWED")).isZero();
         assertThat(runDue(world).renewed()).as("not due again yet").isZero();
 
@@ -149,7 +149,7 @@ class SubscriptionRenewalIntegrationTest {
         RenewSubscriptionUseCase.Report report = runDue(world);
 
         assertThat(report.renewed()).isEqualTo(1);
-        assertThat(row(subscription)).containsEntry("periods_charged", 1).containsEntry("renewal_attempts", 0);
+        assertThat(row(subscription)).containsEntry("status", "ACTIVE").containsEntry("periods_charged", 1).containsEntry("renewal_attempts", 0);
         assertThat(balance(world)).isEqualTo(10_000 - PRICE);
     }
 

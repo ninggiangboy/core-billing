@@ -64,6 +64,14 @@ billing:
     read-timeout: PT10S
     deadline: PT15S
 
+  invoicing:
+    # How Postpaid charges are grouped into invoices: calendar periods in UTC (DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY).
+    postpaid-cycle: MONTHLY
+    cycle-batch: 100
+    cycle-delay: PT5M
+    # Switch off to stop creating invoices from closed periods; charges stay collected and are invoiced when it is back on.
+    jobs-enabled: true
+
   payments:
     # The public address of this deployment, as Stripe reaches it. Webhook URLs shown to Tenants are built from it.
     public-base-url: ${BILLING_PUBLIC_BASE_URL:http://localhost:8080}

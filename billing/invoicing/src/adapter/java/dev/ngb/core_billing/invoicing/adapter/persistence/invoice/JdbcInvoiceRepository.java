@@ -6,10 +6,12 @@ import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoicePayment;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.sharedkernel.Causes;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -37,7 +39,14 @@ public class JdbcInvoiceRepository implements InvoiceRepository {
 
     @Override
     public void add(Invoice invoice) {
-        aggregates.insert(InvoiceRow.from(invoice));
+        try {
+            aggregates.insert(InvoiceRow.from(invoice));
+        } catch (RuntimeException e) {
+            if (Causes.contains(e, DuplicateKeyException.class)) {
+                throw new ConflictException("an invoice for this wallet and period already exists");
+            }
+            throw e;
+        }
         for (InvoiceItem item : invoice.items()) {
             // A line is attached once: an unbilled line becomes this invoice's, a line of another invoice is left alone and reported.
             int attached = jdbc.sql("""

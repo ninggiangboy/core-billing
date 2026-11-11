@@ -58,7 +58,7 @@ class EventContractIntegrationTest {
     private static final Set<String> EMITTED_HERE = Set.of(
             "reservation.created", "reservation.released", "reservation.expired", "charge.succeeded", "charge.failed", "wallet.credited",
             "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated",
-            "payment.succeeded", "payment.failed", "refund.succeeded");
+            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created");
 
     @Autowired MoneyTestWorld worlds;
     @Autowired ScopeTestSupport scopes;
@@ -78,6 +78,8 @@ class EventContractIntegrationTest {
     @Autowired dev.ngb.core_billing.payment.application.payment.port.PaymentRepository paymentRepository;
     @Autowired dev.ngb.core_billing.payment.application.refund.port.RefundRepository refundRepository;
     @Autowired dev.ngb.core_billing.sharedkernel.UnitOfWork unitOfWork;
+    @Autowired dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay relay;
+    @Autowired dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase closeCycle;
 
     private final JsonMapper json = JsonMapper.builder().build();
 
@@ -161,6 +163,24 @@ class EventContractIntegrationTest {
         return payloads;
     }
 
+    /** Collects Postpaid charges, closes their period and returns what landed in the outbox. */
+    private List<Payload> produceInvoicingEvents() {
+        World w = worlds.postpaid(1_000_000);
+        var tenant = w.tenant().id();
+        var money = w.wallet().currency();
+        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(w.wallet().id(), null, Money.of(300, money), null, "work", UUID.randomUUID().toString())));
+        scopes.inTenant(tenant, () -> charge.charge(new ChargeCommand(w.wallet().id(), null, Money.of(700, money), null, "more work", UUID.randomUUID().toString())));
+        scopes.runInTenant(tenant, relay::relayDue);
+        owner.jdbc().update("update invoice_items set cycle_start = cycle_start - interval '1 month', cycle_end = cycle_end - interval '1 month' where tenant_id = ?", tenant.value());
+        scopes.inTenant(tenant, closeCycle::runOnce);
+
+        List<Payload> payloads = new ArrayList<>();
+        owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {
+            payloads.add(new Payload(rs.getString("type"), rs.getString("payload")));
+        }, tenant.value());
+        return payloads;
+    }
+
     private void deliver(dev.ngb.core_billing.payment.PaymentTestWorld.PayWorld w, String body) {
         receive.receiveDirect(w.configuration().id(), body, dev.ngb.core_billing.support.StripeEvents.sign(w.webhookSecret(), body));
     }
@@ -170,6 +190,7 @@ class EventContractIntegrationTest {
         List<Payload> produced = new ArrayList<>(produceMoneyEvents());
         produced.addAll(producePricingEvents());
         produced.addAll(producePaymentEvents());
+        produced.addAll(produceInvoicingEvents());
 
         Set<String> producedTypes = new TreeSet<>();
         produced.forEach(p -> producedTypes.add(p.type()));

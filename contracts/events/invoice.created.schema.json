@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/invoice.created.schema.json",
+  "title": "Invoice created",
+  "description": "An invoice was issued: for a Postpaid wallet when an aggregation period closed, or for one charge the Tenant asked to have an invoice for. The invoice lists charges the wallet already carries, so it asks for payment of existing debt and creates none. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "invoiceId",
+    "number",
+    "customerId",
+    "walletId",
+    "total",
+    "origin",
+    "status",
+    "itemCount"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "invoiceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "number": {
+      "type": "string",
+      "description": "The Tenant's gap-free invoice number, such as INV-000042."
+    },
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "total": {
+      "$ref": "#/$defs/money"
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "POSTPAID_CYCLE",
+        "CHARGE"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "OPEN",
+        "PAID"
+      ],
+      "description": "PAID when the invoice documents a charge the wallet already paid."
+    },
+    "itemCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "periodStart": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start of the aggregation period; only on invoices for a period."
+    },
+    "periodEnd": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

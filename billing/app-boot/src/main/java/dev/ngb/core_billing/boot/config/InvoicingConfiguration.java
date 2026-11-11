@@ -1,6 +1,17 @@
 package dev.ngb.core_billing.boot.config;
 
+import dev.ngb.core_billing.invoicing.adapter.messaging.InvoicingEventListener;
+import dev.ngb.core_billing.invoicing.adapter.persistence.cycle.JdbcUnbilledLineRepository;
 import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JdbcInvoiceRepository;
+import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase;
+import dev.ngb.core_billing.invoicing.application.cycle.command.CollectChargeUseCase;
+import dev.ngb.core_billing.invoicing.application.cycle.command.CycleSettings;
+import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
+import dev.ngb.core_billing.money.api.wallet.WalletLookup;
+import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
+import dev.ngb.core_billing.sharedkernel.EventInbox;
+import dev.ngb.core_billing.sharedkernel.UnitOfWork;
+import org.springframework.beans.factory.annotation.Value;
 import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceIssuer;
 import dev.ngb.core_billing.invoicing.application.invoice.port.InvoiceRepository;
 import dev.ngb.core_billing.sharedkernel.Clock;
@@ -23,5 +34,34 @@ class InvoicingConfiguration {
     @Bean
     InvoiceIssuer invoiceIssuer(InvoiceRepository invoices, EventPublisher events, IdGenerator ids, Clock clock) {
         return new InvoiceIssuer(invoices, events, ids, clock);
+    }
+
+    @Bean
+    CycleSettings cycleSettings(
+            @Value("${billing.invoicing.postpaid-cycle:MONTHLY}") BillingCycle cycle, @Value("${billing.invoicing.cycle-batch:100}") int batchSize) {
+        return new CycleSettings(cycle, batchSize);
+    }
+
+    @Bean
+    UnbilledLineRepository unbilledLineRepository(JdbcClient jdbc) {
+        return new JdbcUnbilledLineRepository(jdbc);
+    }
+
+    @Bean
+    CollectChargeUseCase collectChargeUseCase(
+            UnitOfWork unitOfWork, EventInbox inbox, WalletLookup wallets, UnbilledLineRepository lines, CycleSettings settings, IdGenerator ids,
+            Clock clock) {
+        return new CollectChargeUseCase(unitOfWork, inbox, wallets, lines, settings, ids, clock);
+    }
+
+    @Bean
+    CloseBillingCycleUseCase closeBillingCycleUseCase(
+            UnitOfWork unitOfWork, UnbilledLineRepository lines, InvoiceIssuer issuer, CycleSettings settings, IdGenerator ids, Clock clock) {
+        return new CloseBillingCycleUseCase(unitOfWork, lines, issuer, settings, ids, clock);
+    }
+
+    @Bean
+    InvoicingEventListener invoicingEventListener(CollectChargeUseCase collectCharge) {
+        return new InvoicingEventListener(collectCharge);
     }
 }

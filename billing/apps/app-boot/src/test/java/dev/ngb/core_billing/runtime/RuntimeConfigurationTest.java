@@ -45,6 +45,28 @@ class RuntimeConfigurationTest {
     }
 
     @Test
+    void theApiProfileUsesVirtualThreadsBehindAShortConnectionTimeout() {
+        assertThat(value("application-api.yml", "spring", "threads", "virtual", "enabled"))
+                .as("a wait for Stripe must not occupy a request thread")
+                .isEqualTo(true);
+        assertThat(value("application-api.yml", "spring", "datasource", "hikari", "connection-timeout"))
+                .as("a request that cannot get a connection is refused in 3s, not queued for 30s")
+                .isEqualTo(3000);
+        assertThat(value("application-api.yml", "spring", "datasource", "hikari", "maximum-pool-size")).isNotNull();
+        assertThat((String) value("application-api.yml", "spring", "datasource", "hikari", "connection-init-sql"))
+                .contains("lock_timeout = '30s'");
+    }
+
+    @Test
+    void theWorkerProfileStaysOnPlatformThreads() {
+        assertThat(value("application-worker.yml", "spring", "threads"))
+                .as("virtual threads would replace the four-thread scheduler the worker relies on")
+                .isNull();
+        assertThat(value("application-worker.yml", "spring", "task", "scheduling", "pool", "size")).isNotNull();
+        assertThat(value("application-worker.yml", "billing", "jobs", "tenant-parallelism")).isNotNull();
+    }
+
+    @Test
     void bothServingProfilesExposeProbesAndShutDownGracefully() {
         for (String file : new String[] {"application-api.yml", "application-worker.yml"}) {
             assertThat(value(file, "management", "endpoint", "health", "probes", "enabled")).isEqualTo(true);

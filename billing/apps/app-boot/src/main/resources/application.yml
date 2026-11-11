@@ -58,12 +58,17 @@ billing:
     allow-insecure-targets: ${BILLING_WEBHOOKS_ALLOW_INSECURE_TARGETS:false}
     # Set to false to stop sending; deliveries stay queued and go out when it is switched back on.
     sender-enabled: true
-    poll-delay: PT2S
+    poll-delay: PT1S
     batch-size: 25
     max-attempts: 10
     backoff-base: PT30S
     backoff-cap: PT6H
     lease: PT2M
+    # Outbound HTTP pool. The limits are sized for the tenants a worker sends for at once, not for one tenant.
+    max-connections: ${BILLING_WEBHOOKS_MAX_CONNECTIONS:100}
+    max-connections-per-route: ${BILLING_WEBHOOKS_MAX_CONNECTIONS_PER_ROUTE:25}
+    # Worst case is this wait plus connect-timeout plus read-timeout, which must stay inside deadline: 2s + 3s + 10s.
+    connection-request-timeout: PT2S
     connect-timeout: PT3S
     read-timeout: PT10S
     deadline: PT15S

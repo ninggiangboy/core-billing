@@ -28,6 +28,7 @@ import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooks
 import dev.ngb.core_billing.webhook.application.delivery.command.ManageDeliveryUseCase;
 import dev.ngb.core_billing.webhook.application.endpoint.command.ManageEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
+import dev.ngb.core_billing.webhook.application.delivery.port.DeliveryLagRecorder;
 import dev.ngb.core_billing.webhook.application.endpoint.port.EventTypeCatalog;
 import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
 import dev.ngb.core_billing.webhook.application.delivery.command.RecordDeliveriesUseCase;
@@ -122,10 +123,14 @@ class WebhookConfiguration {
     @Bean(destroyMethod = "close")
     HttpComponentsWebhookSender webhookSender(
             WebhookSettings settings,
+            @Value("${billing.webhooks.max-connections:100}") int maxConnTotal,
+            @Value("${billing.webhooks.max-connections-per-route:25}") int maxConnPerRoute,
+            @Value("${billing.webhooks.connection-request-timeout:PT2S}") Duration connectionRequestTimeout,
             @Value("${billing.webhooks.connect-timeout:PT3S}") Duration connectTimeout,
             @Value("${billing.webhooks.read-timeout:PT10S}") Duration readTimeout,
             @Value("${billing.webhooks.deadline:PT15S}") Duration deadline) {
-        return new HttpComponentsWebhookSender(settings.allowInsecureTargets(), connectTimeout, readTimeout, deadline);
+        return new HttpComponentsWebhookSender(
+                settings.allowInsecureTargets(), maxConnTotal, maxConnPerRoute, connectTimeout, connectionRequestTimeout, readTimeout, deadline);
     }
 
     @Bean
@@ -167,10 +172,16 @@ class WebhookConfiguration {
     }
 
     @Bean
+    DeliveryLagRecorder deliveryLagRecorder(MeterRegistry meters) {
+        return meters.timer("billing.webhook.lag")::record;
+    }
+
+    @Bean
     DeliverWebhooksUseCase deliverWebhooksUseCase(
             UnitOfWork unitOfWork, WebhookDeliveryRepository deliveries, SecretCipher cipher, PayloadSigner signer, WebhookSender sender,
-            WebhookSettings settings, Clock clock) {
-        return new DeliverWebhooksUseCase(unitOfWork, deliveries, cipher, signer, sender, settings, clock, () -> ThreadLocalRandom.current().nextDouble());
+            WebhookSettings settings, Clock clock, DeliveryLagRecorder lags) {
+        return new DeliverWebhooksUseCase(
+                unitOfWork, deliveries, cipher, signer, sender, settings, clock, lags, () -> ThreadLocalRandom.current().nextDouble());
     }
 
     @Bean

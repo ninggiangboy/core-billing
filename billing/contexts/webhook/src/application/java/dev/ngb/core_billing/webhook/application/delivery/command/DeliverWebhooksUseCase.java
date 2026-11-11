@@ -7,6 +7,7 @@ import dev.ngb.core_billing.webhook.domain.delivery.DeliveryPolicy;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryStatus;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookHeaders;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,6 +21,7 @@ import java.util.function.DoubleSupplier;
 import dev.ngb.core_billing.webhook.application.delivery.port.PayloadSigner;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookSender;
+import dev.ngb.core_billing.webhook.application.delivery.port.DeliveryLagRecorder;
 import dev.ngb.core_billing.sharedkernel.security.SecretCipher;
 import dev.ngb.core_billing.webhook.application.endpoint.service.WebhookSettings;
 import dev.ngb.core_billing.webhook.application.delivery.port.ClaimedDelivery;
@@ -31,6 +33,11 @@ import dev.ngb.core_billing.webhook.application.delivery.port.ClaimedDelivery;
  * transaction and in parallel. A worker that dies in between leaves its rows claimed, and they become due
  * again when their lease runs out. Delivery is therefore at-least-once: a receiver must treat a repeated
  * {@code Billing-Event-Id} as a duplicate.
+ *
+ * <p>A successful delivery reports its wait through {@link DeliveryLagRecorder}: measured from the delivery
+ * row's creation to the completed attempt. That excludes the outbox poll delay (at most
+ * {@code billing.outbox.poll-delay}) and the consumer transaction, so production should read it together with
+ * the end-to-end number the load test reports.
  */
 public class DeliverWebhooksUseCase {
 
@@ -45,11 +52,12 @@ public class DeliverWebhooksUseCase {
     private final WebhookSender sender;
     private final WebhookSettings settings;
     private final Clock clock;
+    private final DeliveryLagRecorder lags;
     private final DoubleSupplier random;
 
     public DeliverWebhooksUseCase(
             UnitOfWork unitOfWork, WebhookDeliveryRepository deliveries, SecretCipher cipher, PayloadSigner signer, WebhookSender sender,
-            WebhookSettings settings, Clock clock, DoubleSupplier random) {
+            WebhookSettings settings, Clock clock, DeliveryLagRecorder lags, DoubleSupplier random) {
         this.unitOfWork = unitOfWork;
         this.deliveries = deliveries;
         this.cipher = cipher;
@@ -57,6 +65,7 @@ public class DeliverWebhooksUseCase {
         this.sender = sender;
         this.settings = settings;
         this.clock = clock;
+        this.lags = lags;
         this.random = random;
     }
 
@@ -71,7 +80,8 @@ public class DeliverWebhooksUseCase {
             return Round.NONE;
         }
         List<Sent> results = sendAll(claimed);
-        return unitOfWork.transactional(() -> {
+        List<Duration> successfulLags = new ArrayList<>();
+        Round round = unitOfWork.transactional(() -> {
             int succeeded = 0;
             int retrying = 0;
             int dead = 0;
@@ -85,6 +95,7 @@ public class DeliverWebhooksUseCase {
                     status = DeliveryStatus.SUCCEEDED;
                     completed = attempt.attemptedAt();
                     succeeded++;
+                    successfulLags.add(Duration.between(sent.claimed().delivery().createdAt(), attempt.attemptedAt()));
                 } else if (policy.exhausted(attemptsMade)) {
                     status = DeliveryStatus.DEAD;
                     completed = attempt.attemptedAt();
@@ -98,6 +109,9 @@ public class DeliverWebhooksUseCase {
             }
             return new Round(results.size(), succeeded, retrying, dead);
         });
+        // A metrics call never runs inside the transaction that writes the attempts, and never decides the outcome.
+        successfulLags.forEach(lags::record);
+        return round;
     }
 
     private record Sent(ClaimedDelivery claimed, DeliveryAttempt attempt) {}

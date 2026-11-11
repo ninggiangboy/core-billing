@@ -18,6 +18,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ConnectionRequestTimeoutException;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.util.Timeout;
@@ -34,7 +35,9 @@ public final class HttpComponentsWebhookSender implements WebhookSender, AutoClo
     private final CloseableHttpClient client;
     private final long deadlineNanos;
 
-    public HttpComponentsWebhookSender(boolean allowNonPublicTargets, Duration connectTimeout, Duration readTimeout, Duration deadline) {
+    public HttpComponentsWebhookSender(
+            boolean allowNonPublicTargets, int maxConnTotal, int maxConnPerRoute, Duration connectTimeout,
+            Duration connectionRequestTimeout, Duration readTimeout, Duration deadline) {
         this.deadlineNanos = deadline.toNanos();
         ConnectionConfig connection = ConnectionConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(connectTimeout.toMillis()))
@@ -44,10 +47,13 @@ public final class HttpComponentsWebhookSender implements WebhookSender, AutoClo
                 .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
                         .setDnsResolver(new GuardedDnsResolver(allowNonPublicTargets))
                         .setDefaultConnectionConfig(connection)
-                        .setMaxConnTotal(100)
-                        .setMaxConnPerRoute(10)
+                        .setMaxConnTotal(maxConnTotal)
+                        .setMaxConnPerRoute(maxConnPerRoute)
                         .build())
-                .setDefaultRequestConfig(RequestConfig.custom().setResponseTimeout(Timeout.ofMilliseconds(readTimeout.toMillis())).build())
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setConnectionRequestTimeout(Timeout.ofMilliseconds(connectionRequestTimeout.toMillis()))
+                        .setResponseTimeout(Timeout.ofMilliseconds(readTimeout.toMillis()))
+                        .build())
                 .disableRedirectHandling()
                 .disableAutomaticRetries()
                 .disableCookieManagement()
@@ -100,7 +106,8 @@ public final class HttpComponentsWebhookSender implements WebhookSender, AutoClo
         if (failure instanceof UnknownHostException) {
             return "dns_failure";
         }
-        if (failure instanceof ConnectTimeoutException || failure instanceof SocketTimeoutException) {
+        if (failure instanceof ConnectTimeoutException || failure instanceof SocketTimeoutException
+                || failure instanceof ConnectionRequestTimeoutException) {
             return "timeout";
         }
         if (failure instanceof SSLException) {

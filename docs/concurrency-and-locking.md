@@ -63,6 +63,12 @@ Two consequences:
    the outbox relay leave the row due, and reconciliation leaves the item for the next run. A contended row is
    passed over for the rest of the tick, so it cannot starve the rows behind it. None of them turns a lock that
    simply timed out into a failure notice, a reconciliation incident or a dead letter.
+10. **A background job walks tenants under one semaphore shared by every job.** `TenantSweep` runs one tenant per
+    virtual thread, bounded by `billing.jobs.tenant-parallelism` permits that all jobs share; keep the permits below
+    the worker's Hikari pool size so one job cannot starve the others of connections. The tenant scope is bound
+    inside each task, because `ScopedValue` does not cross a thread boundary. Nothing inside a single tenant's money
+    flow runs in parallel, and a permit is held for the length of the task, including an outbound HTTP call: that is
+    what bounds the connections a stuck receiver can occupy.
 
 ## Adding a flow
 

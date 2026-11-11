@@ -19,6 +19,11 @@ spring:
     timeout-per-shutdown-phase: 30s
 server:
   shutdown: graceful
+billing:
+  jobs:
+    # At most this many tenants run at once across all jobs; keep it below the pool size so a job never starves
+    # the others of connections. 8 = maximum-pool-size 10 minus 2.
+    tenant-parallelism: ${BILLING_WORKER_TENANT_PARALLELISM:8}
 management:
   endpoint:
     health:

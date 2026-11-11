@@ -75,7 +75,8 @@ class HttpSenderTest {
     }
 
     private static HttpComponentsWebhookSender sender(boolean allowNonPublic, Duration readTimeout) {
-        return new HttpComponentsWebhookSender(allowNonPublic, Duration.ofSeconds(2), readTimeout, Duration.ofSeconds(5));
+        return new HttpComponentsWebhookSender(
+                allowNonPublic, 100, 25, Duration.ofSeconds(2), Duration.ofSeconds(2), readTimeout, Duration.ofSeconds(5));
     }
 
     private static WebhookSender.Request post(String url) {
@@ -157,6 +158,25 @@ class HttpSenderTest {
             WebhookSender.Result result = sender.send(post("http://127.0.0.1:" + closedPort + "/x"));
             assertThat(result.statusCode()).isNull();
             assertThat(result.error()).isEqualTo("connection_failed");
+        }
+    }
+
+    @Test
+    void aSaturatedPerRoutePoolFailsFastWithTimeout() throws Exception {
+        try (HttpComponentsWebhookSender sender = new HttpComponentsWebhookSender(
+                true, 20, 1, Duration.ofSeconds(2), Duration.ofMillis(200), Duration.ofSeconds(10), Duration.ofSeconds(15));
+             java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Future<WebhookSender.Result> holding = pool.submit(() -> sender.send(post(base() + "/slow")));
+            Thread.sleep(150); // the first send takes the only connection to this route
+
+            long started = System.nanoTime();
+            WebhookSender.Result queued = pool.submit(() -> sender.send(post(base() + "/slow"))).get(5, java.util.concurrent.TimeUnit.SECONDS);
+            long elapsedMs = (System.nanoTime() - started) / 1_000_000;
+
+            assertThat(queued.statusCode()).isNull();
+            assertThat(queued.error()).as("a pool wait is a timeout, not a read failure").isEqualTo("timeout");
+            assertThat(elapsedMs).as("far below the 10s read timeout").isLessThan(2_000);
+            assertThat(holding.get(10, java.util.concurrent.TimeUnit.SECONDS).statusCode()).isEqualTo(200);
         }
     }
 }

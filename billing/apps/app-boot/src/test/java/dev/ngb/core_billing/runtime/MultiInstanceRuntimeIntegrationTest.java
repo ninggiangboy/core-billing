@@ -145,6 +145,9 @@ class MultiInstanceRuntimeIntegrationTest {
                 "--billing.secrets.master-key=" + PostgresContainerConfig.TEST_MASTER_KEY,
                 "--billing.tenancy.base-domain=localhost",
                 "--billing.jobs.enabled=" + jobs,
+                // Two workers on a two-connection pool: leave the permits at that size so a worker never queues
+                // on its own pool.
+                "--billing.jobs.tenant-parallelism=2",
                 "--billing.payments.jobs-enabled=false",
                 "--billing.invoicing.cycle-delay=PT0.5S",
                 "--billing.invoicing.cycle-batch=10",

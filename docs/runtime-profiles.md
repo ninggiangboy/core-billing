@@ -33,6 +33,12 @@ as the unprivileged application role with Flyway switched off, so a rolling star
   authenticates spends its own bucket; a request that does not spends one of 1024 buckets chosen by key id, so
   invented key ids cannot create unbounded rows or exhaust a real key's budget. A worker removes idle buckets in
   bounded `skip locked` batches, repeating while a batch comes back full.
+- **Threading.** `api` enables virtual threads, so a wait for Stripe or Keycloak does not occupy a request thread,
+  and pairs that with a 3s Hikari `connection-timeout`: the pool stays at 20, so a request that cannot get a
+  connection is refused with a 503 and `Retry-After: 1` instead of queueing for 30s. `worker` deliberately stays on
+  platform threads, because enabling virtual threads there would replace the four-thread scheduler with
+  `SimpleAsyncTaskScheduler` and drop `spring.task.scheduling.pool.size`, which the worker relies on. Jobs bound
+  their own concurrency with `billing.jobs.tenant-parallelism`, not with the scheduler's thread count.
 
 ## Settings per profile
 
@@ -40,6 +46,9 @@ as the unprivileged application role with Flyway switched off, so a rolling star
 |---|---|---|---|
 | Flyway | off | off | on, owner account |
 | Hikari pool | `BILLING_API_DB_POOL_SIZE` (20) | `BILLING_WORKER_DB_POOL_SIZE` (10) | 2 |
+| Hikari `connection-timeout` | 3s | default | default |
+| Virtual threads | enabled | off (platform threads) | off |
+| Tenant parallelism | not applicable | `BILLING_WORKER_TENANT_PARALLELISM` (8), below the pool | not applicable |
 | Scheduler pool | none | `BILLING_WORKER_SCHEDULER_POOL_SIZE` (4) | none |
 | `lock_timeout` | 30s (waiting for a wallet is intended) | 5s (skip the tick, try again) | 3s, bounded retry |
 | `idle_in_transaction_session_timeout` | 60s | 60s | default |

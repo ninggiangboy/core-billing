@@ -53,8 +53,19 @@ tasks.processResources {
 }
 
 tasks.test {
+    // The seeded 500-tenant run lives outside the build; `loadTest` is the only way to run it.
+    useJUnitPlatform { excludeTags("loadtest") }
     // `./gradlew :apps:app-boot:test -Dopenapi.update=true` rewrites contracts/openapi/billing.yaml.
     systemProperty("openapi.update", System.getProperty("openapi.update", "false"))
     // `./gradlew :apps:app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true` regenerates the committed jOOQ schema.
     systemProperty("jooq.update", System.getProperty("jooq.update", "false"))
+}
+
+tasks.register<Test>("loadTest") {
+    group = "verification"
+    description = "Runs the seeded webhook lag load test; never part of build."
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags("loadtest") }
+    outputs.upToDateWhen { false }
 }

@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -86,6 +87,21 @@ class ApiExceptionHandler {
     @ExceptionHandler(PessimisticLockingFailureException.class)
     ResponseEntity<ProblemDetail> retryableLock(PessimisticLockingFailureException e) {
         LOG.warn("a transaction could not take its lock: {}", e.getMostSpecificCause().getMessage());
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE, "The request could not be completed just now. Repeat it with the same Idempotency-Key.");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "1")
+                .body(detail);
+    }
+
+    /**
+     * Hikari ran out of connections and the request gave up waiting. The pool is bounded on purpose, so the
+     * answer is a fast refusal rather than a 30s queue; every money operation carries an idempotency key, so a
+     * repeat is safe. The pool's internals stay in the log.
+     */
+    @ExceptionHandler(CannotGetJdbcConnectionException.class)
+    ResponseEntity<ProblemDetail> noConnection(CannotGetJdbcConnectionException e) {
+        LOG.warn("no database connection was available: {}", e.getMostSpecificCause().getMessage());
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE, "The request could not be completed just now. Repeat it with the same Idempotency-Key.");
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

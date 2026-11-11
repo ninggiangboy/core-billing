@@ -74,6 +74,7 @@ class WebhookDeliveryIntegrationTest {
     @Autowired DeliveryQueries deliveryQueries;
     @Autowired WebhookDeliveryRepository deliveryRepository;
     @Autowired WebhookEventListener listener;
+    @Autowired io.micrometer.core.instrument.MeterRegistry meterRegistry;
 
     private final JsonMapper json = JsonMapper.builder().build();
 
@@ -156,6 +157,24 @@ class WebhookDeliveryIntegrationTest {
             assertThat(scopes.inTenant(tenant, () -> deliveryQueries.get(done.id())).attempts()).singleElement()
                     .satisfies(a -> assertThat(a.statusCode()).isEqualTo(200));
         }
+    }
+
+    @Test
+    void everySuccessfulDeliveryRecordsOneLagSample() throws Exception {
+        TenantId tenant = scopes.newTenant().id();
+        io.micrometer.core.instrument.Timer timer = meterRegistry.timer("billing.webhook.lag");
+        long samplesBefore = timer.count();
+        double timeBefore = timer.totalTime(TimeUnit.NANOSECONDS);
+        try (TestReceiver receiver = new TestReceiver()) {
+            register(tenant, receiver.url(), "*");
+            publish(tenant, "charge.succeeded");
+            relay(tenant);
+
+            assertThat(send(tenant)).isEqualTo(new DeliverWebhooksUseCase.Round(1, 1, 0, 0));
+        }
+
+        assertThat(timer.count()).as("one sample per successful delivery").isEqualTo(samplesBefore + 1);
+        assertThat(timer.totalTime(TimeUnit.NANOSECONDS)).as("with a non-zero wait").isGreaterThan(timeBefore);
     }
 
     @Test

@@ -5,6 +5,8 @@ plugins {
 dependencies {
     implementation(project(":libs:shared-core"))
     implementation(project(":modules:identity"))
+    implementation(project(":modules:billing-client"))
+    implementation(project(":modules:customer"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

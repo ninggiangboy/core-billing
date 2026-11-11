@@ -1,6 +1,7 @@
 package dev.ngb.sampletenant.identity.application;
 
 import dev.ngb.sampletenant.identity.api.Role;
+import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;
 import dev.ngb.sampletenant.identity.domain.User;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
@@ -11,9 +12,11 @@ import java.util.UUID;
 public class ManageUsersUseCase {
 
     private final UserRepository users;
+    private final AccountListener listener;
 
-    public ManageUsersUseCase(UserRepository users) {
+    public ManageUsersUseCase(UserRepository users, AccountListener listener) {
         this.users = users;
+        this.listener = listener;
     }
 
     public List<User> list() {
@@ -35,6 +38,7 @@ public class ManageUsersUseCase {
         User user = get(id);
         User updated = user.disabled();
         users.save(updated);
+        listener.deactivated(updated);
         return updated;
     }
 }

@@ -9,6 +9,7 @@ import dev.ngb.sampletenant.identity.application.AuthenticateUseCase;
 import dev.ngb.sampletenant.identity.application.ManageUsersUseCase;
 import dev.ngb.sampletenant.identity.application.RegisterUserUseCase;
 import dev.ngb.sampletenant.identity.application.SessionService;
+import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.port.SessionRepository;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;
@@ -38,8 +39,9 @@ class IdentityConfiguration {
     }
 
     @Bean
-    RegisterUserUseCase registerUserUseCase(UserRepository users, PasswordHasher hasher, Clock clock) {
-        return new RegisterUserUseCase(users, hasher, clock);
+    RegisterUserUseCase registerUserUseCase(
+            UserRepository users, PasswordHasher hasher, Clock clock, AccountListener listener) {
+        return new RegisterUserUseCase(users, hasher, clock, listener);
     }
 
     @Bean
@@ -58,7 +60,7 @@ class IdentityConfiguration {
     }
 
     @Bean
-    ManageUsersUseCase manageUsersUseCase(UserRepository users) {
-        return new ManageUsersUseCase(users);
+    ManageUsersUseCase manageUsersUseCase(UserRepository users, AccountListener listener) {
+        return new ManageUsersUseCase(users, listener);
     }
 }

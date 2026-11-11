@@ -1,6 +1,7 @@
 package dev.ngb.sampletenant.identity.application;
 
 import dev.ngb.sampletenant.identity.api.Role;
+import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;
 import dev.ngb.sampletenant.identity.domain.User;
@@ -18,11 +19,13 @@ public class RegisterUserUseCase {
     private final UserRepository users;
     private final PasswordHasher hasher;
     private final Clock clock;
+    private final AccountListener listener;
 
-    public RegisterUserUseCase(UserRepository users, PasswordHasher hasher, Clock clock) {
+    public RegisterUserUseCase(UserRepository users, PasswordHasher hasher, Clock clock, AccountListener listener) {
         this.users = users;
         this.hasher = hasher;
         this.clock = clock;
+        this.listener = listener;
     }
 
     public User execute(Command command) {
@@ -38,6 +41,7 @@ public class RegisterUserUseCase {
         Role role = command.role() == null ? Role.VIEWER : command.role();
         User user = User.register(command.email(), command.displayName(), hasher.hash(command.password()), role, clock.instant());
         users.save(user);
+        listener.registered(user);
         return user;
     }
 

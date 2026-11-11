@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.sampletenant.identity.api.Role;
+import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import dev.ngb.sampletenant.identity.domain.User;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
@@ -14,9 +15,14 @@ import org.junit.jupiter.api.Test;
 
 class RegisterUserUseCaseTest {
 
+    private static final AccountListener NO_LISTENER = new AccountListener() {
+        @Override
+        public void registered(User user) {}
+    };
+
     private final Fakes.Users users = new Fakes.Users();
-    private final RegisterUserUseCase register =
-            new RegisterUserUseCase(users, new Fakes.Hasher(), Clock.fixed(Instant.parse("2026-11-11T00:00:00Z"), ZoneOffset.UTC));
+    private final RegisterUserUseCase register = new RegisterUserUseCase(
+            users, new Fakes.Hasher(), Clock.fixed(Instant.parse("2026-11-11T00:00:00Z"), ZoneOffset.UTC), NO_LISTENER);
 
     @Test
     void registersAnActiveUserWithANormalizedEmailAndHashedPassword() {

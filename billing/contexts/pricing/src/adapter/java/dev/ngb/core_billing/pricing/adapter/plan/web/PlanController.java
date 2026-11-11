@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.api.actor.CurrentActor;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.RequiresPermission;
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.pricing.adapter.plan.persistence.RuleDto;
+import dev.ngb.core_billing.pricing.adapter.plan.json.RuleDto;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
 import dev.ngb.core_billing.pricing.application.plan.query.PlanQueries;

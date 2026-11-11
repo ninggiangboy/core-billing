@@ -122,7 +122,8 @@ final class ArchitectureRules {
                 new NamedRule("port-package-holds-no-implementations", portPackageHoldsNoImplementations(root)),
                 new NamedRule("repository-pair-shares-a-package", repositoryPairSharesAPackage(root)),
                 new NamedRule("api-implementations-are-services", apiImplementationsAreServices(root)),
-                new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)));
+                new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)),
+                new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -518,6 +519,14 @@ final class ArchitectureRules {
                     }
                 })
                 .because("an adapter is grouped by feature first and by technology second");
+    }
+
+    /** A controller reaches the data through the application layer; a shared wire format lives in its own package. */
+    private static ArchRule webDoesNotDependOnPersistence(String root) {
+        return noClasses().that().resideInAnyPackage(root + ".*.adapter..web..")
+                .should().dependOnClassesThat().resideInAnyPackage(root + ".*.adapter..persistence..")
+                .because("web and persistence are separate technologies; a shape both use belongs in its own package, such as json")
+                .allowEmptyShould(true);
     }
 
     private static boolean isApiPackage(String root, String packageName) {

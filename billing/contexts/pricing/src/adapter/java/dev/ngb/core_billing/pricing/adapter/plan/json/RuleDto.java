@@ -1,4 +1,4 @@
-package dev.ngb.core_billing.pricing.adapter.plan.persistence;
+package dev.ngb.core_billing.pricing.adapter.plan.json;
 
 import dev.ngb.core_billing.pricing.domain.rule.EventBased;
 import dev.ngb.core_billing.pricing.domain.rule.Hybrid;

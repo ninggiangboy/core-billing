@@ -24,6 +24,7 @@ import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import tools.jackson.databind.json.JsonMapper;
+import dev.ngb.core_billing.pricing.adapter.plan.json.RuleDto;
 
 public class JooqPlanRepository implements PlanRepository {
 

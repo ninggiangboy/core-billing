@@ -53,6 +53,7 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("repository-pair-shares-a-package", "JooqSplitReadRepository");
         CULPRIT_BY_RULE_ID.put("api-implementations-are-services", "MisnamedLookupImplementation");
         CULPRIT_BY_RULE_ID.put("adapter-classes-in-feature-then-technology", "TechnologyFirstController");
+        CULPRIT_BY_RULE_ID.put("web-does-not-depend-on-persistence", "WebReachesPersistence");
     }
 
     private static JavaClasses fixtures;

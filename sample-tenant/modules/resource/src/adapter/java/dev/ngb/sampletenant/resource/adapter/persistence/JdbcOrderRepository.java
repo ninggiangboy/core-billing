@@ -52,6 +52,13 @@ public class JdbcOrderRepository implements OrderRepository {
     }
 
     @Override
+    public List<Order> findByBillingCustomerId(String billingCustomerId) {
+        return rows.findByBillingCustomerIdOrderByCreatedAtDesc(billingCustomerId).stream()
+                .map(JdbcOrderRepository::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Order> findAll() {
         return rows.findAllByOrderByCreatedAtDesc().stream().map(JdbcOrderRepository::toDomain).toList();
     }

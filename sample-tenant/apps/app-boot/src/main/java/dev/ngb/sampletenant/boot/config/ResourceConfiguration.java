@@ -7,7 +7,9 @@ import dev.ngb.sampletenant.customer.api.CustomerDirectory;
 import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderRepository;
 import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderSubmission;
 import dev.ngb.sampletenant.resource.adapter.persistence.OrderJdbcRepository;
+import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.resource.application.CreateOrderUseCase;
+import dev.ngb.sampletenant.resource.application.OrderExecutionService;
 import dev.ngb.sampletenant.resource.application.OrderQueries;
 import dev.ngb.sampletenant.resource.application.port.OrderRepository;
 import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
@@ -47,5 +49,10 @@ class ResourceConfiguration {
     @Bean
     OrderQueries orderQueries(OrderRepository orders, CustomerDirectory customers) {
         return new OrderQueries(orders, customers);
+    }
+
+    @Bean
+    ExecutionOrders executionOrders(OrderRepository orders, Clock clock) {
+        return new OrderExecutionService(orders, clock);
     }
 }

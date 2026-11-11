@@ -8,5 +8,7 @@ public interface OrderJdbcRepository extends CrudRepository<OrderRow, UUID> {
 
     List<OrderRow> findByCustomerIdOrderByCreatedAtDesc(UUID customerId);
 
+    List<OrderRow> findByBillingCustomerIdOrderByCreatedAtDesc(String billingCustomerId);
+
     List<OrderRow> findAllByOrderByCreatedAtDesc();
 }

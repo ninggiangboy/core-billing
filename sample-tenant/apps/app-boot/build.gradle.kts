@@ -9,6 +9,8 @@ dependencies {
     implementation(project(":modules:customer"))
     implementation(project(":modules:catalog"))
     implementation(project(":modules:resource"))
+    implementation(project(":modules:usage"))
+    implementation(project(":modules:execution"))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")

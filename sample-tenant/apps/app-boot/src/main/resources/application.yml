@@ -32,8 +32,10 @@ sampletenant:
     signing-secret: ${SAMPLE_TENANT_WEBHOOK_SECRET:}
     tolerance: PT5M
   execution:
+    enabled: ${SAMPLE_TENANT_EXECUTION_ENABLED:true}
     poll-delay: PT2S
     batch-size: 10
+    max-attempts: 3
   resource:
     reservation-ttl: PT15M
   identity:

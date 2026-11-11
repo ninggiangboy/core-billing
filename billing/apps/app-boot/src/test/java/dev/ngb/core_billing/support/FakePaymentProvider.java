@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.support;
 
-import dev.ngb.core_billing.payment.adapter.stripe.StripePaymentProvider;
+import dev.ngb.core_billing.payment.adapter.stripe.provider.StripePaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderUnavailableException;

@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.function.DoubleSupplier;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
-import dev.ngb.core_billing.payment.application.shared.service.PaymentSettlement;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettlement;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;

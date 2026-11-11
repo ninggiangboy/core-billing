@@ -1,14 +1,14 @@
 package dev.ngb.core_billing.boot.config;
 
-import dev.ngb.core_billing.customer.adapter.persistence.JooqCustomerRepository;
-import dev.ngb.core_billing.customer.adapter.persistence.JooqCustomerReadRepository;
+import dev.ngb.core_billing.customer.adapter.customer.persistence.JooqCustomerRepository;
+import dev.ngb.core_billing.customer.adapter.customer.persistence.JooqCustomerReadRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
-import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
-import dev.ngb.core_billing.customer.application.command.ManageCustomerUseCase;
-import dev.ngb.core_billing.customer.application.query.CustomerLookupService;
-import dev.ngb.core_billing.customer.application.query.CustomerQueries;
-import dev.ngb.core_billing.customer.application.query.CustomerReadRepository;
-import dev.ngb.core_billing.customer.application.port.CustomerRepository;
+import dev.ngb.core_billing.customer.application.customer.command.CreateCustomerUseCase;
+import dev.ngb.core_billing.customer.application.customer.command.ManageCustomerUseCase;
+import dev.ngb.core_billing.customer.application.customer.service.CustomerLookupService;
+import dev.ngb.core_billing.customer.application.customer.query.CustomerQueries;
+import dev.ngb.core_billing.customer.application.customer.query.CustomerReadRepository;
+import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.idempotency.IdempotencyStore;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;

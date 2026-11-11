@@ -30,6 +30,7 @@ import java.util.Set;
  * any direct sub-package of the root except the kernel and the wiring package. Inside a context,
  * packages are grouped by feature and then by role: {@code command} (use cases), {@code query} (read side),
  * {@code port} (outbound interfaces), {@code service} (collaborators of use cases) and {@code exception}.
+ * An adapter is grouped the same way: {@code adapter.<feature>.<technology>}.
  *
  * <p>Every context is checked; there is no exemption list.
  */
@@ -119,7 +120,9 @@ final class ArchitectureRules {
                 new NamedRule("application-classes-in-a-role-package", applicationClassesInARolePackage(root)),
                 new NamedRule("command-package-holds-only-use-cases", commandPackageHoldsOnlyUseCases(root)),
                 new NamedRule("port-package-holds-no-implementations", portPackageHoldsNoImplementations(root)),
-                new NamedRule("repository-pair-shares-a-package", repositoryPairSharesAPackage(root)));
+                new NamedRule("repository-pair-shares-a-package", repositoryPairSharesAPackage(root)),
+                new NamedRule("api-implementations-are-services", apiImplementationsAreServices(root)),
+                new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)));
     }
 
     /** adapter -> application -> domain; never the other way. */
@@ -147,9 +150,9 @@ final class ArchitectureRules {
     }
 
     private static ArchRule persistenceTypesInAdapter(String root) {
-        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter.persistence..", root + ".boot..")
+        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter..persistence..", root + ".boot..")
                 .should().dependOnClassesThat().resideInAPackage("dev.ngb.core_billing_jooq..")
-                .because("generated jOOQ types live in adapter.persistence");
+                .because("generated jOOQ types live in an adapter persistence package");
     }
 
     /** A "use case" is a class named *UseCase; every one in money must open the transaction itself. */
@@ -195,7 +198,7 @@ final class ArchitectureRules {
      */
     private static ArchRule outboundHttpOnlyThroughTheGuardedSender(String root) {
         return noClasses().that().resideInAPackage(root + ".webhook..")
-                .and().resideOutsideOfPackage(root + ".webhook.adapter.http..")
+                .and().resideOutsideOfPackage(root + ".webhook.adapter.delivery.http..")
                 .should().dependOnClassesThat().resideInAnyPackage(
                         "java.net.http..", "org.apache.hc..", "org.springframework.web.client..", "org.springframework.http.client..",
                         "org.springframework.web.reactive.function.client..")
@@ -209,7 +212,7 @@ final class ArchitectureRules {
      * port, which is what keeps a second provider a matter of one adapter and keeps API drift in one place.
      */
     private static ArchRule stripeTypesStayInTheStripeAdapter(String root) {
-        return noClasses().that().resideOutsideOfPackage(root + ".payment.adapter.stripe..")
+        return noClasses().that().resideOutsideOfPackage(root + ".payment.adapter.stripe.provider..")
                 .should().dependOnClassesThat().resideInAPackage("com.stripe..")
                 .because("Stripe's types belong to the Stripe adapter; the rest of the system sees the PaymentProvider port");
     }
@@ -287,9 +290,9 @@ final class ArchitectureRules {
 
     /** A generated jOOQ record is an adapter detail and lives next to the repository that uses it. */
     private static ArchRule generatedRecordsInAdapterPersistence(String root) {
-        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter.persistence..", root + ".boot..")
+        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter..persistence..", root + ".boot..")
                 .should().dependOnClassesThat().resideInAPackage("dev.ngb.core_billing_jooq.tables.records..")
-                .because("a generated record lives in adapter.persistence next to the repository that uses it");
+                .because("a generated record lives in an adapter persistence package next to the repository that uses it");
     }
 
     /**
@@ -439,7 +442,7 @@ final class ArchitectureRules {
 
     /** A feature's write repository and read repository sit side by side, so one package holds one feature's persistence. */
     private static ArchRule repositoryPairSharesAPackage(String root) {
-        return classes().that().resideInAnyPackage(root + ".*.adapter.persistence..")
+        return classes().that().resideInAnyPackage(root + ".*.adapter..persistence..")
                 .and().haveSimpleNameStartingWith("Jooq").and().haveSimpleNameEndingWith("Repository")
                 .should(new ArchCondition<>("sit in the same package as its feature's write repository") {
                     private final Map<String, JavaClass> byContextAndName = new HashMap<>();
@@ -467,6 +470,60 @@ final class ArchitectureRules {
                 })
                 .because("the write and read repository of one feature share a package")
                 .allowEmptyShould(true);
+    }
+
+    /**
+     * A class that implements a public api interface for other contexts, other than a use case, is the
+     * {@code <Interface>Service} of its feature and lives in the service package.
+     */
+    private static ArchRule apiImplementationsAreServices(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .and(areTopLevel())
+                .and().areNotInterfaces()
+                .and().haveSimpleNameNotEndingWith("UseCase")
+                .should(new ArchCondition<>("be <Interface>Service in a service package when it implements an api interface") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        for (JavaClass api : item.getAllRawInterfaces()) {
+                            if (!api.getPackageName().startsWith(root + ".") || !isApiPackage(root, api.getPackageName())) {
+                                continue;
+                            }
+                            String expected = api.getSimpleName() + "Service";
+                            if (!item.getSimpleName().equals(expected) || !hasSegment(item.getPackageName(), "service")) {
+                                events.add(SimpleConditionEvent.violated(item, item.getFullName() + " implements the api interface "
+                                        + api.getSimpleName() + " but is not " + expected + " in a service package"));
+                            }
+                        }
+                    }
+                })
+                .because("one convention for the class that serves another context: <Interface>Service in service");
+    }
+
+    /** An adapter class sits in a feature package and then a technology package: adapter.&lt;feature&gt;.&lt;technology&gt;. */
+    private static ArchRule adapterClassesInFeatureThenTechnology(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.adapter..")
+                .and().doNotHaveSimpleName("package-info")
+                .and(areTopLevel())
+                .should(new ArchCondition<>("sit in adapter.<feature>.<technology>") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String packageName = item.getPackageName();
+                        int adapter = packageName.indexOf(".adapter");
+                        String below = adapter < 0 ? "" : packageName.substring(adapter + ".adapter".length());
+                        int segments = below.isEmpty() ? 0 : below.substring(1).split("\\.").length;
+                        if (segments < 2) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is not in a feature package and then a technology package below adapter"));
+                        }
+                    }
+                })
+                .because("an adapter is grouped by feature first and by technology second");
+    }
+
+    private static boolean isApiPackage(String root, String packageName) {
+        String rest = packageName.substring(root.length() + 1);
+        int dot = rest.indexOf('.');
+        return dot > 0 && (rest.substring(dot + 1).equals("api") || rest.substring(dot + 1).startsWith("api."));
     }
 
     private static DescribedPredicate<JavaClass> areTopLevel() {

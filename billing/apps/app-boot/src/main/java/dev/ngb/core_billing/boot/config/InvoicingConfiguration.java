@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.boot.config;
 
-import dev.ngb.core_billing.invoicing.adapter.messaging.InvoicingEventListener;
-import dev.ngb.core_billing.invoicing.adapter.persistence.cycle.JooqUnbilledLineRepository;
-import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JooqInvoiceReadRepository;
-import dev.ngb.core_billing.invoicing.adapter.persistence.invoice.JooqInvoiceRepository;
-import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JooqSubscriptionReadRepository;
+import dev.ngb.core_billing.invoicing.adapter.invoice.messaging.InvoicingEventListener;
+import dev.ngb.core_billing.invoicing.adapter.cycle.persistence.JooqUnbilledLineRepository;
+import dev.ngb.core_billing.invoicing.adapter.invoice.persistence.JooqInvoiceReadRepository;
+import dev.ngb.core_billing.invoicing.adapter.invoice.persistence.JooqInvoiceRepository;
+import dev.ngb.core_billing.invoicing.adapter.subscription.persistence.JooqSubscriptionReadRepository;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ManageInvoiceUseCase;
 import dev.ngb.core_billing.invoicing.application.invoice.query.InvoiceQueries;
 import dev.ngb.core_billing.invoicing.application.invoice.query.InvoiceReadRepository;
@@ -16,7 +16,7 @@ import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.application.invoice.command.ApplyPaymentUseCase;
-import dev.ngb.core_billing.invoicing.adapter.persistence.subscription.JooqSubscriptionRepository;
+import dev.ngb.core_billing.invoicing.adapter.subscription.persistence.JooqSubscriptionRepository;
 import dev.ngb.core_billing.invoicing.application.invoice.service.ChargeLineFactory;
 import dev.ngb.core_billing.invoicing.application.invoice.command.InvoiceChargeUseCase;
 import dev.ngb.core_billing.invoicing.application.subscription.command.CancelSubscriptionUseCase;

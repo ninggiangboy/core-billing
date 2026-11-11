@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.web;
 
-import dev.ngb.core_billing.platform.adapter.web.CallerResolver;
+import dev.ngb.core_billing.platform.adapter.auth.web.CallerResolver;
 import dev.ngb.core_billing.platform.api.actor.Authenticated;
 import dev.ngb.core_billing.platform.api.actor.Authorizer;
 import dev.ngb.core_billing.platform.api.actor.CurrentActor;

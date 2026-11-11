@@ -14,7 +14,7 @@ import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.TestEvent;
 import dev.ngb.core_billing.support.TestReceiver;
-import dev.ngb.core_billing.webhook.adapter.messaging.WebhookEventListener;
+import dev.ngb.core_billing.webhook.adapter.delivery.messaging.WebhookEventListener;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;

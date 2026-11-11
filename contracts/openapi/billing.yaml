@@ -62,7 +62,7 @@ paths:
   /api/v1/stripe/configuration/webhook-secret:
     put:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: setWebhookSecret
       parameters:
       - name: X-Request-Id
@@ -89,7 +89,7 @@ paths:
   /api/v1/stripe/configuration/direct:
     put:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: connectDirect
       parameters:
       - name: X-Request-Id
@@ -247,7 +247,7 @@ paths:
   /api/v1/webhook-endpoints:
     get:
       tags:
-      - webhook-controller
+      - endpoint-controller
       operationId: listEndpoints
       responses:
         "200":
@@ -264,7 +264,7 @@ paths:
       - tenant-system
     post:
       tags:
-      - webhook-controller
+      - endpoint-controller
       operationId: createEndpoint
       parameters:
       - name: X-Request-Id
@@ -292,7 +292,7 @@ paths:
   /api/v1/webhook-endpoints/{id}/rotate-secret:
     post:
       tags:
-      - webhook-controller
+      - endpoint-controller
       operationId: rotateSecret
       parameters:
       - name: id
@@ -319,7 +319,7 @@ paths:
   /api/v1/webhook-deliveries/{id}/resend:
     post:
       tags:
-      - webhook-controller
+      - delivery-controller
       operationId: resend
       parameters:
       - name: id
@@ -346,7 +346,7 @@ paths:
   /api/v1/wallets:
     get:
       tags:
-      - money-controller
+      - wallet-controller
       operationId: wallets
       parameters:
       - name: customerId
@@ -369,7 +369,7 @@ paths:
       - tenant-system
     post:
       tags:
-      - money-controller
+      - wallet-controller
       operationId: openWallet
       parameters:
       - name: X-Request-Id
@@ -751,7 +751,7 @@ paths:
   /api/v1/subscriptions:
     get:
       tags:
-      - invoicing-controller
+      - subscription-controller
       operationId: subscriptions
       parameters:
       - name: customerId
@@ -796,7 +796,7 @@ paths:
       - tenant-system
     post:
       tags:
-      - invoicing-controller
+      - subscription-controller
       operationId: subscribe
       parameters:
       - name: Idempotency-Key
@@ -829,7 +829,7 @@ paths:
   /api/v1/subscriptions/{id}/cancel:
     post:
       tags:
-      - invoicing-controller
+      - subscription-controller
       operationId: cancel
       parameters:
       - name: id
@@ -856,7 +856,7 @@ paths:
   /api/v1/stripe/reconcile:
     post:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: reconcile
       responses:
         "200":
@@ -871,7 +871,7 @@ paths:
   /api/v1/stripe/incidents/{id}/resolve:
     post:
       tags:
-      - payment-controller
+      - incident-controller
       operationId: resolveIncident
       parameters:
       - name: id
@@ -893,7 +893,7 @@ paths:
   /api/v1/stripe/events/{id}/retry:
     post:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: retry
       parameters:
       - name: id
@@ -919,7 +919,7 @@ paths:
   /api/v1/stripe/configuration/refresh:
     post:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: refresh
       parameters:
       - name: X-Request-Id
@@ -940,7 +940,7 @@ paths:
   /api/v1/stripe/configuration/connect:
     post:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: startConnect
       parameters:
       - name: X-Request-Id
@@ -967,7 +967,7 @@ paths:
   /api/v1/stripe/configuration/connect/link:
     post:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: onboardingLink
       responses:
         "200":
@@ -1021,7 +1021,7 @@ paths:
   /api/v1/reservations:
     post:
       tags:
-      - money-controller
+      - reservation-controller
       operationId: reserve
       parameters:
       - name: Idempotency-Key
@@ -1049,7 +1049,7 @@ paths:
   /api/v1/reservations/{id}/release:
     post:
       tags:
-      - money-controller
+      - reservation-controller
       operationId: release
       parameters:
       - name: id
@@ -1071,7 +1071,7 @@ paths:
   /api/v1/reservations/{id}/capture:
     post:
       tags:
-      - money-controller
+      - charge-controller
       operationId: capture
       parameters:
       - name: id
@@ -1104,7 +1104,7 @@ paths:
   /api/v1/pricing/usage-charges:
     post:
       tags:
-      - pricing-controller
+      - rating-controller
       operationId: chargeUsage
       requestBody:
         content:
@@ -1126,7 +1126,7 @@ paths:
   /api/v1/pricing/reservations:
     post:
       tags:
-      - pricing-controller
+      - rating-controller
       operationId: reserveEstimate
       parameters:
       - name: Idempotency-Key
@@ -1154,7 +1154,7 @@ paths:
   /api/v1/pricing/estimates:
     post:
       tags:
-      - pricing-controller
+      - rating-controller
       operationId: estimate
       requestBody:
         content:
@@ -1176,7 +1176,7 @@ paths:
   /api/v1/pricing-plans:
     get:
       tags:
-      - pricing-controller
+      - plan-controller
       operationId: listPlans
       parameters:
       - name: status
@@ -1199,7 +1199,7 @@ paths:
       - tenant-system
     post:
       tags:
-      - pricing-controller
+      - plan-controller
       operationId: createPlan
       parameters:
       - name: X-Request-Id
@@ -1226,7 +1226,7 @@ paths:
   /api/v1/pricing-plans/{id}/versions:
     post:
       tags:
-      - pricing-controller
+      - plan-controller
       operationId: publishVersion
       parameters:
       - name: id
@@ -1258,7 +1258,7 @@ paths:
   /api/v1/pricing-plans/{id}/retire:
     post:
       tags:
-      - pricing-controller
+      - plan-controller
       operationId: retire
       parameters:
       - name: id
@@ -1284,7 +1284,7 @@ paths:
   /api/v1/payments/{id}/refunds:
     post:
       tags:
-      - payment-controller
+      - refund-controller
       operationId: requestRefund
       parameters:
       - name: id
@@ -1354,7 +1354,7 @@ paths:
   /api/v1/ledger-entries/{id}/reverse:
     post:
       tags:
-      - money-controller
+      - ledger-controller
       operationId: reverse
       parameters:
       - name: id
@@ -1381,7 +1381,7 @@ paths:
   /api/v1/invoices:
     get:
       tags:
-      - invoicing-controller
+      - invoice-controller
       operationId: invoices
       parameters:
       - name: customerId
@@ -1426,7 +1426,7 @@ paths:
       - tenant-system
     post:
       tags:
-      - invoicing-controller
+      - invoice-controller
       operationId: invoiceCharge
       parameters:
       - name: X-Request-Id
@@ -1454,7 +1454,7 @@ paths:
   /api/v1/invoices/{id}/void:
     post:
       tags:
-      - invoicing-controller
+      - invoice-controller
       operationId: voidInvoice
       parameters:
       - name: id
@@ -1486,7 +1486,7 @@ paths:
   /api/v1/invoices/{id}/uncollectible:
     post:
       tags:
-      - invoicing-controller
+      - invoice-controller
       operationId: markUncollectible
       parameters:
       - name: id
@@ -1512,7 +1512,7 @@ paths:
   /api/v1/invoices/{id}/payments:
     post:
       tags:
-      - invoicing-controller
+      - invoice-controller
       operationId: pay
       parameters:
       - name: id
@@ -1621,7 +1621,7 @@ paths:
   /api/v1/charges:
     post:
       tags:
-      - money-controller
+      - charge-controller
       operationId: charge
       parameters:
       - name: Idempotency-Key
@@ -1649,7 +1649,7 @@ paths:
   /api/v1/webhook-endpoints/{id}:
     get:
       tags:
-      - webhook-controller
+      - endpoint-controller
       operationId: getEndpoint
       parameters:
       - name: id
@@ -1670,7 +1670,7 @@ paths:
       - tenant-system
     patch:
       tags:
-      - webhook-controller
+      - endpoint-controller
       operationId: updateEndpoint
       parameters:
       - name: id
@@ -1703,7 +1703,7 @@ paths:
   /api/v1/webhook-deliveries:
     get:
       tags:
-      - webhook-controller
+      - delivery-controller
       operationId: listDeliveries
       parameters:
       - name: status
@@ -1744,7 +1744,7 @@ paths:
   /api/v1/webhook-deliveries/{id}:
     get:
       tags:
-      - webhook-controller
+      - delivery-controller
       operationId: getDelivery
       parameters:
       - name: id
@@ -1766,7 +1766,7 @@ paths:
   /api/v1/wallets/{id}:
     get:
       tags:
-      - money-controller
+      - wallet-controller
       operationId: wallet
       parameters:
       - name: id
@@ -1788,7 +1788,7 @@ paths:
   /api/v1/wallets/{id}/ledger:
     get:
       tags:
-      - money-controller
+      - ledger-controller
       operationId: ledger
       parameters:
       - name: id
@@ -1933,7 +1933,7 @@ paths:
   /api/v1/subscriptions/{id}:
     get:
       tags:
-      - invoicing-controller
+      - subscription-controller
       operationId: subscription
       parameters:
       - name: id
@@ -1955,7 +1955,7 @@ paths:
   /api/v1/stripe/incidents:
     get:
       tags:
-      - payment-controller
+      - incident-controller
       operationId: incidents
       parameters:
       - name: open
@@ -1986,7 +1986,7 @@ paths:
   /api/v1/stripe/events:
     get:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: events
       parameters:
       - name: status
@@ -2021,7 +2021,7 @@ paths:
   /api/v1/stripe/events/{id}:
     get:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: event
       parameters:
       - name: id
@@ -2042,7 +2042,7 @@ paths:
   /api/v1/stripe/configuration:
     get:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: getConfiguration
       responses:
         "200":
@@ -2056,7 +2056,7 @@ paths:
       - tenant-user
     delete:
       tags:
-      - payment-controller
+      - stripe-controller
       operationId: disconnect
       parameters:
       - name: X-Request-Id
@@ -2095,7 +2095,7 @@ paths:
   /api/v1/reservations/{id}:
     get:
       tags:
-      - money-controller
+      - reservation-controller
       operationId: reservation
       parameters:
       - name: id
@@ -2117,7 +2117,7 @@ paths:
   /api/v1/refunds/{id}:
     get:
       tags:
-      - payment-controller
+      - refund-controller
       operationId: getRefund
       parameters:
       - name: id
@@ -2139,7 +2139,7 @@ paths:
   /api/v1/pricing/usage-charges/{id}:
     get:
       tags:
-      - pricing-controller
+      - rating-controller
       operationId: getRating
       parameters:
       - name: id
@@ -2161,7 +2161,7 @@ paths:
   /api/v1/pricing-plans/{id}:
     get:
       tags:
-      - pricing-controller
+      - plan-controller
       operationId: getPlan
       parameters:
       - name: id
@@ -2280,7 +2280,7 @@ paths:
   /api/v1/invoices/{id}:
     get:
       tags:
-      - invoicing-controller
+      - invoice-controller
       operationId: invoice
       parameters:
       - name: id
@@ -2329,7 +2329,7 @@ paths:
   /api/v1/charges/{id}:
     get:
       tags:
-      - money-controller
+      - charge-controller
       operationId: getCharge
       parameters:
       - name: id

@@ -10,7 +10,7 @@ import dev.ngb.core_billing.boot.jobs.OutboxJobs;
 import dev.ngb.core_billing.boot.jobs.PaymentJobs;
 import dev.ngb.core_billing.boot.jobs.TenantSweep;
 import dev.ngb.core_billing.boot.jobs.WebhookJobs;
-import dev.ngb.core_billing.customer.adapter.web.CustomerController;
+import dev.ngb.core_billing.customer.adapter.customer.web.CustomerController;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

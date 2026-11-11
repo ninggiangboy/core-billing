@@ -35,9 +35,9 @@ import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
-import dev.ngb.core_billing.usage.application.command.RecordUsageUseCase;
-import dev.ngb.core_billing.usage.application.query.UsageQueries;
-import dev.ngb.core_billing.usage.api.usage.UsageTotal;
+import dev.ngb.core_billing.usage.application.usage.command.RecordUsageUseCase;
+import dev.ngb.core_billing.usage.api.lookup.UsageLookup;
+import dev.ngb.core_billing.usage.api.lookup.UsageTotal;
 import dev.ngb.core_billing.usage.domain.usage.UsageTrace;
 import java.time.Duration;
 import java.time.Instant;
@@ -81,7 +81,7 @@ class PricingUsageIntegrationTest {
     @Autowired ChargeFromUsageUseCase chargeUsage;
     @Autowired RatingQueries ratings;
     @Autowired RecordUsageUseCase recordUsage;
-    @Autowired UsageQueries usageQueries;
+    @Autowired UsageLookup usageLookup;
     @Autowired WalletQueries wallets;
     @Autowired CreditWallet credit;
     @Autowired dev.ngb.core_billing.money.api.charge.ChargeWallet chargeWallet;
@@ -246,13 +246,13 @@ class PricingUsageIntegrationTest {
         worlds.record(tenant, w.customerId(), calls, "call", "100", DAY.plusSeconds(120));
         worlds.record(tenant, w.customerId(), storage, "gb", "1000", DAY.plus(1, ChronoUnit.DAYS)); // exactly at the end: excluded
 
-        List<UsageTotal> totals = scopes.inTenant(tenant, () -> usageQueries.totals(w.customerId(), Set.of(), DAY, DAY.plus(1, ChronoUnit.DAYS)));
+        List<UsageTotal> totals = scopes.inTenant(tenant, () -> usageLookup.totals(w.customerId(), Set.of(), DAY, DAY.plus(1, ChronoUnit.DAYS)));
         assertThat(totals).extracting(UsageTotal::metric).containsExactlyInAnyOrder(storage, calls);
         UsageTotal storageTotal = totals.stream().filter(t -> t.metric().equals(storage)).findFirst().orElseThrow();
         assertThat(storageTotal.quantity()).isEqualByComparingTo("15");
         assertThat(storageTotal.events()).isEqualTo(2);
         assertThat(storageTotal.unit()).isEqualTo("gb");
-        assertThat(scopes.inTenant(tenant, () -> usageQueries.totals(w.customerId(), Set.of(calls), DAY, DAY.plus(1, ChronoUnit.DAYS)))).hasSize(1);
+        assertThat(scopes.inTenant(tenant, () -> usageLookup.totals(w.customerId(), Set.of(calls), DAY, DAY.plus(1, ChronoUnit.DAYS)))).hasSize(1);
     }
 
     // ---- plans

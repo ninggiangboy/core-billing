@@ -51,6 +51,8 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("command-package-holds-only-use-cases", "HelperInCommand");
         CULPRIT_BY_RULE_ID.put("port-package-holds-no-implementations", "ImplementationInPort");
         CULPRIT_BY_RULE_ID.put("repository-pair-shares-a-package", "JooqSplitReadRepository");
+        CULPRIT_BY_RULE_ID.put("api-implementations-are-services", "MisnamedLookupImplementation");
+        CULPRIT_BY_RULE_ID.put("adapter-classes-in-feature-then-technology", "TechnologyFirstController");
     }
 
     private static JavaClasses fixtures;

@@ -19,7 +19,7 @@ import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.CustomerId;
 import dev.ngb.core_billing.sharedkernel.TenantId;
 import dev.ngb.core_billing.support.ScopeTestSupport;
-import dev.ngb.core_billing.usage.application.command.RecordUsageUseCase;
+import dev.ngb.core_billing.usage.application.usage.command.RecordUsageUseCase;
 import dev.ngb.core_billing.usage.domain.usage.UsageTrace;
 import java.math.BigDecimal;
 import java.time.Instant;

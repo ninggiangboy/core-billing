@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
-import dev.ngb.core_billing.payment.application.shared.service.PaymentSettlement;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettlement;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.payment.application.refund.port.RefundRepository;

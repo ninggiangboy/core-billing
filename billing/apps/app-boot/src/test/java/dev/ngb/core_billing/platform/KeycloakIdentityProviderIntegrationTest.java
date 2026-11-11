@@ -4,7 +4,7 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.ngb.core_billing.platform.adapter.keycloak.KeycloakIdentityProvider;
+import dev.ngb.core_billing.platform.adapter.auth.keycloak.KeycloakIdentityProvider;
 import dev.ngb.core_billing.platform.application.auth.port.IdentityProviderPort.NewIdentity;
 import dev.ngb.core_billing.support.KeycloakFixture;
 import java.util.Base64;

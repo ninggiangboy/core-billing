@@ -10,9 +10,9 @@ import dev.ngb.core_billing.boot.jobs.MoneyJobs;
 import dev.ngb.core_billing.boot.jobs.OutboxJobs;
 import dev.ngb.core_billing.boot.jobs.PaymentJobs;
 import dev.ngb.core_billing.boot.jobs.WebhookJobs;
-import dev.ngb.core_billing.customer.adapter.web.CustomerController;
-import dev.ngb.core_billing.money.adapter.web.MoneyController;
-import dev.ngb.core_billing.payment.adapter.web.StripeWebhookController;
+import dev.ngb.core_billing.customer.adapter.customer.web.CustomerController;
+import dev.ngb.core_billing.money.adapter.wallet.web.WalletController;
+import dev.ngb.core_billing.payment.adapter.stripe.web.StripeWebhookController;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ class WorkerProfileIntegrationTest {
 
     @Test
     void theWorkerProfileHasNoBusinessEndpoint() {
-        for (Class<?> controller : new Class<?>[] {CustomerController.class, MoneyController.class, StripeWebhookController.class}) {
+        for (Class<?> controller : new Class<?>[] {CustomerController.class, WalletController.class, StripeWebhookController.class}) {
             assertThat(context.getBeanNamesForType(controller)).as(controller.getSimpleName()).isEmpty();
         }
     }

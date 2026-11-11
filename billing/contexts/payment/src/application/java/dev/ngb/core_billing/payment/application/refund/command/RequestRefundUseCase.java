@@ -24,7 +24,7 @@ import java.time.Instant;
 import java.util.Optional;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
-import dev.ngb.core_billing.payment.application.shared.service.PaymentSettlement;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettlement;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.payment.application.refund.port.RefundRepository;

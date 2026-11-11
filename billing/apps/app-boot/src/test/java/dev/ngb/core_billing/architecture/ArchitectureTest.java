@@ -65,7 +65,7 @@ class ArchitectureTest {
     void theStripeAdapterIsWhereTheSdkIsUsed() {
         long users = production.stream()
                 .filter(c -> c.getDirectDependenciesFromSelf().stream().anyMatch(d -> d.getTargetClass().getPackageName().startsWith("com.stripe")))
-                .filter(c -> c.getPackageName().startsWith(ROOT + ".payment.adapter.stripe"))
+                .filter(c -> c.getPackageName().startsWith(ROOT + ".payment.adapter.stripe.provider"))
                 .count();
         assertThat(users).as("a rule that matches no class passes vacuously").isGreaterThanOrEqualTo(1);
     }

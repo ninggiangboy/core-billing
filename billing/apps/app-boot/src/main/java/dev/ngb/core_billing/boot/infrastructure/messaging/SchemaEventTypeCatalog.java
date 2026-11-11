@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.boot.infrastructure.messaging;
 
-import dev.ngb.core_billing.webhook.application.shared.port.EventTypeCatalog;
+import dev.ngb.core_billing.webhook.application.endpoint.port.EventTypeCatalog;
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;

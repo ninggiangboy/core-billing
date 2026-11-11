@@ -100,7 +100,7 @@ class AccessControlHttpIntegrationTest {
         for (var entry : handlerMapping.getHandlerMethods().entrySet()) {
             RequestMappingInfo info = entry.getKey();
             HandlerMethod method = entry.getValue();
-            if (!method.getBeanType().getName().startsWith("dev.ngb.core_billing.platform.adapter.web")) {
+            if (!method.getBeanType().getName().matches("dev\\.ngb\\.core_billing\\.platform\\.adapter\\.[a-z]+\\.web\\..*")) {
                 continue;
             }
             RequiresPermission required = method.getMethodAnnotation(RequiresPermission.class);
@@ -119,14 +119,14 @@ class AccessControlHttpIntegrationTest {
         int publicEndpoints = 0;
         for (var entry : handlerMapping.getHandlerMethods().entrySet()) {
             HandlerMethod method = entry.getValue();
-            if (!method.getBeanType().getName().matches("dev\\.ngb\\.core_billing\\.[a-z]+\\.adapter\\.web\\..*")) {
+            if (!method.getBeanType().getName().matches("dev\\.ngb\\.core_billing\\.[a-z]+\\.adapter\\.[a-z]+\\.web\\..*")) {
                 continue;
             }
             checked++;
             if (method.hasMethodAnnotation(dev.ngb.core_billing.platform.api.actor.PublicEndpoint.class)) {
                 // Open to callers that prove themselves another way; the list is deliberate and short.
                 assertThat(method.getBeanType().getName()).as("only Stripe's signed webhooks are open endpoints")
-                        .isEqualTo("dev.ngb.core_billing.payment.adapter.web.StripeWebhookController");
+                        .isEqualTo("dev.ngb.core_billing.payment.adapter.stripe.web.StripeWebhookController");
                 publicEndpoints++;
                 continue;
             }

@@ -6,13 +6,14 @@ import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
 import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
-import dev.ngb.core_billing.usage.adapter.persistence.JooqUsageEventRepository;
-import dev.ngb.core_billing.usage.adapter.persistence.JooqUsageEventReadRepository;
-import dev.ngb.core_billing.usage.application.port.MetricUnits;
-import dev.ngb.core_billing.usage.application.command.RecordUsageUseCase;
-import dev.ngb.core_billing.usage.application.port.UsageEventRepository;
-import dev.ngb.core_billing.usage.application.query.UsageEventReadRepository;
-import dev.ngb.core_billing.usage.application.query.UsageQueries;
+import dev.ngb.core_billing.usage.adapter.usage.persistence.JooqUsageEventRepository;
+import dev.ngb.core_billing.usage.adapter.usage.persistence.JooqUsageEventReadRepository;
+import dev.ngb.core_billing.usage.application.usage.port.MetricUnits;
+import dev.ngb.core_billing.usage.application.usage.command.RecordUsageUseCase;
+import dev.ngb.core_billing.usage.application.usage.port.UsageEventRepository;
+import dev.ngb.core_billing.usage.application.usage.query.UsageEventReadRepository;
+import dev.ngb.core_billing.usage.application.usage.query.UsageQueries;
+import dev.ngb.core_billing.usage.application.usage.service.UsageLookupService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.jooq.DSLContext;
@@ -47,9 +48,14 @@ class UsageConfiguration {
         return new RecordUsageUseCase(unitOfWork, events, customers, metricUnits, tenantContext, ids, clock);
     }
 
-    /** Also the {@code UsageLookup} other contexts read usage through. */
     @Bean
     UsageQueries usageQueries(UnitOfWork unitOfWork, UsageEventReadRepository events, CustomerLookup customers) {
         return new UsageQueries(unitOfWork, events, customers);
+    }
+
+    /** The {@code UsageLookup} other contexts read usage through. */
+    @Bean
+    UsageLookupService usageLookup(UsageQueries queries) {
+        return new UsageLookupService(queries);
     }
 }

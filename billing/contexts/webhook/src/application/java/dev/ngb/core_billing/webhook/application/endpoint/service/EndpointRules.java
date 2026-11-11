@@ -5,8 +5,7 @@ import dev.ngb.core_billing.webhook.domain.endpoint.WebhookUrl;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import dev.ngb.core_billing.webhook.application.shared.port.EventTypeCatalog;
-import dev.ngb.core_billing.webhook.application.shared.service.WebhookSettings;
+import dev.ngb.core_billing.webhook.application.endpoint.port.EventTypeCatalog;
 
 /** Validation shared by creating and changing an endpoint. */
 public final class EndpointRules {

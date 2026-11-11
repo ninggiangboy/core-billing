@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.money;
 
 import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.customer.application.command.CreateCustomerUseCase;
+import dev.ngb.core_billing.customer.application.customer.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.money.api.wallet.CreditCommand;
 import dev.ngb.core_billing.money.api.wallet.CreditWallet;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;

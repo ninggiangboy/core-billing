@@ -1,14 +1,23 @@
 # Runtime profiles and deployment
 
-One jar runs in three deployment shapes. `dev` and `test` start with no profile and keep the all-in-one behaviour
-they had before the split; production starts one of the profiles below.
+One jar runs in three deployment shapes. `dev` and `test` start with no profile, which activates `api` and `worker`
+together — the all-in-one behaviour from before the split; production starts one of the profiles below.
 
 | Profile | Serves | Builds | Migrates |
 |---|---|---|---|
 | `api` (N instances) | HTTP and Stripe webhooks | no job bean, no scheduler | no |
 | `worker` (M instances) | actuator probes only | every job, no business controller | no |
 | `migrate` (one step) | nothing | no jobs, no bootstrap | Flyway as the table owner, then exits |
-| default (no profile) | HTTP and jobs | both | yes |
+| default (no profile) | HTTP and jobs | `api` and `worker` together | yes |
+
+Each edge declares its beans positively: a controller carries `@Profile("api")`, a job carries `@Profile("worker")`,
+and architecture tests fail when either annotation goes missing. `spring.profiles.default` in `application.yml`
+supplies both profiles to a run that sets none.
+
+The two profile files describe a runtime that runs alone, so each guards itself: `application-api.yml` carries
+`spring.config.activate.on-profile: api & !worker` and `application-worker.yml` carries `worker & !api`. Without the
+guard the dev/test default would load both files, and the worker would win every shared key — Flyway off, a 5s
+`lock_timeout` and eight-way tenant parallelism — instead of the base `application.yml` that the default relies on.
 
 Deploy in the order `migrate`, `api`, `worker`. The migrate step is the only writer of schema; api and worker connect
 as the unprivileged application role with Flyway switched off, so a rolling start never races a migration.

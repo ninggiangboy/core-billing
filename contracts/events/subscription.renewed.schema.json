@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corebilling.io/events/subscription.renewed.schema.json",
+  "title": "Subscription renewed",
+  "description": "A period of a subscription was paid from the customer's wallet. Period 0 is the first one and is reported when the subscription starts. Billing only reports this fact: it never provisions or stops anything for the Tenant System, which decides what the renewal means for it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
+  "type": "object",
+  "required": [
+    "subscriptionId",
+    "customerId",
+    "walletId",
+    "planId",
+    "planCode",
+    "periodNumber",
+    "periodStart",
+    "periodEnd",
+    "amount",
+    "endsAtPeriodEnd"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "customerId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "walletId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "planId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "planCode": {
+      "type": "string"
+    },
+    "periodNumber": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Counted from the subscription's anchor; 0 is the first period."
+    },
+    "periodStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "periodEnd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "amount": {
+      "$ref": "#/$defs/money"
+    },
+    "chargeId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The charge that paid the period. Absent only for a plan whose recurring price is zero."
+    },
+    "endsAtPeriodEnd": {
+      "type": "boolean",
+      "description": "True when the subscription was canceled and ends when this period ends instead of renewing."
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "description": "An amount in minor units (cents, dong) of one ISO 4217 currency.",
+      "required": [
+        "minorUnits",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minorUnits": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

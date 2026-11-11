@@ -8,7 +8,6 @@ import dev.ngb.core_billing.invoicing.domain.invoice.Invoice;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceId;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceOrigin;
-import dev.ngb.core_billing.invoicing.domain.invoice.ItemSource;
 import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.charge.ChargeLookup;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
@@ -50,6 +49,7 @@ public class InvoiceChargeUseCase {
     private final InvoiceRepository invoices;
     private final UnbilledLineRepository unbilled;
     private final InvoiceIssuer issuer;
+    private final ChargeLineFactory lineFactory;
     private final AuditLog auditLog;
     private final TenantContext tenantContext;
     private final IdGenerator ids;
@@ -57,7 +57,8 @@ public class InvoiceChargeUseCase {
 
     public InvoiceChargeUseCase(
             UnitOfWork unitOfWork, ChargeLookup charges, WalletLookup wallets, CustomerLookup customers, InvoiceRepository invoices,
-            UnbilledLineRepository unbilled, InvoiceIssuer issuer, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
+            UnbilledLineRepository unbilled, InvoiceIssuer issuer, ChargeLineFactory lineFactory, AuditLog auditLog, TenantContext tenantContext,
+            IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.charges = charges;
         this.wallets = wallets;
@@ -65,6 +66,7 @@ public class InvoiceChargeUseCase {
         this.invoices = invoices;
         this.unbilled = unbilled;
         this.issuer = issuer;
+        this.lineFactory = lineFactory;
         this.auditLog = auditLog;
         this.tenantContext = tenantContext;
         this.ids = ids;
@@ -94,8 +96,8 @@ public class InvoiceChargeUseCase {
         }
         Instant now = clock.now();
         Optional<UnbilledLine> waiting = unbilled.lockByCharge(charge.id().value());
-        InvoiceItem item = waiting.map(UnbilledLine::item).orElseGet(() -> new InvoiceItem(ids.newId(), ItemSource.CHARGE, charge.id().value(), null, null,
-                null, ChargeDescription.of(charge.source().name(), charge.reference()), charge.amount(), charge.createdAt()));
+        InvoiceItem item = waiting.map(UnbilledLine::item).orElseGet(() -> lineFactory.lineFor(charge.id().value(), charge.source().name(), charge.reference(),
+                charge.amount(), charge.createdAt()));
         Invoice draft = Invoice.draft(new InvoiceId(ids.newId()), tenantContext.requireTenant(), wallet.customerId(), wallet.id(), wallet.currency(),
                 InvoiceOrigin.CHARGE, List.of(item), null, null, now);
         Invoice issued = issuer.issue(draft, wallet.mode() == WalletMode.PREPAID);

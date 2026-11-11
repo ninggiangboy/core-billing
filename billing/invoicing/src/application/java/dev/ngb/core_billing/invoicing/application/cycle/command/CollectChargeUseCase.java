@@ -1,10 +1,9 @@
 package dev.ngb.core_billing.invoicing.application.cycle.command;
 
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
-import dev.ngb.core_billing.invoicing.application.invoice.command.ChargeDescription;
+import dev.ngb.core_billing.invoicing.application.invoice.command.ChargeLineFactory;
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceItem;
-import dev.ngb.core_billing.invoicing.domain.invoice.ItemSource;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
@@ -12,7 +11,6 @@ import dev.ngb.core_billing.sharedkernel.Clock;
 import dev.ngb.core_billing.sharedkernel.Currency;
 import dev.ngb.core_billing.sharedkernel.DomainEvent;
 import dev.ngb.core_billing.sharedkernel.EventInbox;
-import dev.ngb.core_billing.sharedkernel.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.Money;
 import dev.ngb.core_billing.sharedkernel.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.WalletId;
@@ -34,18 +32,19 @@ public class CollectChargeUseCase {
     private final EventInbox inbox;
     private final WalletLookup wallets;
     private final UnbilledLineRepository lines;
+    private final ChargeLineFactory lineFactory;
     private final CycleSettings settings;
-    private final IdGenerator ids;
     private final Clock clock;
 
     public CollectChargeUseCase(
-            UnitOfWork unitOfWork, EventInbox inbox, WalletLookup wallets, UnbilledLineRepository lines, CycleSettings settings, IdGenerator ids, Clock clock) {
+            UnitOfWork unitOfWork, EventInbox inbox, WalletLookup wallets, UnbilledLineRepository lines, ChargeLineFactory lineFactory, CycleSettings settings,
+            Clock clock) {
         this.unitOfWork = unitOfWork;
         this.inbox = inbox;
         this.wallets = wallets;
         this.lines = lines;
+        this.lineFactory = lineFactory;
         this.settings = settings;
-        this.ids = ids;
         this.clock = clock;
     }
 
@@ -69,8 +68,8 @@ public class CollectChargeUseCase {
                 // The period was billed before this event reached us; the line belongs to the period that is open now.
                 start = settings.cycle().calendarStart(now);
             }
-            InvoiceItem item = new InvoiceItem(ids.newId(), ItemSource.CHARGE, UUID.fromString((String) data.get("chargeId")), null, null, null,
-                    ChargeDescription.of((String) data.get("source"), (String) data.get("reference")), amount(data, wallet.currency()), event.occurredAt());
+            InvoiceItem item = lineFactory.lineFor(UUID.fromString((String) data.get("chargeId")), (String) data.get("source"), (String) data.get("reference"),
+                    amount(data, wallet.currency()), event.occurredAt());
             return lines.add(new UnbilledLine(event.tenantId(), wallet.customerId(), wallet.id(), item, start, settings.cycle().calendarEnd(start)));
         });
     }

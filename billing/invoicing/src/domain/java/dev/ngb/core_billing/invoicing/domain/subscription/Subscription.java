@@ -110,6 +110,44 @@ public final class Subscription {
         return periodsCharged == 0 ? null : periodEnd(periodsCharged - 1);
     }
 
+    /** True when a period is due: the subscription is not canceled and its next renewal time has come. */
+    public boolean dueAt(Instant now) {
+        return status != SubscriptionStatus.CANCELED && nextRenewalAt != null && !nextRenewalAt.isAfter(now);
+    }
+
+    /** The number of the period to charge next. */
+    public int periodToCharge() {
+        return periodsCharged;
+    }
+
+    /** Which try at charging the next period this is, starting at 1; part of the charge's idempotency key. */
+    public int nextAttempt() {
+        return renewalAttempts + 1;
+    }
+
+    /** Records that the next period was charged: the subscription is active, paid up to the end of that period, and due again there. */
+    public void recordRenewed(Instant now) {
+        if (status == SubscriptionStatus.CANCELED) {
+            throw new IllegalStateException("a canceled subscription does not renew");
+        }
+        int charged = periodsCharged;
+        this.periodsCharged = charged + 1;
+        this.status = SubscriptionStatus.ACTIVE;
+        this.renewalAttempts = 0;
+        this.nextRenewalAt = periodEnd(charged);
+        this.updatedAt = now;
+    }
+
+    /** The next period could not be charged: count the attempt and look again at {@code retryAt}. */
+    public void deferRenewal(Instant retryAt, Instant now) {
+        if (status == SubscriptionStatus.CANCELED) {
+            throw new IllegalStateException("a canceled subscription does not renew");
+        }
+        this.renewalAttempts = renewalAttempts + 1;
+        this.nextRenewalAt = retryAt;
+        this.updatedAt = now;
+    }
+
     /**
      * Ends the subscription now when no paid period is running (nothing was charged yet, or the last period could
      * not be paid), otherwise schedules it to end where the paid period ends. Cancelling twice changes nothing.

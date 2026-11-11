@@ -58,7 +58,7 @@ class EventContractIntegrationTest {
     private static final Set<String> EMITTED_HERE = Set.of(
             "reservation.created", "reservation.released", "reservation.expired", "charge.succeeded", "charge.failed", "wallet.credited",
             "wallet.debited", "ledger.entry-reversed", "customer.created", "pricing-plan.version-published", "pricing-plan.retired", "usage.rated",
-            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created", "invoice.paid");
+            "payment.succeeded", "payment.failed", "refund.succeeded", "invoice.created", "invoice.paid", "subscription.renewed");
 
     @Autowired MoneyTestWorld worlds;
     @Autowired ScopeTestSupport scopes;
@@ -80,6 +80,7 @@ class EventContractIntegrationTest {
     @Autowired dev.ngb.core_billing.sharedkernel.UnitOfWork unitOfWork;
     @Autowired dev.ngb.core_billing.boot.infrastructure.outbox.OutboxRelay relay;
     @Autowired dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase closeCycle;
+    @Autowired dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase subscribe;
 
     private final JsonMapper json = JsonMapper.builder().build();
 
@@ -182,6 +183,10 @@ class EventContractIntegrationTest {
         deliver(w, dev.ngb.core_billing.support.StripeEvents.paidCheckout(dev.ngb.core_billing.support.StripeEvents.newEventId(), null, "cs_" + paymentId, "pi_" + paymentId,
                 paymentId.toString(), 1000));
         scopes.runInTenant(tenant, relay::relayDue);
+
+        var plan = pricing.plan(tenant, "pro", pricing.pro(), dev.ngb.core_billing.pricing.api.plan.BillingCycle.MONTHLY, null, null);
+        scopes.inTenant(tenant, () -> subscribe.execute(new dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase.Command(
+                postpaid.wallet().id(), plan.id().value(), UUID.randomUUID().toString(), PricingTestWorld.AUDIT, null)));
 
         List<Payload> payloads = new ArrayList<>();
         owner.jdbc().query("select type, payload::text as payload from outbox where tenant_id = ?", rs -> {

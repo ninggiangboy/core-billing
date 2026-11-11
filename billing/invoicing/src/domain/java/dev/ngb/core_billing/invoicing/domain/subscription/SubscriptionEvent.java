@@ -31,6 +31,11 @@ public record SubscriptionEvent(
         return new SubscriptionEvent(id, subscription.tenantId(), subscription.id(), Type.CREATED, null, null, null, null, null, "plan " + subscription.planCode(), now);
     }
 
+    public static SubscriptionEvent renewed(UUID id, Subscription subscription, int periodNumber, Money amount, UUID chargeId, Instant now) {
+        return new SubscriptionEvent(id, subscription.tenantId(), subscription.id(), Type.RENEWED, periodNumber, subscription.periodStart(periodNumber),
+                subscription.periodEnd(periodNumber), amount, chargeId, null, now);
+    }
+
     public static SubscriptionEvent cancelRequested(UUID id, Subscription subscription, Instant now) {
         return new SubscriptionEvent(id, subscription.tenantId(), subscription.id(), Type.CANCEL_REQUESTED, null, subscription.currentPeriodStart(), subscription.currentPeriodEnd(), null,
                 null, "ends at the end of the paid period", now);

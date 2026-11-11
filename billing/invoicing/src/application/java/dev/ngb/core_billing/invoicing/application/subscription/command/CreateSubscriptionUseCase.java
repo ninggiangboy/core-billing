@@ -27,7 +27,7 @@ import java.util.UUID;
 
 /**
  * Subscribes a customer's wallet to a plan. The subscription is anchored now and its first period is due at once;
- * the renewal logic charges it (see {@link RenewSubscriptionUseCase}). The cycle and the currency come from the plan
+ * it is charged right after, through the same logic as every later renewal ({@link RenewSubscriptionUseCase}). The cycle and the currency come from the plan
  * and stay fixed for the life of the subscription, so the periods never drift if the plan changes later.
  */
 public class CreateSubscriptionUseCase {
@@ -42,19 +42,21 @@ public class CreateSubscriptionUseCase {
     private final WalletLookup wallets;
     private final CustomerLookup customers;
     private final PlanPricing plans;
+    private final RenewSubscriptionUseCase renewal;
     private final AuditLog auditLog;
     private final TenantContext tenantContext;
     private final IdGenerator ids;
     private final Clock clock;
 
     public CreateSubscriptionUseCase(
-            UnitOfWork unitOfWork, SubscriptionRepository subscriptions, WalletLookup wallets, CustomerLookup customers, PlanPricing plans, AuditLog auditLog,
-            TenantContext tenantContext, IdGenerator ids, Clock clock) {
+            UnitOfWork unitOfWork, SubscriptionRepository subscriptions, WalletLookup wallets, CustomerLookup customers, PlanPricing plans,
+            RenewSubscriptionUseCase renewal, AuditLog auditLog, TenantContext tenantContext, IdGenerator ids, Clock clock) {
         this.unitOfWork = unitOfWork;
         this.subscriptions = subscriptions;
         this.wallets = wallets;
         this.customers = customers;
         this.plans = plans;
+        this.renewal = renewal;
         this.auditLog = auditLog;
         this.tenantContext = tenantContext;
         this.ids = ids;
@@ -64,7 +66,7 @@ public class CreateSubscriptionUseCase {
     public Result execute(Command command) {
         String key = Fingerprint.requireKey(command.idempotencyKey());
         String hash = Fingerprint.of(command.walletId().toString(), command.planId().toString());
-        return unitOfWork.transactional(() -> {
+        Result created = unitOfWork.transactional(() -> {
             Optional<Subscription> existing = subscriptions.findByIdempotencyKey(key);
             if (existing.isPresent()) {
                 if (!existing.get().requestHash().equals(hash)) {
@@ -88,5 +90,11 @@ public class CreateSubscriptionUseCase {
                     command.audit().requestId(), now));
             return new Result(subscription, false);
         });
+        if (created.replayed()) {
+            return created;
+        }
+        // The first period is due at once: charge it now, in its own transaction, so a refusal by the wallet leaves the subscription recorded.
+        renewal.renewIfDue(created.subscription().id());
+        return new Result(unitOfWork.transactional(() -> subscriptions.findById(created.subscription().id()).orElseThrow()), false);
     }
 }

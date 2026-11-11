@@ -55,7 +55,7 @@ class SubscriptionIntegrationTest {
     }
 
     @Test
-    void aSubscriptionIsCreatedActiveWithItsFirstPeriodDueAndAHistoryRecord() {
+    void aSubscriptionIsCreatedActiveAndItsFirstPeriodIsChargedAtOnce() {
         World world = worlds.prepaid(100_000);
 
         Subscription subscription = subscribe(world, proPlan(world), "sub-1").subscription();
@@ -64,9 +64,10 @@ class SubscriptionIntegrationTest {
         assertThat(reloaded).usingRecursiveComparison().isEqualTo(subscription);
         assertThat(reloaded.status()).isEqualTo(SubscriptionStatus.ACTIVE);
         assertThat(reloaded.cycle()).isEqualTo(BillingCycle.MONTHLY);
-        assertThat(reloaded.periodsCharged()).isZero();
-        assertThat(reloaded.nextRenewalAt()).isEqualTo(reloaded.anchor());
+        assertThat(reloaded.periodsCharged()).isEqualTo(1);
+        assertThat(reloaded.nextRenewalAt()).isEqualTo(reloaded.periodEnd(0));
         assertThat(owner.count("select count(*) from subscription_events where subscription_id = ? and type = 'CREATED'", subscription.id().value())).isEqualTo(1);
+        assertThat(owner.count("select count(*) from subscription_events where subscription_id = ? and type = 'RENEWED'", subscription.id().value())).isEqualTo(1);
     }
 
     @Test
@@ -109,8 +110,9 @@ class SubscriptionIntegrationTest {
     }
 
     @Test
-    void cancellingBeforeTheFirstChargeEndsItAtOnceAndIsRepeatable() {
-        World world = worlds.prepaid(100_000);
+    void cancellingBeforeAnyPeriodIsPaidEndsItAtOnceAndIsRepeatable() {
+        // An empty prepaid wallet cannot pay the first period, so nothing paid is running.
+        World world = worlds.prepaid(0);
         Subscription subscription = subscribe(world, proPlan(world), "sub-1").subscription();
 
         Subscription canceled = scopes.inTenant(world.tenant().id(), () -> cancel.execute(new CancelSubscriptionUseCase.Command(subscription.id(), AUDIT, null)));

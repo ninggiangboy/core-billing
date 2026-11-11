@@ -6,6 +6,8 @@ import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionEvent;
 import dev.ngb.core_billing.invoicing.domain.subscription.SubscriptionId;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.sharedkernel.Causes;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
@@ -50,6 +52,13 @@ public class JdbcSubscriptionRepository implements SubscriptionRepository {
     public Optional<Subscription> lockById(SubscriptionId id) {
         return jdbc.sql("select " + COLUMNS + " from subscriptions where id = ? for update").param(id.value()).query(SubscriptionRow.class).optional()
                 .map(SubscriptionRow::toDomain);
+    }
+
+    @Override
+    public Optional<Subscription> lockNextDue(Instant now) {
+        return jdbc.sql("select " + COLUMNS + " from subscriptions where status in ('ACTIVE', 'PAST_DUE') and next_renewal_at <= ? "
+                        + "order by next_renewal_at, id limit 1 for update skip locked")
+                .param(Timestamp.from(now)).query(SubscriptionRow.class).optional().map(SubscriptionRow::toDomain);
     }
 
     @Override

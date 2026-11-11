@@ -69,6 +69,10 @@ billing:
     postpaid-cycle: MONTHLY
     cycle-batch: 100
     cycle-delay: PT5M
+    renewal-batch: 100
+    renewal-delay: PT1M
+    # How long a subscription waits after a period could not be charged before it is tried again.
+    renewal-retry-delay: PT1H
     # Switch off to stop creating invoices from closed periods; charges stay collected and are invoiced when it is back on.
     jobs-enabled: true
 

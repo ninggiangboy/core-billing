@@ -44,7 +44,7 @@ created: 2026-11-11
 | 2 | Runtime profiles: api, worker, migrate, probes, pools, shutdown, per-profile timeouts | done |
 | 3 | Singleton heavy jobs and platform bootstrap under a lease | done |
 | 4 | Lock safety net: retryable SQLSTATEs, 503, lock hierarchy documentation | done |
-| 5 | Concurrency and multi-instance tests: profile separation, lease contention, failover, deadlock stress | pending |
+| 5 | Concurrency and multi-instance tests: profile separation, lease contention, failover, deadlock stress | done |
 
 Each phase: regenerate jOOQ when the schema changes, run the narrowest tests then
 `./gradlew :app-boot:test`, and commit.

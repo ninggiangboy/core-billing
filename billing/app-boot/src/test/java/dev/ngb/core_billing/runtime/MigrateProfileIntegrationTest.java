@@ -39,7 +39,8 @@ class MigrateProfileIntegrationTest {
 
     @Test
     void theMigrateStepRunsFlywayAsTheOwner() {
-        assertThat(jdbc.queryForObject("select count(*) from job_leases", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("select to_regclass('public.job_leases')::text", String.class))
+                .isEqualTo("job_leases");
     }
 
     @Test

@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Concurrency and multi-instance tests"
-status: pending
+status: done
 ---
 
 # Concurrency and multi-instance tests

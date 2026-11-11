@@ -40,6 +40,10 @@ public class InvoicingJobs {
                 LOG.info("closed {} billing periods for tenant {}", report.invoiced(), tenant);
                 meters.counter("billing.invoicing.cycle.invoiced").increment(report.invoiced());
             }
+            if (report.failed() > 0) {
+                LOG.warn("{} billing periods could not be closed for tenant {}", report.failed(), tenant);
+                meters.counter("billing.invoicing.cycle.failed").increment(report.failed());
+            }
         });
     }
 

@@ -21,7 +21,8 @@ import java.util.List;
  */
 public class CloseBillingCycleUseCase {
 
-    public record Report(int invoiced, int skipped) {}
+    /** {@code skipped} periods had nothing left to bill; {@code failed} periods threw and were left for the next run. */
+    public record Report(int invoiced, int skipped, int failed) {}
 
     private final UnitOfWork unitOfWork;
     private final UnbilledLineRepository lines;
@@ -44,6 +45,7 @@ public class CloseBillingCycleUseCase {
         List<ClosedPeriod> due = unitOfWork.transactional(() -> lines.closedPeriods(clock.now(), settings.batchSize()));
         int invoiced = 0;
         int skipped = 0;
+        int failed = 0;
         for (ClosedPeriod period : due) {
             try {
                 if (Boolean.TRUE.equals(unitOfWork.transactional(() -> close(period)))) {
@@ -53,9 +55,12 @@ public class CloseBillingCycleUseCase {
                 }
             } catch (ConflictException billedMeanwhile) {
                 skipped++;
+            } catch (RuntimeException broken) {
+                // One period that cannot be closed must not hold back the periods behind it; it is tried again next run.
+                failed++;
             }
         }
-        return new Report(invoiced, skipped);
+        return new Report(invoiced, skipped, failed);
     }
 
     private boolean close(ClosedPeriod period) {

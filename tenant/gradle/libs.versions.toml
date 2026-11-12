@@ -2,6 +2,9 @@
 # Spring Boot 4.1 manages Spring Data JDBC, Flyway, PostgreSQL driver and Testcontainers.
 [versions]
 spring-boot = "4.1.2"
+spring-cloud = "2025.1.4"
+# Spring Cloud 2025.1.4 pins OpenFeign 5.0.4 and Feign 13.6.1; keep this aligned when bumping it.
+feign = "13.6.1"
 spring-modulith = "2.1.2"
 archunit = "1.5.1"
 json-schema-validator = "3.0.7"
@@ -12,6 +15,9 @@ jdk = "25"
 [libraries]
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
+spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
+spring-cloud-starter-openfeign = { module = "org.springframework.cloud:spring-cloud-starter-openfeign" }
+feign-java11 = { module = "io.github.openfeign:feign-java11", version.ref = "feign" }
 spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "spring-modulith" }
 spring-modulith-api = { module = "org.springframework.modulith:spring-modulith-api" }
 spring-modulith-core = { module = "org.springframework.modulith:spring-modulith-core" }

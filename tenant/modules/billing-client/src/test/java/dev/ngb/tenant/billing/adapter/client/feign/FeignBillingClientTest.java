@@ -1,11 +1,13 @@
-package dev.ngb.tenant.billing.adapter.client.http;
+package dev.ngb.tenant.billing.adapter.client.feign;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import dev.ngb.tenant.billing.adapter.client.http.HttpBillingSettings;
 import dev.ngb.tenant.billing.api.client.BillingCharges.CaptureRequest;
+import dev.ngb.tenant.billing.api.client.BillingCharges.ChargeRequest;
 import dev.ngb.tenant.billing.api.client.BillingCustomers.NewCustomer;
 import dev.ngb.tenant.billing.api.client.BillingPricing.EstimateRequest;
 import dev.ngb.tenant.billing.api.client.BillingPricing.ReserveRequest;
@@ -18,6 +20,7 @@ import dev.ngb.tenant.billing.api.model.UsageEventRequest;
 import dev.ngb.tenant.billing.api.model.Wallet;
 import dev.ngb.tenant.shared.error.NotFoundException;
 import dev.ngb.tenant.shared.error.PaymentRequiredException;
+import dev.ngb.tenant.shared.error.UpstreamUnavailableException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -32,16 +35,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class HttpBillingClientTest {
+class FeignBillingClientTest {
 
     private FakeBilling billing;
-    private HttpBillingClient client;
+    private FeignBillingClient client;
 
     @BeforeEach
     void start() throws IOException {
         billing = new FakeBilling();
-        client = new HttpBillingClient(new HttpBillingSettings(
-                billing.baseUrl(), "cbk_key_secret", Duration.ofSeconds(1), Duration.ofSeconds(1), 2, Duration.ofMillis(1)));
+        client = clientWith("cbk_key_secret");
     }
 
     @AfterEach
@@ -63,6 +65,8 @@ class HttpBillingClientTest {
         assertThat(request.path()).isEqualTo("/api/v1/customers");
         assertThat(request.header("Authorization")).isEqualTo("Bearer cbk_key_secret");
         assertThat(request.header("Idempotency-Key")).isEqualTo("key-1");
+        assertThat(request.header("Content-Type")).isEqualTo("application/json");
+        assertThat(request.header("Accept")).isEqualTo("application/json");
         assertThat(request.body()).contains("\"externalUserId\":\"user_1\"");
     }
 
@@ -150,10 +154,12 @@ class HttpBillingClientTest {
         billing.respond(404, "{\"detail\":\"customer not found\"}");
         billing.respond(402, "{\"detail\":\"The wallet cannot cover this amount.\"}");
 
-        assertThatThrownBy(() -> client.get("cus_missing")).isInstanceOf(NotFoundException.class);
-        assertThatThrownBy(() -> client.charge("key", new dev.ngb.tenant.billing.api.client.BillingCharges.ChargeRequest(
-                        "wal_1", 9999, "USD", null, "order-1")))
-                .isInstanceOf(PaymentRequiredException.class);
+        assertThatThrownBy(() -> client.get("cus_missing"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage("customer not found");
+        assertThatThrownBy(() -> client.charge("key", new ChargeRequest("wal_1", 9999, "USD", null, "order-1")))
+                .isInstanceOf(PaymentRequiredException.class)
+                .hasMessage("The wallet cannot cover this amount.");
     }
 
     @Test
@@ -169,6 +175,70 @@ class HttpBillingClientTest {
         assertThat(billing.requests()).hasSize(2);
         assertThat(billing.request(0).header("Idempotency-Key")).isEqualTo("key-retry");
         assertThat(billing.request(1).header("Idempotency-Key")).isEqualTo("key-retry");
+    }
+
+    @Test
+    void givesUpAfterTheConfiguredAttempts() {
+        billing.respond(500, "{\"detail\":\"temporary\"}");
+        billing.respond(500, "{\"detail\":\"temporary\"}");
+
+        assertThatThrownBy(() -> client.get("cus_1")).isInstanceOf(UpstreamUnavailableException.class);
+
+        assertThat(billing.requests()).hasSize(2);
+    }
+
+    @Test
+    void omitsAnAbsentQueryParameter() {
+        billing.respond(200, "[]");
+
+        client.plans(null);
+
+        assertThat(billing.request(0).path()).isEqualTo("/api/v1/pricing-plans");
+    }
+
+    @Test
+    void refusesAWriteWithoutAnIdempotencyKeyBeforeAnyRequest() {
+        NewCustomer customer = new NewCustomer("sys_1", "user_1", "Ada", "ada@example.com");
+
+        assertThatThrownBy(() -> client.create(null, customer)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> client.charge(null, new ChargeRequest("wal_1", 1, "USD", null, "order-1")))
+                .isInstanceOf(NullPointerException.class);
+
+        assertThat(billing.requests()).isEmpty();
+    }
+
+    @Test
+    void encodesReservedCharactersInAPathValue() {
+        billing.respond(200, "{\"id\":\"cus_1\"}");
+
+        client.byExternalUser("a/b c", "sys_1");
+
+        assertThat(billing.request(0).path())
+                .isEqualTo("/api/v1/customers/by-external-user/a%2Fb%20c?tenantSystemId=sys_1");
+    }
+
+    @Test
+    void ignoresUnknownJsonFields() {
+        billing.respond(200, """
+                {"id":"cus_1","displayName":"Ada","status":"ACTIVE","unexpected":{"nested":true}}
+                """);
+
+        Customer customer = client.get("cus_1");
+
+        assertThat(customer.id()).isEqualTo("cus_1");
+    }
+
+    @Test
+    void sendsNoCredentialWhenTheKeyIsBlank() {
+        billing.respond(200, "[]");
+        clientWith("").plans(null);
+
+        assertThat(billing.request(0).header("Authorization")).isNull();
+    }
+
+    private FeignBillingClient clientWith(String apiKey) {
+        return BillingFeignClientFactory.create(new HttpBillingSettings(
+                billing.baseUrl(), apiKey, Duration.ofSeconds(1), Duration.ofSeconds(1), 2, Duration.ofMillis(1)));
     }
 
     private static final class FakeBilling implements AutoCloseable {
@@ -215,8 +285,10 @@ class HttpBillingClientTest {
             byte[] body = exchange.getRequestBody().readAllBytes();
             requests.add(new Request(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath()
-                            + (exchange.getRequestURI().getQuery() == null ? "" : "?" + exchange.getRequestURI().getQuery()),
+                    exchange.getRequestURI().getRawPath()
+                            + (exchange.getRequestURI().getRawQuery() == null
+                                    ? ""
+                                    : "?" + exchange.getRequestURI().getRawQuery()),
                     exchange.getRequestHeaders(),
                     new String(body, StandardCharsets.UTF_8)));
             Response response = responses.isEmpty() ? new Response(500, "{}") : responses.remove();

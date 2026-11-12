@@ -1,6 +1,7 @@
 package dev.ngb.tenant.boot.config;
 
-import dev.ngb.tenant.billing.adapter.client.http.HttpBillingClient;
+import dev.ngb.tenant.billing.adapter.client.feign.BillingFeignClientFactory;
+import dev.ngb.tenant.billing.adapter.client.feign.FeignBillingClient;
 import dev.ngb.tenant.billing.adapter.client.http.HttpBillingSettings;
 import dev.ngb.tenant.billing.api.client.BillingCharges;
 import dev.ngb.tenant.billing.api.client.BillingCustomers;
@@ -25,7 +26,7 @@ import org.springframework.context.annotation.Profile;
 @Profile("!test")
 class BillingConfiguration {
 
-    record BillingClientHolder(HttpBillingClient client) {}
+    record BillingClientHolder(FeignBillingClient client) {}
 
     @Bean
     HttpBillingSettings httpBillingSettings(
@@ -40,7 +41,7 @@ class BillingConfiguration {
 
     @Bean
     BillingClientHolder billingClientHolder(HttpBillingSettings settings) {
-        return new BillingClientHolder(new HttpBillingClient(settings));
+        return new BillingClientHolder(BillingFeignClientFactory.create(settings));
     }
 
     @Bean

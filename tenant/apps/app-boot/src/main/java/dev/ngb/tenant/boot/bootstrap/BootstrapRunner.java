@@ -1,6 +1,6 @@
 package dev.ngb.tenant.boot.bootstrap;
 
-import dev.ngb.tenant.billing.adapter.client.http.HttpBillingClient;
+import dev.ngb.tenant.billing.adapter.client.feign.BillingFeignClientFactory;
 import dev.ngb.tenant.billing.adapter.client.http.HttpBillingSettings;
 import dev.ngb.tenant.billing.api.client.BillingAdmin;
 import dev.ngb.tenant.billing.api.client.BillingWebhooks;
@@ -61,7 +61,7 @@ class BootstrapRunner implements ApplicationRunner {
             LOG.warn("tenant.bootstrap.admin-token is empty; pricing plans were not published");
             return;
         }
-        BillingAdmin admin = new HttpBillingClient(new HttpBillingSettings(
+        BillingAdmin admin = BillingFeignClientFactory.create(new HttpBillingSettings(
                 tenantSettings.baseUrl(),
                 adminToken,
                 tenantSettings.connectTimeout(),
@@ -88,7 +88,7 @@ class BootstrapRunner implements ApplicationRunner {
             LOG.warn("tenant.billing.api-key is empty; the webhook endpoint was not registered");
             return;
         }
-        HttpBillingClient tenant = new HttpBillingClient(tenantSettings);
+        BillingWebhooks tenant = BillingFeignClientFactory.create(tenantSettings);
         boolean exists = tenant.endpoints().stream().anyMatch(endpoint -> endpoint.url().equals(webhookUrl));
         if (exists) {
             return;

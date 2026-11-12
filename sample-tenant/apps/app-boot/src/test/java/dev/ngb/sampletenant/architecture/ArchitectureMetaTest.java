@@ -48,6 +48,11 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("persistence-types-in-adapter", "RowInDomain");
         CULPRIT_BY_RULE_ID.put("generated-records-in-adapter-persistence", "TableInApplication");
         CULPRIT_BY_RULE_ID.put("module-uses-only-own-tables", "UsesAnotherModulesTable");
+        CULPRIT_BY_RULE_ID.put("write-side-does-not-depend-on-query", "CommandReachesQuery");
+        CULPRIT_BY_RULE_ID.put("read-side-does-not-depend-on-write", "QueryReachesWritePort");
+        CULPRIT_BY_RULE_ID.put("query-side-uses-no-domain-aggregates", "QueryReachesAggregate");
+        CULPRIT_BY_RULE_ID.put("write-ports-serve-no-reads", "WritePort");
+        CULPRIT_BY_RULE_ID.put("repository-pair-shares-a-package", "JooqSplitReadRepository");
     }
 
     private static final Map<String, String> CULPRIT_BY_CORE_RULE_ID = Map.of(

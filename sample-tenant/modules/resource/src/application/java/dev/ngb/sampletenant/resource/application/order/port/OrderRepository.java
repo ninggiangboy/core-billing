@@ -12,9 +12,5 @@ public interface OrderRepository {
 
     Optional<Order> findById(UUID id);
 
-    List<Order> findByCustomerId(UUID customerId);
-
     List<Order> findByBillingCustomerId(String billingCustomerId);
-
-    List<Order> findAll();
 }

@@ -2,6 +2,7 @@ package dev.ngb.sampletenant.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
@@ -13,6 +14,7 @@ import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.lang.syntax.elements.GivenClassesConjunction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +69,9 @@ final class ArchitectureRules {
         }
     }
 
+    /** Domain types a read model may name besides enums. Read models use primitives where they can. */
+    private static final Set<String> ALLOWED_QUERY_DOMAIN_TYPES = Set.of();
+
     private ArchitectureRules() {}
 
     static List<NamedRule> all(String root) {
@@ -89,7 +94,12 @@ final class ArchitectureRules {
                 new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)),
                 new NamedRule("persistence-types-in-adapter", persistenceTypesInAdapter(root)),
                 new NamedRule("generated-records-in-adapter-persistence", generatedRecordsInAdapterPersistence(root)),
-                new NamedRule("module-uses-only-own-tables", moduleUsesOnlyItsOwnTables(root)));
+                new NamedRule("module-uses-only-own-tables", moduleUsesOnlyItsOwnTables(root)),
+                new NamedRule("write-side-does-not-depend-on-query", writeSideDoesNotDependOnQuery(root)),
+                new NamedRule("read-side-does-not-depend-on-write", readSideDoesNotDependOnWrite(root)),
+                new NamedRule("query-side-uses-no-domain-aggregates", querySideUsesNoDomainAggregates(root)),
+                new NamedRule("write-ports-serve-no-reads", writePortsServeNoReads(root)),
+                new NamedRule("repository-pair-shares-a-package", repositoryPairSharesAPackage(root)));
     }
 
     /**
@@ -377,16 +387,14 @@ final class ArchitectureRules {
     private static ArchRule persistenceTypesInAdapter(String root) {
         return noClasses().that().resideOutsideOfPackages(root + ".*.adapter..persistence..", root + ".boot..")
                 .should().dependOnClassesThat().resideInAPackage("dev.ngb.sampletenant_jooq..")
-                .because("generated jOOQ types live in an adapter persistence package")
-                .allowEmptyShould(true);
+                .because("generated jOOQ types live in an adapter persistence package");
     }
 
     /** A generated jOOQ record is an adapter detail and lives next to the repository that uses it. */
     private static ArchRule generatedRecordsInAdapterPersistence(String root) {
         return noClasses().that().resideOutsideOfPackages(root + ".*.adapter..persistence..", root + ".boot..")
                 .should().dependOnClassesThat().resideInAPackage("dev.ngb.sampletenant_jooq.tables.records..")
-                .because("a generated record lives in an adapter persistence package next to the repository that uses it")
-                .allowEmptyShould(true);
+                .because("a generated record lives in an adapter persistence package next to the repository that uses it");
     }
 
     /** A module's adapters use only the tables it owns. */
@@ -412,8 +420,106 @@ final class ArchitectureRules {
                         }
                     }
                 })
-                .because("each module persists only its own tables")
+                .because("each module persists only its own tables");
+    }
+
+    /** The command side never reads through the query side; a use case that must read decides with its own port. */
+    private static ArchRule writeSideDoesNotDependOnQuery(String root) {
+        return noClasses().that().resideInAnyPackage(root + ".*..command..", root + ".*..port..")
+                .should().dependOnClassesThat().resideInAnyPackage(root + ".*..query..")
+                .because("the write side decides with its own ports and never through a read model")
                 .allowEmptyShould(true);
+    }
+
+    /**
+     * The query side names views and read ports only. It never reaches into the command side and never depends
+     * on a write port, so a read cannot accidentally drive a write.
+     */
+    private static ArchRule readSideDoesNotDependOnWrite(String root) {
+        ArchRule byPackage = noClasses().that().resideInAnyPackage(root + ".*..query..")
+                .should().dependOnClassesThat().resideInAnyPackage(root + ".*..command..", root + ".*..port..")
+                .because("a query class reads through a read port and never through the write side")
+                .allowEmptyShould(true);
+        ArchRule byName = noClasses().that().resideInAnyPackage(root + "..")
+                .and().haveSimpleNameStartingWith("Jooq").and().haveSimpleNameEndingWith("ReadRepository")
+                .should().dependOnClassesThat().resideInAnyPackage(root + ".*..command..", root + ".*..port..")
+                .because("a read repository selects into a view and never into the write side")
+                .allowEmptyShould(true);
+        return CompositeArchRule.of(byPackage).and(byName).allowEmptyShould(true);
+    }
+
+    /**
+     * A read model is never a domain aggregate. Should a read need a value object, the explicit allowlist
+     * records it for review instead of letting the domain leak in silently.
+     */
+    private static ArchRule querySideUsesNoDomainAggregates(String root) {
+        return classes().that().resideInAnyPackage(root + ".*..query..")
+                .should(new ArchCondition<>("not use a domain aggregate") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        for (Dependency dependency : item.getDirectDependenciesFromSelf()) {
+                            JavaClass target = dependency.getTargetClass();
+                            if (isDomainPackage(root, target.getPackageName())
+                                    && !target.isEnum()
+                                    && !ALLOWED_QUERY_DOMAIN_TYPES.contains(target.getFullName())) {
+                                events.add(SimpleConditionEvent.violated(item,
+                                        item.getFullName() + " depends on domain type " + target.getFullName()));
+                            }
+                        }
+                    }
+                })
+                .because("a read model is shaped for its caller and is never a domain aggregate");
+    }
+
+    /** The write side never serves reads: a port has no list, page or search method. */
+    private static ArchRule writePortsServeNoReads(String root) {
+        return noMethods().that().areDeclaredInClassesThat().resideInAnyPackage(root + ".*..port..")
+                .and().areDeclaredInClassesThat().areInterfaces()
+                .should().haveNameMatching("(list|page|search).*")
+                .because("the write side never serves reads; a list, page or search method belongs to a read port")
+                .allowEmptyShould(true);
+    }
+
+    /** A feature's write repository and read repository sit side by side. */
+    private static ArchRule repositoryPairSharesAPackage(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.adapter..persistence..")
+                .and().haveSimpleNameStartingWith("Jooq").and().haveSimpleNameEndingWith("Repository")
+                .should(new ArchCondition<>("sit in the same package as its feature's write repository") {
+                    private final Map<String, JavaClass> byContextAndName = new HashMap<>();
+
+                    @Override
+                    public void init(Collection<JavaClass> allObjectsToTest) {
+                        for (JavaClass candidate : allObjectsToTest) {
+                            byContextAndName.put(
+                                    owningContextOf(root, candidate.getPackageName()) + "/" + candidate.getSimpleName(),
+                                    candidate);
+                        }
+                    }
+
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String name = item.getSimpleName();
+                        if (!name.endsWith("ReadRepository")) {
+                            return;
+                        }
+                        String writeName = name.substring(0, name.length() - "ReadRepository".length()) + "Repository";
+                        JavaClass write =
+                                byContextAndName.get(owningContextOf(root, item.getPackageName()) + "/" + writeName);
+                        if (write != null && !write.getPackageName().equals(item.getPackageName())) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is not in the same package as " + write.getFullName()));
+                        }
+                    }
+                })
+                .because("the write and read repository of one feature share a package")
+                .allowEmptyShould(true);
+    }
+
+    private static boolean isDomainPackage(String root, String packageName) {
+        if (!packageName.startsWith(root + ".")) {
+            return false;
+        }
+        return hasSegment(packageName.substring(root.length() + 1), "domain");
     }
 
     private static String owningContextOf(String root, String packageName) {

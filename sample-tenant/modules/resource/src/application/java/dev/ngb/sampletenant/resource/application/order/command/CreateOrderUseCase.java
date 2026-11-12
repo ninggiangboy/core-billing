@@ -2,6 +2,7 @@ package dev.ngb.sampletenant.resource.application.order.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.sampletenant.billing.api.client.BillingPricing;
 import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.client.BillingWallets;
@@ -13,7 +14,8 @@ import dev.ngb.sampletenant.billing.api.model.UsageInput;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
-import dev.ngb.sampletenant.resource.application.order.port.OrderSubmission;
+import dev.ngb.sampletenant.resource.application.order.port.OrderQueueRepository;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
 import dev.ngb.sampletenant.resource.domain.order.Order;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
@@ -35,7 +37,9 @@ public class CreateOrderUseCase {
     private final BillingPricing pricing;
     private final BillingSubscriptions subscriptions;
     private final BillingWallets wallets;
-    private final OrderSubmission submission;
+    private final OrderRepository orders;
+    private final OrderQueueRepository queue;
+    private final UnitOfWork unitOfWork;
     private final Clock clock;
     private final IdGenerator ids;
     private final Duration reservationTtl;
@@ -46,7 +50,9 @@ public class CreateOrderUseCase {
             BillingPricing pricing,
             BillingSubscriptions subscriptions,
             BillingWallets wallets,
-            OrderSubmission submission,
+            OrderRepository orders,
+            OrderQueueRepository queue,
+            UnitOfWork unitOfWork,
             Clock clock,
             IdGenerator ids,
             Duration reservationTtl) {
@@ -55,7 +61,9 @@ public class CreateOrderUseCase {
         this.pricing = pricing;
         this.subscriptions = subscriptions;
         this.wallets = wallets;
-        this.submission = submission;
+        this.orders = orders;
+        this.queue = queue;
+        this.unitOfWork = unitOfWork;
         this.clock = clock;
         this.ids = ids;
         this.reservationTtl = reservationTtl;
@@ -122,7 +130,11 @@ public class CreateOrderUseCase {
                 reservationId,
                 subscriptionId,
                 now);
-        submission.submit(order);
+        unitOfWork.transactional(() -> {
+            orders.save(order);
+            queue.enqueue(order.id(), order.createdAt());
+            return null;
+        });
         return order;
     }
 

@@ -6,9 +6,8 @@ dependencies {
     "applicationImplementation"(project(":modules:billing-client"))
     "applicationImplementation"(project(":modules:resource"))
     "applicationImplementation"(project(":modules:usage"))
-    "adapterImplementation"(project(":modules:billing-client"))
-    "adapterImplementation"(project(":modules:resource"))
-    "adapterImplementation"(project(":modules:usage"))
-    "adapterImplementation"("org.springframework.boot:spring-boot-starter-data-jdbc")
+    testImplementation(project(":modules:billing-client"))
+    testImplementation(project(":modules:resource"))
+    testImplementation(project(":modules:usage"))
     testImplementation("org.assertj:assertj-core")
 }

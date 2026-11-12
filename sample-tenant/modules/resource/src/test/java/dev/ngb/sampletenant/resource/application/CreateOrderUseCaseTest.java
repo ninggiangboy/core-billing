@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.sampletenant.billing.api.client.BillingPricing;
 import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.client.BillingWallets;
@@ -19,8 +20,10 @@ import dev.ngb.sampletenant.billing.api.model.UsageInput;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
+import dev.ngb.sampletenant.resource.api.execution.ExecutionQueue.Claimed;
 import dev.ngb.sampletenant.resource.application.order.command.CreateOrderUseCase;
-import dev.ngb.sampletenant.resource.application.order.port.OrderSubmission;
+import dev.ngb.sampletenant.resource.application.order.port.OrderQueueRepository;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
 import dev.ngb.sampletenant.resource.domain.order.Order;
 import dev.ngb.sampletenant.resource.domain.order.OrderStatus;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
@@ -30,7 +33,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 class CreateOrderUseCaseTest {
@@ -44,9 +49,16 @@ class CreateOrderUseCaseTest {
     private final FakePricing pricing = new FakePricing();
     private final FakeSubscriptions subscriptions = new FakeSubscriptions();
     private final FakeWallets wallets = new FakeWallets();
-    private final CapturingSubmission submission = new CapturingSubmission();
+    private final InMemoryOrders orders = new InMemoryOrders();
+    private final InMemoryQueue queue = new InMemoryQueue();
+    private final UnitOfWork unitOfWork = new UnitOfWork() {
+        @Override
+        public <T> T transactional(Supplier<T> work) {
+            return work.get();
+        }
+    };
     private final CreateOrderUseCase create = new CreateOrderUseCase(
-            catalog, customers, pricing, subscriptions, wallets, submission,
+            catalog, customers, pricing, subscriptions, wallets, orders, queue, unitOfWork,
             () -> NOW, () -> UUID.randomUUID(), Duration.ofMinutes(15));
 
     @Test
@@ -59,7 +71,8 @@ class CreateOrderUseCaseTest {
         assertThat(order.metric()).isEqualTo("compute.vcpu_minute");
         assertThat(pricing.estimated).isTrue();
         assertThat(pricing.reserved).isTrue();
-        assertThat(submission.orders).containsExactly(order);
+        assertThat(orders.saved).containsExactly(order);
+        assertThat(queue.enqueued).containsExactly(order.id());
     }
 
     @Test
@@ -68,7 +81,8 @@ class CreateOrderUseCaseTest {
 
         assertThatThrownBy(() -> create.execute(new CreateOrderUseCase.Command(USER, PLAN, "120", null)))
                 .isInstanceOf(PaymentRequiredException.class);
-        assertThat(submission.orders).isEmpty();
+        assertThat(orders.saved).isEmpty();
+        assertThat(queue.enqueued).isEmpty();
     }
 
     @Test
@@ -78,7 +92,8 @@ class CreateOrderUseCaseTest {
         assertThatThrownBy(() -> create.execute(new CreateOrderUseCase.Command(USER, PLAN, "120", null)))
                 .isInstanceOf(BadRequestException.class);
         assertThat(pricing.estimated).isFalse();
-        assertThat(submission.orders).isEmpty();
+        assertThat(orders.saved).isEmpty();
+        assertThat(queue.enqueued).isEmpty();
     }
 
     @Test
@@ -252,12 +267,42 @@ class CreateOrderUseCaseTest {
         }
     }
 
-    private static final class CapturingSubmission implements OrderSubmission {
-        private final List<Order> orders = new ArrayList<>();
+    private static final class InMemoryOrders implements OrderRepository {
+        private final List<Order> saved = new ArrayList<>();
 
         @Override
-        public void submit(Order order) {
-            orders.add(order);
+        public void save(Order order) {
+            saved.add(order);
         }
+
+        @Override
+        public Optional<Order> findById(UUID id) {
+            return saved.stream().filter(order -> order.id().equals(id)).findFirst();
+        }
+
+        @Override
+        public List<Order> findByBillingCustomerId(String billingCustomerId) {
+            return saved.stream().filter(order -> billingCustomerId.equals(order.billingCustomerId())).toList();
+        }
+    }
+
+    private static final class InMemoryQueue implements OrderQueueRepository {
+        private final List<UUID> enqueued = new ArrayList<>();
+
+        @Override
+        public void enqueue(UUID orderId, Instant enqueuedAt) {
+            enqueued.add(orderId);
+        }
+
+        @Override
+        public List<Claimed> claim(int batchSize) {
+            return List.of();
+        }
+
+        @Override
+        public void finish(UUID orderId) {}
+
+        @Override
+        public void requeue(UUID orderId) {}
     }
 }

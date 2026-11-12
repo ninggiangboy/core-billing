@@ -1,9 +1,9 @@
-package dev.ngb.sampletenant.execution.application.queue.port;
+package dev.ngb.sampletenant.resource.api.execution;
 
 import java.util.List;
 import java.util.UUID;
 
-/** The database-backed queue. A claim uses {@code for update skip locked}, so workers never collide. */
+/** The queue operations the execution worker needs. The resource module owns the queue table. */
 public interface ExecutionQueue {
 
     record Claimed(UUID orderId, int attempts) {}

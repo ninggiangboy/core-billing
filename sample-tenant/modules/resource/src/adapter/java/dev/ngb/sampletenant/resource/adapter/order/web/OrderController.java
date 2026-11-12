@@ -7,6 +7,7 @@ import dev.ngb.sampletenant.identity.api.security.Role;
 import dev.ngb.sampletenant.resource.application.order.command.CreateOrderUseCase;
 import dev.ngb.sampletenant.resource.application.order.command.ManageOrderUseCase;
 import dev.ngb.sampletenant.resource.application.order.query.OrderQueries;
+import dev.ngb.sampletenant.resource.application.order.query.OrderView;
 import dev.ngb.sampletenant.resource.domain.order.Order;
 import java.time.Instant;
 import java.util.List;
@@ -41,6 +42,22 @@ public class OrderController {
             String failureReason,
             Instant createdAt,
             Instant updatedAt) {
+        static OrderResponse of(OrderView order) {
+            return new OrderResponse(
+                    order.id(),
+                    order.reference(),
+                    order.planId(),
+                    order.billingPlanId(),
+                    order.status(),
+                    order.walletId(),
+                    order.reservationId(),
+                    order.estimatedMinorUnits(),
+                    order.currency(),
+                    order.failureReason(),
+                    order.createdAt(),
+                    order.updatedAt());
+        }
+
         static OrderResponse of(Order order) {
             return new OrderResponse(
                     order.id(),
@@ -81,7 +98,7 @@ public class OrderController {
     @GetMapping
     @RequiresPermission(Permission.ORDER_READ)
     public List<OrderResponse> list(@AuthenticationPrincipal AuthenticatedUser principal) {
-        List<Order> orders = principal.role() == Role.ADMIN ? queries.all() : queries.forUser(principal.id());
+        List<OrderView> orders = principal.role() == Role.ADMIN ? queries.all() : queries.forUser(principal.id());
         return orders.stream().map(OrderResponse::of).toList();
     }
 

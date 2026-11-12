@@ -8,7 +8,6 @@ dependencies {
     "adapterImplementation"(project(":modules:customer"))
     "adapterImplementation"(project(":modules:identity"))
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-webmvc")
-    "adapterImplementation"("org.springframework.boot:spring-boot-starter-data-jdbc")
     "adapterImplementation"("org.springframework.security:spring-security-core")
     testImplementation("org.assertj:assertj-core")
     "adapterImplementation"("org.springframework.boot:spring-boot-starter-jooq")

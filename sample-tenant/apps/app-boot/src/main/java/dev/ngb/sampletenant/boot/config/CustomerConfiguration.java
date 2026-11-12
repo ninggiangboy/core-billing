@@ -18,7 +18,7 @@ import dev.ngb.sampletenant.customer.application.ManageWalletSettingUseCase;
 import dev.ngb.sampletenant.customer.application.RegisterCustomerUseCase;
 import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
 import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
-import dev.ngb.sampletenant.identity.application.port.AccountListener;
+import dev.ngb.sampletenant.identity.api.account.AccountListener;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

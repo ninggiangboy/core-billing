@@ -3,7 +3,8 @@ package dev.ngb.sampletenant.identity.application;
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.identity.api.Role;
-import dev.ngb.sampletenant.identity.application.port.AccountListener;
+import dev.ngb.sampletenant.identity.api.account.AccountListener;
+import dev.ngb.sampletenant.identity.api.account.RegisteredAccount;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;
 import dev.ngb.sampletenant.identity.domain.User;
@@ -46,7 +47,7 @@ public class RegisterUserUseCase {
         User user = User.register(
                 ids, command.email(), command.displayName(), hasher.hash(command.password()), role, clock.now());
         users.save(user);
-        listener.registered(user);
+        listener.registered(new RegisteredAccount(user.id(), user.displayName(), user.email()));
         return user;
     }
 

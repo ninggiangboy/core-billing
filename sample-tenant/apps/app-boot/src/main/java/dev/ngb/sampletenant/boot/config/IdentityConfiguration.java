@@ -11,7 +11,7 @@ import dev.ngb.sampletenant.identity.application.AuthenticateUseCase;
 import dev.ngb.sampletenant.identity.application.ManageUsersUseCase;
 import dev.ngb.sampletenant.identity.application.RegisterUserUseCase;
 import dev.ngb.sampletenant.identity.application.SessionService;
-import dev.ngb.sampletenant.identity.application.port.AccountListener;
+import dev.ngb.sampletenant.identity.api.account.AccountListener;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.port.SessionRepository;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;

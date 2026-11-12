@@ -6,7 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.identity.api.Role;
-import dev.ngb.sampletenant.identity.application.port.AccountListener;
+import dev.ngb.sampletenant.identity.api.account.AccountListener;
+import dev.ngb.sampletenant.identity.api.account.RegisteredAccount;
 import dev.ngb.sampletenant.identity.domain.User;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
@@ -18,7 +19,7 @@ class RegisterUserUseCaseTest {
 
     private static final AccountListener NO_LISTENER = new AccountListener() {
         @Override
-        public void registered(User user) {}
+        public void registered(RegisteredAccount account) {}
     };
 
     private final Fakes.Users users = new Fakes.Users();

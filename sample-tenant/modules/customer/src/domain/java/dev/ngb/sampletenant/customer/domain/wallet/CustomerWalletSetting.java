@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.customer.domain;
+package dev.ngb.sampletenant.customer.domain.wallet;
 
 import java.time.Instant;
 import java.util.UUID;

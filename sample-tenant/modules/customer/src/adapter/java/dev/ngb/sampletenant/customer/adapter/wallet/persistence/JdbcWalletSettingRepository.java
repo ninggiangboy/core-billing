@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.customer.adapter.persistence;
+package dev.ngb.sampletenant.customer.adapter.wallet.persistence;
 
-import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
-import dev.ngb.sampletenant.customer.domain.CustomerWalletSetting;
-import dev.ngb.sampletenant.customer.domain.WalletMode;
+import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
+import dev.ngb.sampletenant.customer.domain.wallet.CustomerWalletSetting;
+import dev.ngb.sampletenant.customer.domain.wallet.WalletMode;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.UUID;

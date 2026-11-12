@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.customer.application.port;
+package dev.ngb.sampletenant.customer.application.wallet.port;
 
-import dev.ngb.sampletenant.customer.domain.CustomerWalletSetting;
+import dev.ngb.sampletenant.customer.domain.wallet.CustomerWalletSetting;
 import java.util.Optional;
 import java.util.UUID;
 

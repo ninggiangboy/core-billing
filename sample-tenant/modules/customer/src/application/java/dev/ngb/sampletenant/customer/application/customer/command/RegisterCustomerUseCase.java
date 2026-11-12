@@ -1,9 +1,10 @@
-package dev.ngb.sampletenant.customer.application;
+package dev.ngb.sampletenant.customer.application.customer.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
-import dev.ngb.sampletenant.customer.domain.Customer;
+import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerMapping;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
 import java.util.List;

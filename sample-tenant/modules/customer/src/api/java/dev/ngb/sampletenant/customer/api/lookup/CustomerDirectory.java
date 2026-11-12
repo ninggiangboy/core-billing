@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.customer.api;
+package dev.ngb.sampletenant.customer.api.lookup;
 
 import java.util.UUID;
 

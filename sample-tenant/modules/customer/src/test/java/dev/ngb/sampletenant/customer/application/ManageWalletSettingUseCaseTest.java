@@ -8,10 +8,13 @@ import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
-import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
-import dev.ngb.sampletenant.customer.domain.Customer;
-import dev.ngb.sampletenant.customer.domain.CustomerWalletSetting;
-import dev.ngb.sampletenant.customer.domain.WalletMode;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerDirectoryService;
+import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
+import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
+import dev.ngb.sampletenant.customer.domain.wallet.CustomerWalletSetting;
+import dev.ngb.sampletenant.customer.domain.wallet.WalletMode;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -31,7 +34,7 @@ class ManageWalletSettingUseCaseTest {
     private final FakeWallets wallets = new FakeWallets();
     private final IdGenerator ids = () -> UUID.randomUUID();
     private final ManageWalletSettingUseCase useCase = new ManageWalletSettingUseCase(
-            new CustomerQueries(customers), settings, wallets, () -> NOW);
+            new CustomerDirectoryService(new CustomerQueries(customers)), settings, wallets, () -> NOW);
 
     @Test
     void theDefaultSettingIsPrepaidInUsd() {

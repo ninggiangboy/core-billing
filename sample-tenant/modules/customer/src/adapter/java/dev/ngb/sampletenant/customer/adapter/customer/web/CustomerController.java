@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.customer.adapter.web;
+package dev.ngb.sampletenant.customer.adapter.customer.web;
 
-import dev.ngb.sampletenant.customer.application.CustomerQueries;
-import dev.ngb.sampletenant.customer.application.RegisterCustomerUseCase;
-import dev.ngb.sampletenant.customer.domain.Customer;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
+import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustomerUseCase;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
 import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.Permission;
 import dev.ngb.sampletenant.identity.api.RequiresPermission;

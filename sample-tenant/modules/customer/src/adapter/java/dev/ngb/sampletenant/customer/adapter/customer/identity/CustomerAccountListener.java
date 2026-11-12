@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.customer.adapter.identity;
+package dev.ngb.sampletenant.customer.adapter.customer.identity;
 
-import dev.ngb.sampletenant.customer.application.ManageWalletSettingUseCase;
-import dev.ngb.sampletenant.customer.application.RegisterCustomerUseCase;
+import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
+import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustomerUseCase;
 import dev.ngb.sampletenant.identity.api.account.AccountListener;
 import dev.ngb.sampletenant.identity.api.account.RegisteredAccount;
 

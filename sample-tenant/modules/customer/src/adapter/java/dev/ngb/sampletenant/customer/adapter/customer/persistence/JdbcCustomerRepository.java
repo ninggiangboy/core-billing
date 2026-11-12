@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.customer.adapter.persistence;
+package dev.ngb.sampletenant.customer.adapter.customer.persistence;
 
-import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
-import dev.ngb.sampletenant.customer.domain.Customer;
-import dev.ngb.sampletenant.customer.domain.CustomerStatus;
+import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
+import dev.ngb.sampletenant.customer.domain.customer.CustomerStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

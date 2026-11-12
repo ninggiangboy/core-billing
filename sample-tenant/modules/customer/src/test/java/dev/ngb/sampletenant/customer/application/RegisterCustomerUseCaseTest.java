@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.customer.domain.Customer;
-import dev.ngb.sampletenant.customer.domain.CustomerStatus;
+import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustomerUseCase;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerMapping;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
+import dev.ngb.sampletenant.customer.domain.customer.CustomerStatus;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

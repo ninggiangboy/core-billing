@@ -6,7 +6,7 @@ import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Invoice;
 import dev.ngb.sampletenant.billing.api.model.Payment;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import java.util.List;
 import java.util.UUID;

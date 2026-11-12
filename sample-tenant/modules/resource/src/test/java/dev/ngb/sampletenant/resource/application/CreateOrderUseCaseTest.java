@@ -18,7 +18,7 @@ import dev.ngb.sampletenant.billing.api.model.SubscriptionDetail;
 import dev.ngb.sampletenant.billing.api.model.UsageInput;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
 import dev.ngb.sampletenant.resource.domain.Order;
 import dev.ngb.sampletenant.resource.domain.OrderStatus;

@@ -11,7 +11,7 @@ import dev.ngb.sampletenant.billing.api.model.InvoiceDetail;
 import dev.ngb.sampletenant.billing.api.model.Payment;
 import dev.ngb.sampletenant.billing.api.model.PaymentDetail;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

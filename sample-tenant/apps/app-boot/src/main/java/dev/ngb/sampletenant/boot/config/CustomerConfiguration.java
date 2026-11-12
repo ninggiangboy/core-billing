@@ -7,20 +7,21 @@ import dev.ngb.sampletenant.billing.api.BillingInvoices;
 import dev.ngb.sampletenant.billing.api.BillingPayments;
 import dev.ngb.sampletenant.billing.api.BillingSessions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
-import dev.ngb.sampletenant.customer.adapter.identity.CustomerAccountListener;
-import dev.ngb.sampletenant.customer.adapter.persistence.CustomerJdbcRepository;
-import dev.ngb.sampletenant.customer.adapter.persistence.JdbcCustomerRepository;
-import dev.ngb.sampletenant.customer.adapter.persistence.JdbcWalletSettingRepository;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
+import dev.ngb.sampletenant.customer.adapter.customer.identity.CustomerAccountListener;
+import dev.ngb.sampletenant.customer.adapter.customer.persistence.CustomerJdbcRepository;
+import dev.ngb.sampletenant.customer.adapter.customer.persistence.JdbcCustomerRepository;
+import dev.ngb.sampletenant.customer.adapter.wallet.persistence.JdbcWalletSettingRepository;
 import dev.ngb.sampletenant.customer.application.billing.command.OpenBillingSessionUseCase;
 import dev.ngb.sampletenant.customer.application.billing.command.TopUpUseCase;
 import dev.ngb.sampletenant.customer.application.billing.query.CustomerBillingQueries;
-import dev.ngb.sampletenant.customer.application.CustomerMapping;
-import dev.ngb.sampletenant.customer.application.CustomerQueries;
-import dev.ngb.sampletenant.customer.application.ManageWalletSettingUseCase;
-import dev.ngb.sampletenant.customer.application.RegisterCustomerUseCase;
-import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
-import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerDirectoryService;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerMapping;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
+import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
+import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustomerUseCase;
+import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
 import dev.ngb.sampletenant.identity.api.account.AccountListener;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +58,11 @@ class CustomerConfiguration {
     }
 
     @Bean
+    CustomerDirectoryService customerDirectoryService(CustomerQueries customers) {
+        return new CustomerDirectoryService(customers);
+    }
+
+    @Bean
     OpenBillingSessionUseCase openBillingSessionUseCase(
             CustomerDirectory customers,
             @Qualifier("billingSessions") BillingSessions sessions,
@@ -88,7 +94,7 @@ class CustomerConfiguration {
 
     @Bean
     ManageWalletSettingUseCase manageWalletSettingUseCase(
-            CustomerQueries customers,
+            CustomerDirectory customers,
             WalletSettingRepository settings,
             @Qualifier("billingWallets") BillingWallets wallets,
             Clock clock) {

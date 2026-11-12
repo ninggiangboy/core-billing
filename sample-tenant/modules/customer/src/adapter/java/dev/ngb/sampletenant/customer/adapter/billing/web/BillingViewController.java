@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.customer.adapter.web;
+package dev.ngb.sampletenant.customer.adapter.billing.web;
 
 import dev.ngb.sampletenant.billing.api.model.BillingSession;
 import dev.ngb.sampletenant.billing.api.model.Invoice;

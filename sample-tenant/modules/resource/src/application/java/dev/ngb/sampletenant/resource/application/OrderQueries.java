@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.resource.application;
 
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.resource.application.port.OrderRepository;
 import dev.ngb.sampletenant.resource.domain.Order;
 import dev.ngb.sampletenant.shared.error.NotFoundException;

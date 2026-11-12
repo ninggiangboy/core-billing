@@ -1,24 +1,18 @@
-package dev.ngb.sampletenant.customer.application;
+package dev.ngb.sampletenant.customer.application.customer.query;
 
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
-import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
-import dev.ngb.sampletenant.customer.domain.Customer;
+import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import java.util.List;
 import java.util.UUID;
 
 /** Read side of the customer mapping. */
-public class CustomerQueries implements CustomerDirectory {
+public class CustomerQueries {
 
     private final CustomerRepository customers;
 
     public CustomerQueries(CustomerRepository customers) {
         this.customers = customers;
-    }
-
-    @Override
-    public CustomerSnapshot byUserId(UUID userId) {
-        return snapshot(byUser(userId));
     }
 
     public Customer byUser(UUID userId) {
@@ -31,10 +25,5 @@ public class CustomerQueries implements CustomerDirectory {
 
     public List<Customer> list() {
         return customers.findAll();
-    }
-
-    private static CustomerSnapshot snapshot(Customer customer) {
-        return new CustomerSnapshot(
-                customer.id(), customer.userId(), customer.billingCustomerId(), customer.mapped());
     }
 }

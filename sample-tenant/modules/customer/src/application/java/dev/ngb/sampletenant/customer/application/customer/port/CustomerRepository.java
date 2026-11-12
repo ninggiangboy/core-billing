@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.customer.application.port;
+package dev.ngb.sampletenant.customer.application.customer.port;
 
-import dev.ngb.sampletenant.customer.domain.Customer;
+import dev.ngb.sampletenant.customer.domain.customer.Customer;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

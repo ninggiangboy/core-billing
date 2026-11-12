@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.customer.application;
+package dev.ngb.sampletenant.customer.application.customer.service;
 
 import dev.ngb.sampletenant.billing.api.BillingCustomers;
 import dev.ngb.sampletenant.billing.api.model.Customer;
-import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
 
@@ -19,7 +19,7 @@ public class CustomerMapping {
         this.tenantSystemId = tenantSystemId;
     }
 
-    public dev.ngb.sampletenant.customer.domain.Customer map(dev.ngb.sampletenant.customer.domain.Customer customer) {
+    public dev.ngb.sampletenant.customer.domain.customer.Customer map(dev.ngb.sampletenant.customer.domain.customer.Customer customer) {
         if (tenantSystemId == null || tenantSystemId.isBlank()) {
             throw new BadRequestException("sampletenant.billing.tenant-system-id is not configured");
         }
@@ -36,8 +36,8 @@ public class CustomerMapping {
         }
     }
 
-    private dev.ngb.sampletenant.customer.domain.Customer store(
-            dev.ngb.sampletenant.customer.domain.Customer customer, String billingCustomerId) {
+    private dev.ngb.sampletenant.customer.domain.customer.Customer store(
+            dev.ngb.sampletenant.customer.domain.customer.Customer customer, String billingCustomerId) {
         var mapped = customer.mapped(billingCustomerId);
         customers.save(mapped);
         return mapped;

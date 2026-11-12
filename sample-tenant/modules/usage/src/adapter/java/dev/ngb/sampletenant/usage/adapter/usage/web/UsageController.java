@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.usage.adapter.usage.web;
 
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.Permission;
 import dev.ngb.sampletenant.identity.api.RequiresPermission;

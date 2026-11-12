@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.customer.adapter.web;
+package dev.ngb.sampletenant.customer.adapter.wallet.web;
 
-import dev.ngb.sampletenant.customer.application.ManageWalletSettingUseCase;
-import dev.ngb.sampletenant.customer.domain.CustomerWalletSetting;
-import dev.ngb.sampletenant.customer.domain.WalletMode;
+import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
+import dev.ngb.sampletenant.customer.domain.wallet.CustomerWalletSetting;
+import dev.ngb.sampletenant.customer.domain.wallet.WalletMode;
 import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.Permission;
 import dev.ngb.sampletenant.identity.api.RequiresPermission;

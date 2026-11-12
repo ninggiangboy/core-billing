@@ -2,7 +2,7 @@ package dev.ngb.sampletenant.customer.application.billing.command;
 
 import dev.ngb.sampletenant.billing.api.BillingSessions;
 import dev.ngb.sampletenant.billing.api.model.BillingSession;
-import dev.ngb.sampletenant.customer.api.CustomerDirectory;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import java.util.List;
 import java.util.UUID;

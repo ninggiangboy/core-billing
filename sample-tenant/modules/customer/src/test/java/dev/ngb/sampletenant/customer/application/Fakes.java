@@ -2,8 +2,8 @@ package dev.ngb.sampletenant.customer.application;
 
 import dev.ngb.sampletenant.billing.api.BillingCustomers;
 import dev.ngb.sampletenant.billing.api.model.Customer;
-import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
-import dev.ngb.sampletenant.customer.domain.CustomerStatus;
+import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.domain.customer.CustomerStatus;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -18,25 +18,25 @@ final class Fakes {
     private Fakes() {}
 
     static final class Customers implements CustomerRepository {
-        private final Map<UUID, dev.ngb.sampletenant.customer.domain.Customer> byId = new LinkedHashMap<>();
+        private final Map<UUID, dev.ngb.sampletenant.customer.domain.customer.Customer> byId = new LinkedHashMap<>();
 
         @Override
-        public void save(dev.ngb.sampletenant.customer.domain.Customer customer) {
+        public void save(dev.ngb.sampletenant.customer.domain.customer.Customer customer) {
             byId.put(customer.id(), customer);
         }
 
         @Override
-        public Optional<dev.ngb.sampletenant.customer.domain.Customer> findById(UUID id) {
+        public Optional<dev.ngb.sampletenant.customer.domain.customer.Customer> findById(UUID id) {
             return Optional.ofNullable(byId.get(id));
         }
 
         @Override
-        public Optional<dev.ngb.sampletenant.customer.domain.Customer> findByUserId(UUID userId) {
+        public Optional<dev.ngb.sampletenant.customer.domain.customer.Customer> findByUserId(UUID userId) {
             return byId.values().stream().filter(customer -> customer.userId().equals(userId)).findFirst();
         }
 
         @Override
-        public List<dev.ngb.sampletenant.customer.domain.Customer> findAll() {
+        public List<dev.ngb.sampletenant.customer.domain.customer.Customer> findAll() {
             return new ArrayList<>(byId.values());
         }
     }
@@ -86,7 +86,7 @@ final class Fakes {
         }
     }
 
-    static boolean mapped(dev.ngb.sampletenant.customer.domain.Customer customer) {
+    static boolean mapped(dev.ngb.sampletenant.customer.domain.customer.Customer customer) {
         return customer.status() == CustomerStatus.MAPPED;
     }
 }

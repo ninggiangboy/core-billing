@@ -1,12 +1,12 @@
-package dev.ngb.sampletenant.customer.application;
+package dev.ngb.sampletenant.customer.application.wallet.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
-import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
-import dev.ngb.sampletenant.customer.domain.Customer;
-import dev.ngb.sampletenant.customer.domain.CustomerWalletSetting;
-import dev.ngb.sampletenant.customer.domain.WalletMode;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
+import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
+import dev.ngb.sampletenant.customer.domain.wallet.CustomerWalletSetting;
+import dev.ngb.sampletenant.customer.domain.wallet.WalletMode;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
@@ -22,13 +22,13 @@ public class ManageWalletSettingUseCase {
 
     private static final Pattern CURRENCY = Pattern.compile("^[A-Z]{3}$");
 
-    private final CustomerQueries customers;
+    private final CustomerDirectory customers;
     private final WalletSettingRepository settings;
     private final BillingWallets wallets;
     private final Clock clock;
 
     public ManageWalletSettingUseCase(
-            CustomerQueries customers, WalletSettingRepository settings, BillingWallets wallets, Clock clock) {
+            CustomerDirectory customers, WalletSettingRepository settings, BillingWallets wallets, Clock clock) {
         this.customers = customers;
         this.settings = settings;
         this.wallets = wallets;
@@ -36,13 +36,13 @@ public class ManageWalletSettingUseCase {
     }
 
     public CustomerWalletSetting current(UUID userId) {
-        Customer customer = mapped(userId);
+        CustomerDirectory.CustomerSnapshot customer = mapped(userId);
         return settings.findByCustomerId(customer.id())
                 .orElseGet(() -> CustomerWalletSetting.defaults(customer.id()));
     }
 
     public CustomerWalletSetting update(UUID userId, WalletMode mode, String currency, Long creditLimit) {
-        Customer customer = mapped(userId);
+        CustomerDirectory.CustomerSnapshot customer = mapped(userId);
         String normalized = currency == null ? "" : currency.trim().toUpperCase(Locale.ROOT);
         if (!CURRENCY.matcher(normalized).matches()) {
             throw new BadRequestException("currency must be an ISO 4217 code");
@@ -65,7 +65,7 @@ public class ManageWalletSettingUseCase {
 
     public void ensureDefaultWallet(UUID userId) {
         try {
-            Customer customer = customers.byUser(userId);
+            CustomerDirectory.CustomerSnapshot customer = customers.byUserId(userId);
             if (!customer.mapped() || settings.findByCustomerId(customer.id()).isPresent()) {
                 return;
             }
@@ -75,8 +75,8 @@ public class ManageWalletSettingUseCase {
         }
     }
 
-    private Customer mapped(UUID userId) {
-        Customer customer = customers.byUser(userId);
+    private CustomerDirectory.CustomerSnapshot mapped(UUID userId) {
+        CustomerDirectory.CustomerSnapshot customer = customers.byUserId(userId);
         if (!customer.mapped()) {
             throw new BadRequestException("this account has no Billing customer mapping yet");
         }

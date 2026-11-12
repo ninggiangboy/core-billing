@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.customer.domain;
+package dev.ngb.sampletenant.customer.domain.wallet;
 
 /** How the customer pays: from a topped-up balance, or later against a credit limit. */
 public enum WalletMode {

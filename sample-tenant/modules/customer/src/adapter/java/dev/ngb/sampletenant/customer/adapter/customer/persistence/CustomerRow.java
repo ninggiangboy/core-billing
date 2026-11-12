@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.customer.adapter.persistence;
+package dev.ngb.sampletenant.customer.adapter.customer.persistence;
 
 import java.time.Instant;
 import java.util.UUID;

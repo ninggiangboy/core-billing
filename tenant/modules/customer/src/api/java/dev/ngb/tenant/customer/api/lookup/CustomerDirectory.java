@@ -1,0 +1,11 @@
+package dev.ngb.tenant.customer.api.lookup;
+
+import java.util.UUID;
+
+/** The customer facts other modules need, without exposing the customer module. */
+public interface CustomerDirectory {
+
+    record CustomerSnapshot(UUID id, UUID userId, String billingCustomerId, boolean mapped) {}
+
+    CustomerSnapshot byUserId(UUID userId);
+}

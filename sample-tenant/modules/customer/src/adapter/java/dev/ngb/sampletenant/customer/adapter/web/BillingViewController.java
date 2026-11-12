@@ -4,7 +4,9 @@ import dev.ngb.sampletenant.billing.api.model.BillingSession;
 import dev.ngb.sampletenant.billing.api.model.Invoice;
 import dev.ngb.sampletenant.billing.api.model.Payment;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
-import dev.ngb.sampletenant.customer.application.CustomerBillingViews;
+import dev.ngb.sampletenant.customer.application.billing.command.OpenBillingSessionUseCase;
+import dev.ngb.sampletenant.customer.application.billing.command.TopUpUseCase;
+import dev.ngb.sampletenant.customer.application.billing.query.CustomerBillingQueries;
 import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.Permission;
 import dev.ngb.sampletenant.identity.api.RequiresPermission;
@@ -26,35 +28,41 @@ public class BillingViewController {
 
     public record TopUpRequest(String walletId, long amount, String currency) {}
 
-    private final CustomerBillingViews views;
+    private final OpenBillingSessionUseCase openSession;
+    private final TopUpUseCase topUp;
+    private final CustomerBillingQueries queries;
 
-    public BillingViewController(CustomerBillingViews views) {
-        this.views = views;
+    public BillingViewController(
+            OpenBillingSessionUseCase openSession, TopUpUseCase topUp, CustomerBillingQueries queries) {
+        this.openSession = openSession;
+        this.topUp = topUp;
+        this.queries = queries;
     }
 
     @PostMapping("/session")
     @RequiresPermission(Permission.BILLING_READ)
     public BillingSession session(
             @AuthenticationPrincipal AuthenticatedUser principal, @RequestBody SessionRequest request) {
-        return views.openSession(principal.id(), request.returnUrl(), request.permissions(), request.expiresInSeconds());
+        return openSession.execute(
+                principal.id(), request.returnUrl(), request.permissions(), request.expiresInSeconds());
     }
 
     @GetMapping("/wallets")
     @RequiresPermission(Permission.BILLING_READ)
     public List<Wallet> wallets(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return views.wallets(principal.id());
+        return queries.wallets(principal.id());
     }
 
     @GetMapping("/invoices")
     @RequiresPermission(Permission.BILLING_READ)
     public List<Invoice> invoices(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return views.invoices(principal.id());
+        return queries.invoices(principal.id());
     }
 
     @GetMapping("/payments")
     @RequiresPermission(Permission.BILLING_READ)
     public List<Payment> payments(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return views.payments(principal.id());
+        return queries.payments(principal.id());
     }
 
     @PostMapping("/top-ups")
@@ -63,6 +71,6 @@ public class BillingViewController {
             @AuthenticationPrincipal AuthenticatedUser principal,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestBody TopUpRequest request) {
-        return views.topUp(principal.id(), request.walletId(), request.amount(), request.currency(), idempotencyKey);
+        return topUp.execute(principal.id(), request.walletId(), request.amount(), request.currency(), idempotencyKey);
     }
 }

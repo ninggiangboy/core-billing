@@ -7,11 +7,14 @@ import dev.ngb.sampletenant.billing.api.BillingInvoices;
 import dev.ngb.sampletenant.billing.api.BillingPayments;
 import dev.ngb.sampletenant.billing.api.BillingSessions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.customer.api.CustomerDirectory;
 import dev.ngb.sampletenant.customer.adapter.identity.CustomerAccountListener;
 import dev.ngb.sampletenant.customer.adapter.persistence.CustomerJdbcRepository;
 import dev.ngb.sampletenant.customer.adapter.persistence.JdbcCustomerRepository;
 import dev.ngb.sampletenant.customer.adapter.persistence.JdbcWalletSettingRepository;
-import dev.ngb.sampletenant.customer.application.CustomerBillingViews;
+import dev.ngb.sampletenant.customer.application.billing.command.OpenBillingSessionUseCase;
+import dev.ngb.sampletenant.customer.application.billing.command.TopUpUseCase;
+import dev.ngb.sampletenant.customer.application.billing.query.CustomerBillingQueries;
 import dev.ngb.sampletenant.customer.application.CustomerMapping;
 import dev.ngb.sampletenant.customer.application.CustomerQueries;
 import dev.ngb.sampletenant.customer.application.ManageWalletSettingUseCase;
@@ -54,14 +57,28 @@ class CustomerConfiguration {
     }
 
     @Bean
-    CustomerBillingViews customerBillingViews(
-            CustomerQueries customers,
+    OpenBillingSessionUseCase openBillingSessionUseCase(
+            CustomerDirectory customers,
             @Qualifier("billingSessions") BillingSessions sessions,
+            @Value("${sampletenant.portal.return-url:}") String defaultReturnUrl) {
+        return new OpenBillingSessionUseCase(customers, sessions, defaultReturnUrl);
+    }
+
+    @Bean
+    TopUpUseCase topUpUseCase(
+            CustomerDirectory customers,
+            @Qualifier("billingWallets") BillingWallets wallets,
+            @Qualifier("billingPayments") BillingPayments payments) {
+        return new TopUpUseCase(customers, wallets, payments);
+    }
+
+    @Bean
+    CustomerBillingQueries customerBillingQueries(
+            CustomerDirectory customers,
             @Qualifier("billingInvoices") BillingInvoices invoices,
             @Qualifier("billingPayments") BillingPayments payments,
-            @Qualifier("billingWallets") BillingWallets wallets,
-            @Value("${sampletenant.portal.return-url:}") String defaultReturnUrl) {
-        return new CustomerBillingViews(customers, sessions, invoices, payments, wallets, defaultReturnUrl);
+            @Qualifier("billingWallets") BillingWallets wallets) {
+        return new CustomerBillingQueries(customers, invoices, payments, wallets);
     }
 
     @Bean

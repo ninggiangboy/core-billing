@@ -2,6 +2,7 @@ package dev.ngb.sampletenant.identity.application.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.sampletenant.identity.application.session.service.Tokens;
 import org.junit.jupiter.api.Test;
 
 class TokensTest {

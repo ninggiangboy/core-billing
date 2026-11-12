@@ -1,9 +1,9 @@
 package dev.ngb.sampletenant.resource.adapter.web;
 
-import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
-import dev.ngb.sampletenant.identity.api.Permission;
-import dev.ngb.sampletenant.identity.api.RequiresPermission;
-import dev.ngb.sampletenant.identity.api.Role;
+import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
+import dev.ngb.sampletenant.identity.api.security.Permission;
+import dev.ngb.sampletenant.identity.api.security.RequiresPermission;
+import dev.ngb.sampletenant.identity.api.security.Role;
 import dev.ngb.sampletenant.resource.application.CreateOrderUseCase;
 import dev.ngb.sampletenant.resource.application.ManageOrderUseCase;
 import dev.ngb.sampletenant.resource.application.OrderQueries;

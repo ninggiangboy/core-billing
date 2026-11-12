@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.boot.web;
 
-import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
-import dev.ngb.sampletenant.identity.api.RequiresPermission;
+import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
+import dev.ngb.sampletenant.identity.api.security.RequiresPermission;
 import dev.ngb.sampletenant.shared.error.ForbiddenException;
 import dev.ngb.sampletenant.shared.error.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;

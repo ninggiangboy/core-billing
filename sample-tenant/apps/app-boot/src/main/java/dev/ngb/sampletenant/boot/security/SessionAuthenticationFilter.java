@@ -1,8 +1,8 @@
 package dev.ngb.sampletenant.boot.security;
 
-import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
-import dev.ngb.sampletenant.identity.application.SessionService;
-import dev.ngb.sampletenant.identity.domain.User;
+import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
+import dev.ngb.sampletenant.identity.application.session.service.SessionService;
+import dev.ngb.sampletenant.identity.domain.user.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

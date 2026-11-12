@@ -5,10 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.identity.api.Role;
+import dev.ngb.sampletenant.identity.api.security.Role;
 import dev.ngb.sampletenant.identity.api.account.AccountListener;
 import dev.ngb.sampletenant.identity.api.account.RegisteredAccount;
-import dev.ngb.sampletenant.identity.domain.User;
+import dev.ngb.sampletenant.identity.application.user.command.RegisterUserUseCase;
+import dev.ngb.sampletenant.identity.domain.user.User;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
 import java.time.Instant;

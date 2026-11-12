@@ -4,10 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.identity.api.Role;
-import dev.ngb.sampletenant.identity.application.security.Tokens;
-import dev.ngb.sampletenant.identity.domain.User;
-import dev.ngb.sampletenant.identity.domain.UserSession;
+import dev.ngb.sampletenant.identity.api.security.Role;
+import dev.ngb.sampletenant.identity.application.session.service.SessionService;
+import dev.ngb.sampletenant.identity.application.session.service.Tokens;
+import dev.ngb.sampletenant.identity.domain.user.User;
+import dev.ngb.sampletenant.identity.domain.session.UserSession;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

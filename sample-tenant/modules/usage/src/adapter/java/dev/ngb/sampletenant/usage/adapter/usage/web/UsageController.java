@@ -1,9 +1,9 @@
 package dev.ngb.sampletenant.usage.adapter.usage.web;
 
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
-import dev.ngb.sampletenant.identity.api.AuthenticatedUser;
-import dev.ngb.sampletenant.identity.api.Permission;
-import dev.ngb.sampletenant.identity.api.RequiresPermission;
+import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
+import dev.ngb.sampletenant.identity.api.security.Permission;
+import dev.ngb.sampletenant.identity.api.security.RequiresPermission;
 import dev.ngb.sampletenant.usage.application.usage.query.UsageQueries;
 import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
 import java.time.Instant;

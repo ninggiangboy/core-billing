@@ -5,8 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.identity.api.Role;
-import dev.ngb.sampletenant.identity.domain.User;
+import dev.ngb.sampletenant.identity.api.security.Role;
+import dev.ngb.sampletenant.identity.application.session.command.AuthenticateUseCase;
+import dev.ngb.sampletenant.identity.domain.user.User;
 import dev.ngb.sampletenant.shared.error.ForbiddenException;
 import dev.ngb.sampletenant.shared.error.UnauthorizedException;
 import java.time.Duration;

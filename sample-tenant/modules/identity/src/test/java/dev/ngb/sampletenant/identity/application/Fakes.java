@@ -1,10 +1,10 @@
 package dev.ngb.sampletenant.identity.application;
 
-import dev.ngb.sampletenant.identity.domain.User;
-import dev.ngb.sampletenant.identity.domain.UserSession;
-import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
-import dev.ngb.sampletenant.identity.application.port.SessionRepository;
-import dev.ngb.sampletenant.identity.application.port.UserRepository;
+import dev.ngb.sampletenant.identity.domain.user.User;
+import dev.ngb.sampletenant.identity.domain.session.UserSession;
+import dev.ngb.sampletenant.identity.application.user.port.PasswordHasher;
+import dev.ngb.sampletenant.identity.application.session.port.SessionRepository;
+import dev.ngb.sampletenant.identity.application.user.port.UserRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

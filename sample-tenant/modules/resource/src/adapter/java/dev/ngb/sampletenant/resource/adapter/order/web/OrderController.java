@@ -1,13 +1,13 @@
-package dev.ngb.sampletenant.resource.adapter.web;
+package dev.ngb.sampletenant.resource.adapter.order.web;
 
 import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.security.Permission;
 import dev.ngb.sampletenant.identity.api.security.RequiresPermission;
 import dev.ngb.sampletenant.identity.api.security.Role;
-import dev.ngb.sampletenant.resource.application.CreateOrderUseCase;
-import dev.ngb.sampletenant.resource.application.ManageOrderUseCase;
-import dev.ngb.sampletenant.resource.application.OrderQueries;
-import dev.ngb.sampletenant.resource.domain.Order;
+import dev.ngb.sampletenant.resource.application.order.command.CreateOrderUseCase;
+import dev.ngb.sampletenant.resource.application.order.command.ManageOrderUseCase;
+import dev.ngb.sampletenant.resource.application.order.query.OrderQueries;
+import dev.ngb.sampletenant.resource.domain.order.Order;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

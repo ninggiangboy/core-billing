@@ -5,7 +5,7 @@ import dev.ngb.sampletenant.billing.api.client.BillingCharges;
 import dev.ngb.sampletenant.billing.api.model.Charge;
 import dev.ngb.sampletenant.billing.api.model.ChargeUsageRequest;
 import dev.ngb.sampletenant.execution.application.queue.port.ExecutionQueue;
-import dev.ngb.sampletenant.resource.api.ExecutionOrders;
+import dev.ngb.sampletenant.resource.api.execution.ExecutionOrders;
 import dev.ngb.sampletenant.usage.api.recording.UsageRecorder;
 import java.time.Instant;
 import java.util.List;

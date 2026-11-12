@@ -8,16 +8,16 @@ import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
-import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderRepository;
-import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderSubmission;
-import dev.ngb.sampletenant.resource.adapter.persistence.OrderJdbcRepository;
-import dev.ngb.sampletenant.resource.api.ExecutionOrders;
-import dev.ngb.sampletenant.resource.application.CreateOrderUseCase;
-import dev.ngb.sampletenant.resource.application.ManageOrderUseCase;
-import dev.ngb.sampletenant.resource.application.OrderExecutionService;
-import dev.ngb.sampletenant.resource.application.OrderQueries;
-import dev.ngb.sampletenant.resource.application.port.OrderRepository;
-import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
+import dev.ngb.sampletenant.resource.adapter.order.persistence.JdbcOrderRepository;
+import dev.ngb.sampletenant.resource.adapter.order.persistence.JdbcOrderSubmission;
+import dev.ngb.sampletenant.resource.adapter.order.persistence.OrderJdbcRepository;
+import dev.ngb.sampletenant.resource.api.execution.ExecutionOrders;
+import dev.ngb.sampletenant.resource.application.order.command.CreateOrderUseCase;
+import dev.ngb.sampletenant.resource.application.order.command.ManageOrderUseCase;
+import dev.ngb.sampletenant.resource.application.order.service.ExecutionOrdersService;
+import dev.ngb.sampletenant.resource.application.order.query.OrderQueries;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
+import dev.ngb.sampletenant.resource.application.order.port.OrderSubmission;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +70,6 @@ class ResourceConfiguration {
 
     @Bean
     ExecutionOrders executionOrders(OrderRepository orders, Clock clock) {
-        return new OrderExecutionService(orders, clock);
+        return new ExecutionOrdersService(orders, clock);
     }
 }

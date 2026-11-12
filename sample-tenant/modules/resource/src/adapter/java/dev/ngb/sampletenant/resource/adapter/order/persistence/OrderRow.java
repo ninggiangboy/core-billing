@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.resource.adapter.persistence;
+package dev.ngb.sampletenant.resource.adapter.order.persistence;
 
 import java.time.Instant;
 import java.util.UUID;

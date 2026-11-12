@@ -1,9 +1,10 @@
-package dev.ngb.sampletenant.resource.application;
+package dev.ngb.sampletenant.resource.application.order.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
-import dev.ngb.sampletenant.resource.application.port.OrderRepository;
-import dev.ngb.sampletenant.resource.domain.Order;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
+import dev.ngb.sampletenant.resource.application.order.query.OrderQueries;
+import dev.ngb.sampletenant.resource.domain.order.Order;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import java.util.UUID;
 

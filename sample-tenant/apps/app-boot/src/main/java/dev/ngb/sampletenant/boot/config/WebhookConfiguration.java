@@ -2,7 +2,7 @@ package dev.ngb.sampletenant.boot.config;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.resource.api.ExecutionOrders;
+import dev.ngb.sampletenant.resource.api.execution.ExecutionOrders;
 import dev.ngb.sampletenant.webhook.adapter.event.persistence.JdbcCustomerPeriods;
 import dev.ngb.sampletenant.webhook.adapter.event.persistence.JdbcDebtBook;
 import dev.ngb.sampletenant.webhook.adapter.event.persistence.JdbcWebhookRepository;

@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.resource.adapter.persistence;
+package dev.ngb.sampletenant.resource.adapter.order.persistence;
 
-import dev.ngb.sampletenant.resource.application.port.OrderRepository;
-import dev.ngb.sampletenant.resource.domain.Order;
-import dev.ngb.sampletenant.resource.domain.OrderStatus;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
+import dev.ngb.sampletenant.resource.domain.order.Order;
+import dev.ngb.sampletenant.resource.domain.order.OrderStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

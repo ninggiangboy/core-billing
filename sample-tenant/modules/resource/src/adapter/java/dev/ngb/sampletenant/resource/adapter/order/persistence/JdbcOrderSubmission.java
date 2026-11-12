@@ -1,9 +1,9 @@
-package dev.ngb.sampletenant.resource.adapter.persistence;
+package dev.ngb.sampletenant.resource.adapter.order.persistence;
 
 import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.core.runtime.UnitOfWork;
-import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
-import dev.ngb.sampletenant.resource.domain.Order;
+import dev.ngb.sampletenant.resource.application.order.port.OrderSubmission;
+import dev.ngb.sampletenant.resource.domain.order.Order;
 import java.sql.Timestamp;
 import org.springframework.jdbc.core.JdbcTemplate;
 

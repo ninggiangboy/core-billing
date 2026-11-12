@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.resource.application;
+package dev.ngb.sampletenant.resource.application.order.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
@@ -13,8 +13,8 @@ import dev.ngb.sampletenant.billing.api.model.UsageInput;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
-import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
-import dev.ngb.sampletenant.resource.domain.Order;
+import dev.ngb.sampletenant.resource.application.order.port.OrderSubmission;
+import dev.ngb.sampletenant.resource.domain.order.Order;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import java.time.Duration;

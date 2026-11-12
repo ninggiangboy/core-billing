@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.resource.api;
+package dev.ngb.sampletenant.resource.api.execution;
 
 import java.time.Instant;
 import java.util.Optional;

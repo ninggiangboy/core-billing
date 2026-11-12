@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.resource.domain;
+package dev.ngb.sampletenant.resource.domain.order;
 
 import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.shared.error.BadRequestException;

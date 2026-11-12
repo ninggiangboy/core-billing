@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.resource.application;
+package dev.ngb.sampletenant.resource.application.order.query;
 
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
-import dev.ngb.sampletenant.resource.application.port.OrderRepository;
-import dev.ngb.sampletenant.resource.domain.Order;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
+import dev.ngb.sampletenant.resource.domain.order.Order;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import java.util.List;
 import java.util.UUID;

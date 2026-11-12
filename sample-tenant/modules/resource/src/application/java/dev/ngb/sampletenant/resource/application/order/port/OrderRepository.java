@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.resource.application.port;
+package dev.ngb.sampletenant.resource.application.order.port;
 
-import dev.ngb.sampletenant.resource.domain.Order;
+import dev.ngb.sampletenant.resource.domain.order.Order;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

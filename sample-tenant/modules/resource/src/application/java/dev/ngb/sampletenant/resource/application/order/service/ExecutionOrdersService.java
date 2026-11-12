@@ -1,28 +1,28 @@
-package dev.ngb.sampletenant.resource.application;
+package dev.ngb.sampletenant.resource.application.order.service;
 
 import dev.ngb.core.runtime.Clock;
-import dev.ngb.sampletenant.resource.api.ExecutionOrders;
-import dev.ngb.sampletenant.resource.application.port.OrderRepository;
-import dev.ngb.sampletenant.resource.domain.Order;
-import dev.ngb.sampletenant.resource.domain.OrderStatus;
+import dev.ngb.sampletenant.resource.api.execution.ExecutionOrders;
+import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
+import dev.ngb.sampletenant.resource.domain.order.Order;
+import dev.ngb.sampletenant.resource.domain.order.OrderStatus;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
 /** Applies worker and webhook-driven state changes to orders. */
-public class OrderExecutionService implements ExecutionOrders {
+public class ExecutionOrdersService implements ExecutionOrders {
 
     private final OrderRepository orders;
     private final Clock clock;
 
-    public OrderExecutionService(OrderRepository orders, Clock clock) {
+    public ExecutionOrdersService(OrderRepository orders, Clock clock) {
         this.orders = orders;
         this.clock = clock;
     }
 
     @Override
     public Optional<ExecutionOrder> find(UUID orderId) {
-        return orders.findById(orderId).map(OrderExecutionService::snapshot);
+        return orders.findById(orderId).map(ExecutionOrdersService::snapshot);
     }
 
     @Override

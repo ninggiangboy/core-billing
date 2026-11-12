@@ -7,4 +7,6 @@ plugins {
 dependencies {
     compileOnly("org.springframework:spring-context")
     compileOnly("jakarta.persistence:jakarta.persistence-api")
+    compileOnly("org.jooq:jooq")
+    compileOnly(project(":libs:jooq-schema"))
 }

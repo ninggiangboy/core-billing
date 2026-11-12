@@ -45,6 +45,9 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("adapter-classes-in-feature-then-technology", "TechnologyFirstController");
         CULPRIT_BY_RULE_ID.put("api-implementations-are-services", "MisnamedLookupImplementation");
         CULPRIT_BY_RULE_ID.put("web-does-not-depend-on-persistence", "WebReachesPersistence");
+        CULPRIT_BY_RULE_ID.put("persistence-types-in-adapter", "RowInDomain");
+        CULPRIT_BY_RULE_ID.put("generated-records-in-adapter-persistence", "TableInApplication");
+        CULPRIT_BY_RULE_ID.put("module-uses-only-own-tables", "UsesAnotherModulesTable");
     }
 
     private static final Map<String, String> CULPRIT_BY_CORE_RULE_ID = Map.of(

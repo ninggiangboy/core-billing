@@ -18,6 +18,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-jackson")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    implementation(project(":libs:jooq-schema"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
@@ -25,9 +27,20 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    // Generates the jOOQ schema from the migrations for the drift test.
+    testImplementation("org.jooq:jooq-codegen")
+    testImplementation("org.jooq:jooq-meta")
     testImplementation("org.assertj:assertj-core")
     testImplementation(libs.archunit.junit5)
     testImplementation(libs.spring.modulith.core)
     testImplementation(libs.spring.modulith.docs)
     testImplementation(project(":testing:arch-fixtures"))
+}
+
+tasks.test {
+    // `./gradlew :apps:app-boot:test --tests '*JooqSchemaTest' -Djooq.update=true` regenerates the committed jOOQ schema.
+    systemProperty("jooq.update", System.getProperty("jooq.update", "false"))
 }

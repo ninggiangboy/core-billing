@@ -13,7 +13,9 @@ import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.lang.syntax.elements.GivenClassesConjunction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,6 +47,26 @@ final class ArchitectureRules {
             "Repository", "Port", "Provider", "Access", "Sender", "Signer", "Cipher", "Writer", "Store", "Keys", "Limiter",
             "Units", "Registry", "Verifier");
 
+    /** Which module owns each generated table; execution owns no table (decision D1 gives execution_queue to resource). */
+    private static final Map<String, String> TABLE_OWNER = new HashMap<>();
+
+    static {
+        for (String table : List.of("Users", "UserSessions")) {
+            TABLE_OWNER.put(table, "identity");
+        }
+        for (String table : List.of("Customers", "CustomerWalletSettings")) {
+            TABLE_OWNER.put(table, "customer");
+        }
+        TABLE_OWNER.put("CatalogPlans", "catalog");
+        TABLE_OWNER.put("UsageRecords", "usage");
+        for (String table : List.of("Orders", "ExecutionQueue")) {
+            TABLE_OWNER.put(table, "resource");
+        }
+        for (String table : List.of("WebhookEvents", "CustomerDebts", "CustomerPeriods")) {
+            TABLE_OWNER.put(table, "webhook");
+        }
+    }
+
     private ArchitectureRules() {}
 
     static List<NamedRule> all(String root) {
@@ -64,7 +86,10 @@ final class ArchitectureRules {
                 new NamedRule("port-package-holds-no-implementations", portPackageHoldsNoImplementations(root)),
                 new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)),
                 new NamedRule("api-implementations-are-services", apiImplementationsAreServices(root)),
-                new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)));
+                new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)),
+                new NamedRule("persistence-types-in-adapter", persistenceTypesInAdapter(root)),
+                new NamedRule("generated-records-in-adapter-persistence", generatedRecordsInAdapterPersistence(root)),
+                new NamedRule("module-uses-only-own-tables", moduleUsesOnlyItsOwnTables(root)));
     }
 
     /**
@@ -347,6 +372,66 @@ final class ArchitectureRules {
                 .should().dependOnClassesThat().resideInAnyPackage(root + ".*.adapter..persistence..")
                 .because("web and persistence are separate technologies; a shape both use belongs in its own package")
                 .allowEmptyShould(true);
+    }
+
+    private static ArchRule persistenceTypesInAdapter(String root) {
+        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter..persistence..", root + ".boot..")
+                .should().dependOnClassesThat().resideInAPackage("dev.ngb.sampletenant_jooq..")
+                .because("generated jOOQ types live in an adapter persistence package")
+                .allowEmptyShould(true);
+    }
+
+    /** A generated jOOQ record is an adapter detail and lives next to the repository that uses it. */
+    private static ArchRule generatedRecordsInAdapterPersistence(String root) {
+        return noClasses().that().resideOutsideOfPackages(root + ".*.adapter..persistence..", root + ".boot..")
+                .should().dependOnClassesThat().resideInAPackage("dev.ngb.sampletenant_jooq.tables.records..")
+                .because("a generated record lives in an adapter persistence package next to the repository that uses it")
+                .allowEmptyShould(true);
+    }
+
+    /** A module's adapters use only the tables it owns. */
+    private static ArchRule moduleUsesOnlyItsOwnTables(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.adapter..", root + ".boot..")
+                .should(new ArchCondition<>("use only the tables its own module owns") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String context = owningContextOf(root, item.getPackageName());
+                        if (context == null) {
+                            return;
+                        }
+                        for (var access : item.getFieldAccessesFromSelf()) {
+                            if (!"dev.ngb.sampletenant_jooq.Tables".equals(access.getTarget().getOwner().getName())) {
+                                continue;
+                            }
+                            String table = tableName(access.getTarget().getName());
+                            String owner = TABLE_OWNER.get(table);
+                            if (owner != null && !owner.equals(context)) {
+                                events.add(SimpleConditionEvent.violated(item,
+                                        item.getFullName() + " uses " + table + ", owned by " + owner));
+                            }
+                        }
+                    }
+                })
+                .because("each module persists only its own tables")
+                .allowEmptyShould(true);
+    }
+
+    private static String owningContextOf(String root, String packageName) {
+        String prefix = root + ".";
+        if (!packageName.startsWith(prefix)) {
+            return null;
+        }
+        String rest = packageName.substring(prefix.length());
+        int dot = rest.indexOf('.');
+        return dot < 0 ? rest : rest.substring(0, dot);
+    }
+
+    private static String tableName(String constant) {
+        StringBuilder name = new StringBuilder();
+        for (String part : constant.split("_")) {
+            name.append(part.charAt(0)).append(part.substring(1).toLowerCase());
+        }
+        return name.toString();
     }
 
     private static boolean isApiPackage(String root, String packageName) {

@@ -13,6 +13,7 @@ rootProject.name = "sample-tenant"
 
 include(
     "libs:shared-core",
+    "libs:jooq-schema",
     "modules:identity",
     "modules:customer",
     "modules:catalog",

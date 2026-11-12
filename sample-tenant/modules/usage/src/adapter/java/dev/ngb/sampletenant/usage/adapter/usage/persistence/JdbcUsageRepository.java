@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.usage.adapter.persistence;
+package dev.ngb.sampletenant.usage.adapter.usage.persistence;
 
-import dev.ngb.sampletenant.usage.application.port.UsageRepository;
-import dev.ngb.sampletenant.usage.domain.UsageRecord;
+import dev.ngb.sampletenant.usage.application.usage.port.UsageRepository;
+import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

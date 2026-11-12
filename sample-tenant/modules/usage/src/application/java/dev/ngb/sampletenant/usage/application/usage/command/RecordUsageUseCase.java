@@ -1,13 +1,13 @@
-package dev.ngb.sampletenant.usage.application;
+package dev.ngb.sampletenant.usage.application.usage.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
 import dev.ngb.sampletenant.billing.api.model.UsageEventRequest;
-import dev.ngb.sampletenant.usage.api.UsageRecorder;
-import dev.ngb.sampletenant.usage.application.port.UsageRepository;
-import dev.ngb.sampletenant.usage.domain.UsageRecord;
+import dev.ngb.sampletenant.usage.api.recording.UsageRecorder;
+import dev.ngb.sampletenant.usage.application.usage.port.UsageRepository;
+import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
 
 /**
  * Scenario 5: usage is recorded locally and sent to Billing with a deterministic idempotency key,

@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.usage.api;
+package dev.ngb.sampletenant.usage.api.recording;
 
 import java.time.Instant;
 import java.util.UUID;

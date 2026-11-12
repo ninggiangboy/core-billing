@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.usage.adapter.persistence;
+package dev.ngb.sampletenant.usage.adapter.usage.persistence;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.usage.application.port;
+package dev.ngb.sampletenant.usage.application.usage.port;
 
-import dev.ngb.sampletenant.usage.domain.UsageRecord;
+import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

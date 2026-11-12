@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.usage.application;
+package dev.ngb.sampletenant.usage.application.usage.query;
 
-import dev.ngb.sampletenant.usage.application.port.UsageRepository;
-import dev.ngb.sampletenant.usage.domain.UsageRecord;
+import dev.ngb.sampletenant.usage.application.usage.port.UsageRepository;
+import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
 import java.util.List;
 
 /** Read side of local usage. */

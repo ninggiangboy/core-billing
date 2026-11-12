@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.usage.domain;
+package dev.ngb.sampletenant.usage.domain.usage;
 
 import dev.ngb.core.runtime.IdGenerator;
 import java.time.Instant;

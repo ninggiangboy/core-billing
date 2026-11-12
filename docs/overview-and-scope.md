@@ -9,7 +9,7 @@ The goal is that many different Tenant Systems can use Billing regardless of ser
 ## Two systems
 
 1. **Core Billing System.** Owns Multi-tenancy, Pricing, Wallet, Ledger, Reservation, Charge, Invoice, Payment, Refund and Subscription. It serves Platform Administration, Tenant Administration and the Customer Billing Portal.
-2. **Sample Tenant System.** A complete Cloud Resource Management reference system that proves the integration. See [sample-tenant-system.md](sample-tenant-system.md).
+2. **Sample Tenant System.** A complete Cloud Resource Management reference system that proves the integration. See [tenant-system.md](tenant-system.md).
 
 They are deployed independently and communicate only through REST API, Events and Webhooks. The Sample Tenant System needs Billing for financial functions but must deploy without it.
 

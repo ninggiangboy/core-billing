@@ -58,7 +58,7 @@ Same backend and frontend toolchain as Billing, see [architecture.md](architectu
 
 ## Module layout
 
-`sample-tenant/settings.gradle.kts` lists the modules; each is a Gradle project with `api`, `domain`,
+`tenant/settings.gradle.kts` lists the modules; each is a Gradle project with `api`, `domain`,
 `application` and `adapter` source sets. Packages are grouped by feature and then by role, exactly as
 in Billing:
 
@@ -124,4 +124,4 @@ Decisions:
 - `JooqSchemaTest` (schema drift), `ArchitectureTest` plus `ArchitectureMetaTest` (every rule fails on
   its fixture), `ModulithVerificationTest` and `ApplicationContextTest`.
 
-Integration tests need Docker. See `sample-tenant/README.md` for the commands.
+Integration tests need Docker. See `tenant/README.md` for the commands.

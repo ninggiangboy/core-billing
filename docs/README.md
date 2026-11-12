@@ -23,7 +23,7 @@ Documentation for two independently deployable systems: the **Core Billing Syste
 | [payments-and-stripe.md](payments-and-stripe.md) | Payment Provider model, Stripe Direct and Connect, Payment, Refund, Stripe webhooks |
 | [billing-session-and-portal.md](billing-session-and-portal.md) | Billing Session and the Customer Portal |
 | [webhooks-and-events.md](webhooks-and-events.md) | Tenant System to Billing and Billing to Tenant System integration |
-| [sample-tenant-system.md](sample-tenant-system.md) | The reference tenant and its integration scenarios |
+| [tenant-system.md](tenant-system.md) | The reference tenant and its integration scenarios |
 | [security-and-reliability.md](security-and-reliability.md) | Security and operational requirements |
 | [concurrency-and-locking.md](concurrency-and-locking.md) | Lock order, coordination transactions, and the lock safety net |
 | [runtime-profiles.md](runtime-profiles.md) | api, worker and migrate profiles, pools, probes and rollout order |

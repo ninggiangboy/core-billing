@@ -5,7 +5,7 @@ Documentation lives in [docs/](docs/README.md). Code lives in:
 | Directory | Contents |
 |---|---|
 | `billing/` | Core Billing System (Gradle multi-module, Spring Boot) |
-| `sample-tenant/` | Sample Tenant System, built and deployed independently |
+| `tenant/` | Sample Tenant System, built and deployed independently |
 | `web/` | Web apps (Platform Admin, Tenant Admin, Customer Portal, Sample Tenant UI) |
 | `core/` | The technical core both systems build against (ports, Spring implementations, DDD base types); the only code they share |
 | `contracts/` | OpenAPI and event schemas shared between systems as documents, never as code |
@@ -32,4 +32,4 @@ set -a; source .env; set +a     # the application reads these variables
 cd billing && ./gradlew :apps:app-boot:bootRun
 ```
 
-The application connects as the unprivileged `corebilling_app` role; Flyway migrates as the table owner. `BILLING_BASE_DOMAIN` (default `localhost`) makes `platform.<base>` the Platform and `<tenant-code>.<base>` a Tenant; `*.localhost` resolves to the local machine in current browsers. Set `BILLING_BOOTSTRAP_ADMIN_EMAIL` to create the first Platform administrator on start. After an intended API change, regenerate the contract with `./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true`.
+The application connects as the unprivileged `billing_app` role; Flyway migrates as the table owner. `BILLING_BASE_DOMAIN` (default `localhost`) makes `platform.<base>` the Platform and `<tenant-code>.<base>` a Tenant; `*.localhost` resolves to the local machine in current browsers. Set `BILLING_BOOTSTRAP_ADMIN_EMAIL` to create the first Platform administrator on start. After an intended API change, regenerate the contract with `./gradlew :apps:app-boot:test --tests '*OpenApiContractTest' -Dopenapi.update=true`.

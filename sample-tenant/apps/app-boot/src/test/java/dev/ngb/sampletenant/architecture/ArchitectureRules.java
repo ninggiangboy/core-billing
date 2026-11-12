@@ -49,7 +49,10 @@ final class ArchitectureRules {
             "Repository", "Port", "Provider", "Access", "Sender", "Signer", "Cipher", "Writer", "Store", "Keys", "Limiter",
             "Units", "Registry", "Verifier");
 
-    /** Which module owns each generated table; execution owns no table (decision D1 gives execution_queue to resource). */
+    /**
+     * Which module owns each generated table. The execution queue belongs to resource, which enqueues in the same
+     * transaction as the order; execution owns no table and reaches the queue through the resource api.
+     */
     private static final Map<String, String> TABLE_OWNER = new HashMap<>();
 
     static {

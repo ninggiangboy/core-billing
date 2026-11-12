@@ -1,6 +1,6 @@
 name: core
 
-# billing and sample-tenant include core as a separate build, which compiles it but never runs its tests.
+# billing and tenant include core as a separate build, which compiles it but never runs its tests.
 on:
   pull_request:
     paths: ["core/**", ".github/workflows/core.yml"]

@@ -3,6 +3,7 @@ package dev.ngb.sampletenant.architecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.lang.ArchCondition;
@@ -34,6 +35,16 @@ final class ArchitectureRules {
     /** The JDK: java.* plus the javax.* packages that ship with it (for example javax.crypto). */
     private static final List<String> JDK = List.of("java..", "javax..");
 
+    private static final List<String> LAYERS = List.of("domain", "application", "adapter", "api");
+
+    /** The role packages of the application layer; every application class sits in exactly one of them. */
+    private static final Set<String> APPLICATION_ROLES = Set.of("command", "query", "port", "service", "exception");
+
+    /** Interfaces in application whose name ends in one of these are outbound (write-side) ports. */
+    private static final Set<String> OUTBOUND_PORT_SUFFIXES = Set.of(
+            "Repository", "Port", "Provider", "Access", "Sender", "Signer", "Cipher", "Writer", "Store", "Keys", "Limiter",
+            "Units", "Registry", "Verifier");
+
     private ArchitectureRules() {}
 
     static List<NamedRule> all(String root) {
@@ -44,7 +55,16 @@ final class ArchitectureRules {
                 new NamedRule("api-exposes-no-internals", apiExposesNoInternals(root)),
                 new NamedRule("no-jpa", noJpa()),
                 new NamedRule("shared-core-is-independent", sharedCoreIsIndependent(root)),
-                new NamedRule("datasource-and-transactions-only-in-core-spring", datasourceOnlyInInfrastructure(root)));
+                new NamedRule("datasource-and-transactions-only-in-core-spring", datasourceOnlyInInfrastructure(root)),
+                new NamedRule("role-package-not-layer-root", rolePackageNotLayerRoot(root)),
+                new NamedRule("use-cases-and-queries-in-command-or-query", useCasesAndQueriesInCommandOrQuery(root)),
+                new NamedRule("ports-in-port-or-query", portsInPortOrQuery(root)),
+                new NamedRule("application-classes-in-a-role-package", applicationClassesInARolePackage(root)),
+                new NamedRule("command-package-holds-only-use-cases", commandPackageHoldsOnlyUseCases(root)),
+                new NamedRule("port-package-holds-no-implementations", portPackageHoldsNoImplementations(root)),
+                new NamedRule("adapter-classes-in-feature-then-technology", adapterClassesInFeatureThenTechnology(root)),
+                new NamedRule("api-implementations-are-services", apiImplementationsAreServices(root)),
+                new NamedRule("web-does-not-depend-on-persistence", webDoesNotDependOnPersistence(root)));
     }
 
     /**
@@ -150,6 +170,213 @@ final class ArchitectureRules {
                         events.add(SimpleConditionEvent.violated(dependency, dependency.getDescription()));
                     }
                 }
+            }
+        };
+    }
+
+    /**
+     * Inside a module no class sits directly in a layer root package: every package is grouped by feature
+     * and then by role, so a reader sees one job per package. {@code package-info} declarations stay.
+     */
+    private static ArchRule rolePackageNotLayerRoot(String root) {
+        List<String> roots = new ArrayList<>();
+        for (String layer : LAYERS) {
+            roots.add(root + ".*." + layer);
+        }
+        return classes().that().resideInAnyPackage(roots.toArray(String[]::new))
+                .and().doNotHaveSimpleName("package-info")
+                .should(never("must not sit directly in a layer root package: group it under a feature and role package"))
+                .because("a module groups packages by feature and then by role")
+                .allowEmptyShould(true);
+    }
+
+    /** A use case belongs to the command side and a query class to the query side. */
+    private static ArchRule useCasesAndQueriesInCommandOrQuery(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .should(new ArchCondition<>("be in a command or query package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String name = item.getSimpleName();
+                        String packageName = item.getPackageName();
+                        if (name.endsWith("UseCase") && !hasSegment(packageName, "command")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a use case but does not live in a ..command.. package"));
+                        }
+                        if (name.endsWith("Queries") && !hasSegment(packageName, "query")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a query class but does not live in a ..query.. package"));
+                        }
+                    }
+                })
+                .because("the command side owns use cases and the query side owns query classes");
+    }
+
+    /** Outbound write ports live in port/, read ports in query/. A read port is named *ReadRepository. */
+    private static ArchRule portsInPortOrQuery(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .and().areInterfaces()
+                .should(new ArchCondition<>("be in a port or query package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String name = item.getSimpleName();
+                        String packageName = item.getPackageName();
+                        if (name.endsWith("ReadRepository")) {
+                            if (!hasSegment(packageName, "query")) {
+                                events.add(SimpleConditionEvent.violated(item,
+                                        item.getFullName() + " is a read port but does not live in a ..query.. package"));
+                            }
+                        } else if (isOutboundPort(name) && !hasSegment(packageName, "port")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a write port but does not live in a ..port.. package"));
+                        }
+                    }
+                })
+                .because("write ports live with the command side and read ports with the query side");
+    }
+
+    /**
+     * Every application class sits in a command, query, port, service or exception package below its feature, so
+     * a reader can tell a use case from a helper, a port and an error by the package alone.
+     */
+    private static ArchRule applicationClassesInARolePackage(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .and().doNotHaveSimpleName("package-info")
+                .and(areTopLevel())
+                .should(new ArchCondition<>("sit in a command, query, port, service or exception package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        boolean inRole = false;
+                        for (String role : APPLICATION_ROLES) {
+                            inRole |= hasSegment(item.getPackageName(), role);
+                        }
+                        if (!inRole) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is not in a command, query, port, service or exception package"));
+                        }
+                    }
+                })
+                .because("an application package has one job: use cases, read side, ports, services or errors");
+    }
+
+    /** The command package holds use cases only; collaborators of a use case live in service. */
+    private static ArchRule commandPackageHoldsOnlyUseCases(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .and().doNotHaveSimpleName("package-info")
+                .and(areTopLevel())
+                .should(new ArchCondition<>("be a *UseCase when it sits in a command package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        if (hasSegment(item.getPackageName(), "command") && !item.getSimpleName().endsWith("UseCase")) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is in a command package but is not named *UseCase"));
+                        }
+                    }
+                })
+                .because("a command package holds use cases; a helper belongs in a service package");
+    }
+
+    /** A port package declares interfaces and their data carriers; an implementation belongs to the adapter. */
+    private static ArchRule portPackageHoldsNoImplementations(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .and().doNotHaveSimpleName("package-info")
+                .and(areTopLevel())
+                .should(new ArchCondition<>("be an interface, record or enum when it sits in a port package") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        if (hasSegment(item.getPackageName(), "port")
+                                && !(item.isInterface() || item.isRecord() || item.isEnum())) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is a class in a port package; ports are interfaces"));
+                        }
+                    }
+                })
+                .because("a port package declares what the application needs; a service class belongs in service");
+    }
+
+    /** An adapter class sits in a feature package and then a technology package: adapter.&lt;feature&gt;.&lt;technology&gt;. */
+    private static ArchRule adapterClassesInFeatureThenTechnology(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.adapter..")
+                .and().doNotHaveSimpleName("package-info")
+                .and(areTopLevel())
+                .should(new ArchCondition<>("sit in adapter.<feature>.<technology>") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        String packageName = item.getPackageName();
+                        int adapter = packageName.indexOf(".adapter");
+                        String below = adapter < 0 ? "" : packageName.substring(adapter + ".adapter".length());
+                        int segments = below.isEmpty() ? 0 : below.substring(1).split("\\.").length;
+                        if (segments < 2) {
+                            events.add(SimpleConditionEvent.violated(item,
+                                    item.getFullName() + " is not in a feature package and then a technology package below adapter"));
+                        }
+                    }
+                })
+                .because("an adapter is grouped by feature first and by technology second");
+    }
+
+    /**
+     * A class that implements a public api interface for other modules, other than a use case, is the
+     * {@code <Interface>Service} of its feature and lives in the service package.
+     */
+    private static ArchRule apiImplementationsAreServices(String root) {
+        return classes().that().resideInAnyPackage(root + ".*.application..")
+                .and(areTopLevel())
+                .and().areNotInterfaces()
+                .and().haveSimpleNameNotEndingWith("UseCase")
+                .should(new ArchCondition<>("be <Interface>Service in a service package when it implements an api interface") {
+                    @Override
+                    public void check(JavaClass item, ConditionEvents events) {
+                        for (JavaClass api : item.getAllRawInterfaces()) {
+                            if (!api.getPackageName().startsWith(root + ".") || !isApiPackage(root, api.getPackageName())) {
+                                continue;
+                            }
+                            String expected = api.getSimpleName() + "Service";
+                            if (!item.getSimpleName().equals(expected) || !hasSegment(item.getPackageName(), "service")) {
+                                events.add(SimpleConditionEvent.violated(item, item.getFullName() + " implements the api interface "
+                                        + api.getSimpleName() + " but is not " + expected + " in a service package"));
+                            }
+                        }
+                    }
+                })
+                .because("one convention for the class that serves another module: <Interface>Service in service");
+    }
+
+    /** A controller reaches the data through the application layer; a shared wire format lives in its own package. */
+    private static ArchRule webDoesNotDependOnPersistence(String root) {
+        return noClasses().that().resideInAnyPackage(root + ".*.adapter..web..")
+                .should().dependOnClassesThat().resideInAnyPackage(root + ".*.adapter..persistence..")
+                .because("web and persistence are separate technologies; a shape both use belongs in its own package")
+                .allowEmptyShould(true);
+    }
+
+    private static boolean isApiPackage(String root, String packageName) {
+        String rest = packageName.substring(root.length() + 1);
+        int dot = rest.indexOf('.');
+        return dot > 0 && (rest.substring(dot + 1).equals("api") || rest.substring(dot + 1).startsWith("api."));
+    }
+
+    private static DescribedPredicate<JavaClass> areTopLevel() {
+        return DescribedPredicate.describe("top-level", javaClass -> javaClass.getEnclosingClass().isEmpty());
+    }
+
+    private static boolean isOutboundPort(String simpleName) {
+        return OUTBOUND_PORT_SUFFIXES.stream().anyMatch(simpleName::endsWith);
+    }
+
+    private static boolean hasSegment(String packageName, String segment) {
+        for (String part : packageName.split("\\.")) {
+            if (part.equals(segment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ArchCondition<JavaClass> never(String reason) {
+        return new ArchCondition<>("not exist: " + reason) {
+            @Override
+            public void check(JavaClass item, ConditionEvents events) {
+                events.add(SimpleConditionEvent.violated(item, item.getFullName() + " " + reason));
             }
         };
     }

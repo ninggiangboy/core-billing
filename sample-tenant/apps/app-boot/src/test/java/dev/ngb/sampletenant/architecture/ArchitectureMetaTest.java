@@ -36,6 +36,15 @@ class ArchitectureMetaTest {
         CULPRIT_BY_RULE_ID.put("no-jpa", "JpaEntity");
         CULPRIT_BY_RULE_ID.put("shared-core-is-independent", "SharedCoreKnowsAModule");
         CULPRIT_BY_RULE_ID.put("datasource-and-transactions-only-in-core-spring", "TouchesDataSource");
+        CULPRIT_BY_RULE_ID.put("role-package-not-layer-root", "StrayRoleClass");
+        CULPRIT_BY_RULE_ID.put("use-cases-and-queries-in-command-or-query", "MisplacedUseCase");
+        CULPRIT_BY_RULE_ID.put("ports-in-port-or-query", "MisplacedReadRepository");
+        CULPRIT_BY_RULE_ID.put("application-classes-in-a-role-package", "StrayFeatureRootClass");
+        CULPRIT_BY_RULE_ID.put("command-package-holds-only-use-cases", "HelperInCommand");
+        CULPRIT_BY_RULE_ID.put("port-package-holds-no-implementations", "ImplementationInPort");
+        CULPRIT_BY_RULE_ID.put("adapter-classes-in-feature-then-technology", "TechnologyFirstController");
+        CULPRIT_BY_RULE_ID.put("api-implementations-are-services", "MisnamedLookupImplementation");
+        CULPRIT_BY_RULE_ID.put("web-does-not-depend-on-persistence", "WebReachesPersistence");
     }
 
     private static final Map<String, String> CULPRIT_BY_CORE_RULE_ID = Map.of(

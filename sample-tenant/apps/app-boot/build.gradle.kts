@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(libs.spring.modulith.bom))
     implementation(project(":libs:shared-core"))
     implementation("dev.ngb:core-spring")
     implementation(project(":modules:identity"))
@@ -26,5 +27,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.assertj:assertj-core")
     testImplementation(libs.archunit.junit5)
+    testImplementation(libs.spring.modulith.core)
+    testImplementation(libs.spring.modulith.docs)
     testImplementation(project(":testing:arch-fixtures"))
 }

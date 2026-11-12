@@ -44,6 +44,10 @@ sourceSets.test {
 // BOM-managed versions for the adapter layer; the inner layers get no framework BOM at all.
 dependencies {
     add(adapter.implementationConfigurationName, platform(catalog.findLibrary("spring-boot-bom").get()))
+    add(adapter.implementationConfigurationName, platform(catalog.findLibrary("spring-modulith-bom").get()))
+    // Lets an adapter-side package-info.java declare the module's `api` package a Spring Modulith
+    // named interface without putting a framework annotation into the plain-Java application layer.
+    add(adapter.implementationConfigurationName, catalog.findLibrary("spring-modulith-api").get())
 }
 
 // Test configurations inherit the adapter's framework dependencies so adapter tests compile.

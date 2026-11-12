@@ -54,4 +54,4 @@ It owns Resources, Orders, Execution and its own users; it decides what to do wi
 
 ## Stack
 
-Same backend and frontend toolchain as Billing, see [architecture.md](architecture.md).
+Same backend and frontend toolchain as Billing, see [architecture.md](architecture.md). It builds against the same technical core as Billing (`core/`): `UnitOfWork`, `Clock` and `IdGenerator`. It plugs no `TransactionScopeHook` into `UnitOfWork` because it has no row-level security.

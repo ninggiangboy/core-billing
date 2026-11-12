@@ -2,7 +2,7 @@
 
 A reference Cloud Resource Management tenant. It is its own Gradle build and database and
 integrates with Core Billing only over REST and signed webhooks; it shares no code with
-`billing/`. See [docs/sample-tenant-system.md](../docs/sample-tenant-system.md).
+`billing/` and builds against the technical `core/` beside it. See [docs/sample-tenant-system.md](../docs/sample-tenant-system.md).
 
 ## Build and run
 
@@ -36,7 +36,7 @@ catalog plan that has no binding, binds the returned ids by plan code, and regis
 
 Each module is a Gradle project whose `api`, `domain`, `application` and `adapter` layers are
 separate source sets, so Spring cannot leak into the plain-Java inner layers.
-`./gradlew checkNoBillingDependency` fails if any module declares a Gradle dependency on Billing,
+`./gradlew checkNoBillingDependency` fails if any module declares a Gradle dependency on Billing (the shared `core/` is allowed),
 and `ArchitectureTest` re-checks the same boundaries on the classpath.
 
 ## Scenario-to-test matrix

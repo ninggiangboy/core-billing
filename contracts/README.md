@@ -1,6 +1,6 @@
 # contracts
 
-Documents that the two systems share, never code.
+Documents that the two systems share, never code. The only code they share is the technical `core/`.
 
 | Path | Owns |
 |---|---|

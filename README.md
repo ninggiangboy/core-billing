@@ -7,6 +7,7 @@ Documentation lives in [docs/](docs/README.md). Code lives in:
 | `billing/` | Core Billing System (Gradle multi-module, Spring Boot) |
 | `sample-tenant/` | Sample Tenant System, built and deployed independently |
 | `web/` | Web apps (Platform Admin, Tenant Admin, Customer Portal, Sample Tenant UI) |
+| `core/` | The technical core both systems build against (ports, Spring implementations, DDD base types); the only code they share |
 | `contracts/` | OpenAPI and event schemas shared between systems as documents, never as code |
 
 Inside `billing/` the modules are grouped by role, and each Gradle project path follows its directory:
@@ -14,7 +15,7 @@ Inside `billing/` the modules are grouped by role, and each Gradle project path 
 | Directory | Modules |
 |---|---|
 | `contexts/` | The eight bounded contexts: `platform`, `customer`, `money`, `pricing`, `usage`, `invoicing`, `payment`, `webhook` |
-| `libs/` | `shared-kernel` and `jooq-schema` |
+| `libs/` | `shared-kernel` (Billing's value objects) and `jooq-schema` |
 | `apps/` | `app-boot`, which wires the contexts and holds the migrations |
 | `testing/` | `arch-fixtures`, the deliberately violating classes the architecture rules are tested against |
 

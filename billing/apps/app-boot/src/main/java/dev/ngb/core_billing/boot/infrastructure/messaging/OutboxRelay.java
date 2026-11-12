@@ -2,12 +2,12 @@ package dev.ngb.core_billing.boot.infrastructure.messaging;
 
 import static dev.ngb.core_billing_jooq.Tables.OUTBOX;
 
-import dev.ngb.core_billing.sharedkernel.util.Backoff;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core.event.EventEnvelope;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core.util.Backoff;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing_jooq.tables.records.OutboxRecord;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;

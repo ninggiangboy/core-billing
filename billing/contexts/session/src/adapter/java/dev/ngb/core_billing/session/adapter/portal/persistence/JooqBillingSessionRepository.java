@@ -2,6 +2,7 @@ package dev.ngb.core_billing.session.adapter.portal.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.BILLING_SESSIONS;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.session.api.portal.PortalPermission;
 import dev.ngb.core_billing.session.application.portal.port.BillingSessionRepository;
@@ -9,7 +10,6 @@ import dev.ngb.core_billing.session.domain.portal.BillingSession;
 import dev.ngb.core_billing.session.domain.portal.BillingSessionId;
 import dev.ngb.core_billing.session.domain.portal.SessionStatus;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.BillingSessionsRecord;
 import java.util.Arrays;
 import java.util.Optional;

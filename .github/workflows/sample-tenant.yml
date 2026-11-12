@@ -2,10 +2,10 @@ name: sample-tenant
 
 on:
   pull_request:
-    paths: ["sample-tenant/**", ".github/workflows/sample-tenant.yml"]
+    paths: ["sample-tenant/**", "core/**", ".github/workflows/sample-tenant.yml"]
   push:
     branches: [main, dev]
-    paths: ["sample-tenant/**", ".github/workflows/sample-tenant.yml"]
+    paths: ["sample-tenant/**", "core/**", ".github/workflows/sample-tenant.yml"]
 
 jobs:
   verify:

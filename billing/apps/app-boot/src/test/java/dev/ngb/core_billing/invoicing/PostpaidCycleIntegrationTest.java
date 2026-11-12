@@ -2,6 +2,8 @@ package dev.ngb.core_billing.invoicing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.event.EventEnvelope;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase;
@@ -11,9 +13,7 @@ import dev.ngb.core_billing.money.MoneyTestWorld.World;
 import dev.ngb.core_billing.money.api.charge.ChargeCommand;
 import dev.ngb.core_billing.money.api.charge.ChargeResult;
 import dev.ngb.core_billing.money.api.charge.ChargeWallet;
-import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;

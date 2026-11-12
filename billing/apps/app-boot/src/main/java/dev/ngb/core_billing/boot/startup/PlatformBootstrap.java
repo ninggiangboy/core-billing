@@ -3,11 +3,12 @@ package dev.ngb.core_billing.boot.startup;
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobLeases;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformAdminUseCase;
-import dev.ngb.core_billing.platform.application.tenant.command.EnsurePlatformDomainUseCase;
 import dev.ngb.core_billing.platform.application.role.command.SeedDefaultRolesUseCase;
 import dev.ngb.core_billing.platform.application.role.command.SeedPermissionsUseCase;
+import dev.ngb.core_billing.platform.application.tenant.command.EnsurePlatformDomainUseCase;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
+import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformAdminUseCase;
+import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 
 /**
  * On every start: mirrors the permission catalog, maps platform.&lt;base-domain&gt; and creates the Platform's
@@ -78,7 +78,7 @@ class PlatformBootstrap implements ApplicationRunner {
                 seedDefaultRoles.execute();
                 // Tenants created before a permission existed get it on their default roles.
                 tenantQueries.list().stream().filter(dev.ngb.core_billing.platform.application.tenant.query.TenantView::isActive).forEach(tenant ->
-                        tenantContext.runAs(RequestScope.tenant(new dev.ngb.core_billing.sharedkernel.id.TenantId(tenant.id())), seedDefaultRoles::execute));
+                        tenantContext.runAs(RequestScope.tenant(new dev.ngb.core.id.TenantId(tenant.id())), seedDefaultRoles::execute));
                 if (!adminEmail.isBlank()) {
                     bootstrapAdmin.execute(adminEmail, "Platform Administrator", adminTemporaryPassword.isBlank() ? null : adminTemporaryPassword);
                 }

@@ -1,5 +1,11 @@
 package dev.ngb.core_billing.customer.application.customer.command;
 
+import dev.ngb.core.event.EventPublisher;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
 import dev.ngb.core_billing.customer.domain.customer.CustomerEvents.CustomerCreated;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
@@ -9,14 +15,8 @@ import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.time.Instant;
-import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 
 /**
  * Creates a Customer, optionally mapped to a Tenant System user, once per idempotency key. The key and the

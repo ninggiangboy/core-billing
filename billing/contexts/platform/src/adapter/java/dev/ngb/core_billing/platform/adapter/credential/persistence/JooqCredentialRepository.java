@@ -2,13 +2,13 @@ package dev.ngb.core_billing.platform.adapter.credential.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.API_CREDENTIALS;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.application.credential.port.CredentialRepository;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
 import dev.ngb.core_billing.platform.domain.credential.CredentialStatus;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.ApiCredentialsRecord;
 import java.util.Arrays;
 import java.util.List;

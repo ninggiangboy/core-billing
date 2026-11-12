@@ -1,14 +1,14 @@
 package dev.ngb.core_billing.payment.domain.payment;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
+import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
-import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
-import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 
 /**
  * A payment through the Tenant's Stripe configuration: a top-up of one wallet, or the payment of one invoice.

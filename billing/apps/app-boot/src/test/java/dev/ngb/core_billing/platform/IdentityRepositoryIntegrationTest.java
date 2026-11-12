@@ -1,12 +1,14 @@
 package dev.ngb.core_billing.platform;
 
-import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core.runtime.Clock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
+import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.application.credential.port.CredentialRepository;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
@@ -15,16 +17,14 @@ import dev.ngb.core_billing.platform.application.user.port.UserRepository;
 import dev.ngb.core_billing.platform.application.user.query.UserQueries;
 import dev.ngb.core_billing.platform.application.user.query.UserView;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredential;
-import dev.ngb.core_billing.platform.domain.credential.ApiKey;
-import dev.ngb.core_billing.platform.domain.user.BillingUser;
 import dev.ngb.core_billing.platform.domain.credential.ApiCredentialId;
+import dev.ngb.core_billing.platform.domain.credential.ApiKey;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
-import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystem;
-import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystem;
+import dev.ngb.core_billing.platform.domain.user.BillingUser;
+import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import java.security.SecureRandom;

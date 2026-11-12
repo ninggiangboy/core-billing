@@ -1,14 +1,14 @@
 package dev.ngb.core_billing.platform.domain.user;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.platform.domain.role.RoleId;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import dev.ngb.core_billing.platform.domain.role.RoleId;
 
 /**
  * An account that administers Billing, either at Platform Scope or inside one Tenant. It is linked to

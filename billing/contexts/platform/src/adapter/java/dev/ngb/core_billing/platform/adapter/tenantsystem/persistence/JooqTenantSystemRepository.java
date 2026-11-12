@@ -2,13 +2,13 @@ package dev.ngb.core_billing.platform.adapter.tenantsystem.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.TENANT_SYSTEMS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.platform.application.tenantsystem.port.TenantSystemRepository;
 import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystem;
 import dev.ngb.core_billing.platform.domain.tenantsystem.TenantSystemStatus;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.TenantSystemsRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;

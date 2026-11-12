@@ -4,8 +4,8 @@ import static dev.ngb.core_billing_jooq.Tables.WEBHOOK_DELIVERIES;
 import static dev.ngb.core_billing_jooq.Tables.WEBHOOK_DELIVERY_ATTEMPTS;
 import static dev.ngb.core_billing_jooq.Tables.WEBHOOK_ENDPOINTS;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.util.Text;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Text;
 import dev.ngb.core_billing.webhook.application.delivery.port.ClaimedDelivery;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryAttempt;

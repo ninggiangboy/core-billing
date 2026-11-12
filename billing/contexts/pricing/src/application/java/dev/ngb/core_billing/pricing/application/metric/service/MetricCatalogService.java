@@ -1,9 +1,9 @@
 package dev.ngb.core_billing.pricing.application.metric.service;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
-import java.util.Optional;
 import dev.ngb.core_billing.pricing.application.metric.query.MetricReadRepository;
+import java.util.Optional;
 
 public class MetricCatalogService implements MetricCatalog {
 

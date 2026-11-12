@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.platform.application.tenant.port;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.platform.domain.tenant.TenantCode;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.Optional;
 
 public interface TenantRepository {

@@ -1,12 +1,13 @@
 package dev.ngb.core_billing.sharedkernel.money;
 
+import dev.ngb.core.ddd.ValueObject;
 import java.util.Objects;
 
 /**
  * An amount in minor units of one currency. Arithmetic never mixes currencies and never wraps on
  * overflow: both are rejected.
  */
-public record Money(long minorUnits, Currency currency) {
+public record Money(long minorUnits, Currency currency) implements ValueObject {
 
     public Money {
         Objects.requireNonNull(currency, "currency");

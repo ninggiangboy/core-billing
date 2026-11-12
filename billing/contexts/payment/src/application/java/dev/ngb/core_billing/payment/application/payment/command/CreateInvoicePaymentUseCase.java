@@ -1,11 +1,15 @@
 package dev.ngb.core_billing.payment.application.payment.command;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
-import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentResult;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePayment;
 import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentCommand;
+import dev.ngb.core_billing.payment.api.invoice.StartInvoicePaymentResult;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
+import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
@@ -15,12 +19,8 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.Locale;
 import java.util.Optional;
-import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 
 /**
  * Starts the payment of an invoice: the payment is stored in REQUIRES_ACTION first, then Stripe's hosted Checkout

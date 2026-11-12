@@ -1,22 +1,22 @@
 package dev.ngb.core_billing.pricing.domain.plan;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
+import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
+import dev.ngb.core_billing.pricing.domain.rule.Hybrid;
+import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
+import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Objects;
-import dev.ngb.core_billing.pricing.domain.metric.UsageSummary;
-import dev.ngb.core_billing.pricing.domain.rule.Hybrid;
-import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
-import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
-import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
-import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
+import java.util.Optional;
 
 /**
  * One immutable version of a plan: the rule, the cycle, the charge limits, the rounding and the period it is valid.

@@ -1,21 +1,21 @@
 package dev.ngb.core_billing.platform.domain.tenantsystem;
 
+import dev.ngb.core.ddd.AggregateRoot;
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.Objects;
 
 /** A third-party application integrated with one Tenant. It authenticates with API credentials. */
-public final class TenantSystem {
+public final class TenantSystem extends AggregateRoot<TenantSystemId> {
 
-    private final TenantSystemId id;
     private final TenantId tenantId;
     private final String name;
     private final Instant createdAt;
     private TenantSystemStatus status;
 
     private TenantSystem(TenantSystemId id, TenantId tenantId, String name, TenantSystemStatus status, Instant createdAt) {
-        this.id = Objects.requireNonNull(id, "id");
+        super(id);
         this.tenantId = Objects.requireNonNull(tenantId, "tenantId");
         Objects.requireNonNull(name, "name");
         if (name.isBlank() || name.length() > 100) {
@@ -41,10 +41,6 @@ public final class TenantSystem {
 
     public boolean isActive() {
         return status == TenantSystemStatus.ACTIVE;
-    }
-
-    public TenantSystemId id() {
-        return id;
     }
 
     public TenantId tenantId() {

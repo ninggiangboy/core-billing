@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.platform.api.actor;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
 import java.util.Objects;
 import java.util.UUID;
 

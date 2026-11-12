@@ -3,14 +3,14 @@ package dev.ngb.core_billing.platform.adapter.role.persistence;
 import static dev.ngb.core_billing_jooq.Tables.ROLES;
 import static dev.ngb.core_billing_jooq.Tables.ROLE_PERMISSIONS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.RolesRecord;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.domain.stripe;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.util.Text;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Text;
 import java.time.Instant;
 import java.util.Objects;
 

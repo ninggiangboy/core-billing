@@ -1,21 +1,21 @@
 package dev.ngb.core_billing.platform.application.role.command;
 
-import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.platform.api.audit.AuditEntry;
-import dev.ngb.core_billing.platform.api.audit.AuditLog;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
+import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.audit.AuditEntry;
+import dev.ngb.core_billing.platform.api.audit.AuditLog;
+import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
+import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 import dev.ngb.core_billing.platform.domain.role.Role;
 import dev.ngb.core_billing.platform.domain.role.RoleId;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.Set;
-import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.platform.application.role.port.RoleRepository;
 
 /** Roles of the current scope. Roles live in the database and can be changed through the UI. */
 public class ManageRoleUseCase {

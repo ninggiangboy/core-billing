@@ -1,9 +1,9 @@
 package dev.ngb.core_billing.session.domain.portal;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import dev.ngb.core_billing.session.api.portal.PortalPermission;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;

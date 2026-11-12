@@ -2,32 +2,35 @@ package dev.ngb.core_billing.webhook;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.event.DomainEvent;
+import dev.ngb.core.event.EventEnvelope;
+import dev.ngb.core.event.EventPublisher;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
-import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
-import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.platform.api.audit.Audit;
+import dev.ngb.core_billing.platform.api.error.ConflictException;
+import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
 import dev.ngb.core_billing.support.TestEvent;
 import dev.ngb.core_billing.support.TestReceiver;
 import dev.ngb.core_billing.webhook.adapter.delivery.messaging.WebhookEventListener;
-import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.DeliverWebhooksUseCase;
 import dev.ngb.core_billing.webhook.application.delivery.command.ManageDeliveryUseCase;
+import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.delivery.query.DeliveryQueries;
 import dev.ngb.core_billing.webhook.application.delivery.query.WebhookDeliveryView;
+import dev.ngb.core_billing.webhook.application.endpoint.command.CreateEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.endpoint.command.ManageEndpointUseCase;
 import dev.ngb.core_billing.webhook.application.endpoint.query.EndpointQueries;
-import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
+import dev.ngb.core_billing.webhook.domain.delivery.DeliveryAttempt;
 import dev.ngb.core_billing.webhook.domain.delivery.DeliveryStatus;
-import dev.ngb.core_billing.webhook.domain.endpoint.EndpointStatus;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
 import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
+import dev.ngb.core_billing.webhook.domain.endpoint.EndpointStatus;
 import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpoint;
 import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpointId;
 import java.nio.charset.StandardCharsets;
@@ -50,9 +53,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
-import dev.ngb.core_billing.webhook.domain.delivery.DeliveryAttempt;
-import dev.ngb.core_billing.platform.api.error.ConflictException;
-import dev.ngb.core_billing.platform.api.error.NotFoundException;
 
 /** The webhook path against real PostgreSQL: outbox, queued deliveries, signed sends, retries, the dead state and resends. */
 @SpringBootTest(classes = Application.class)

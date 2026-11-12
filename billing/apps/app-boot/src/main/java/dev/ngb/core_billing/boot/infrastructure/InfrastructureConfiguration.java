@@ -1,29 +1,30 @@
 package dev.ngb.core_billing.boot.infrastructure;
 
+import dev.ngb.core.event.EventInbox;
+import dev.ngb.core.event.EventPublisher;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core.spring.runtime.SpringUnitOfWork;
+import dev.ngb.core.spring.runtime.SystemClock;
+import dev.ngb.core.spring.runtime.UuidV7IdGenerator;
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobLeases;
 import dev.ngb.core_billing.boot.infrastructure.coordination.JobRuns;
+import dev.ngb.core_billing.boot.infrastructure.messaging.JooqEventInbox;
+import dev.ngb.core_billing.boot.infrastructure.messaging.JooqOutboxAppender;
+import dev.ngb.core_billing.boot.infrastructure.persistence.JooqAuditLog;
 import dev.ngb.core_billing.boot.infrastructure.security.PostgresRateLimiter;
+import dev.ngb.core_billing.boot.infrastructure.tenancy.BillingTransactionScopeHook;
+import dev.ngb.core_billing.boot.infrastructure.tenancy.ScopedTenantContext;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.event.EventInbox;
-import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import tools.jackson.databind.json.JsonMapper;
-import dev.ngb.core_billing.boot.infrastructure.kernel.SystemClock;
-import dev.ngb.core_billing.boot.infrastructure.kernel.UuidV7IdGenerator;
-import dev.ngb.core_billing.boot.infrastructure.messaging.JooqEventInbox;
-import dev.ngb.core_billing.boot.infrastructure.messaging.JooqOutboxAppender;
-import dev.ngb.core_billing.boot.infrastructure.persistence.JooqAuditLog;
-import dev.ngb.core_billing.boot.infrastructure.tenancy.ScopedTenantContext;
-import dev.ngb.core_billing.boot.infrastructure.tenancy.SpringUnitOfWork;
 
 /** Wires the technical ports every context shares; it is the only configuration that sees the transaction manager. */
 @Configuration(proxyBeanMethods = false)
@@ -36,7 +37,7 @@ class InfrastructureConfiguration {
 
     @Bean
     UnitOfWork unitOfWork(PlatformTransactionManager transactionManager, JdbcTemplate jdbc, TenantContext tenantContext) {
-        return new SpringUnitOfWork(transactionManager, jdbc, tenantContext);
+        return new SpringUnitOfWork(transactionManager, new BillingTransactionScopeHook(jdbc, tenantContext));
     }
 
     @Bean

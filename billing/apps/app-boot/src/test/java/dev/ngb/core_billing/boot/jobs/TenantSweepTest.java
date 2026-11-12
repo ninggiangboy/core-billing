@@ -2,14 +2,14 @@ package dev.ngb.core_billing.boot.jobs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.boot.infrastructure.tenancy.ScopedTenantContext;
-import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantDomainView;
+import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantReadRepository;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantView;
 import dev.ngb.core_billing.platform.domain.tenant.TenantStatus;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

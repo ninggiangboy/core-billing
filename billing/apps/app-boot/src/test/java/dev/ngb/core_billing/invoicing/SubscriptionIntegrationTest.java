@@ -3,6 +3,7 @@ package dev.ngb.core_billing.invoicing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.invoicing.application.subscription.command.CancelSubscriptionUseCase;
 import dev.ngb.core_billing.invoicing.application.subscription.command.CreateSubscriptionUseCase;
@@ -18,7 +19,6 @@ import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.pricing.PricingTestWorld;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.application.plan.command.ManagePlanUseCase;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;

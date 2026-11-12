@@ -1,5 +1,8 @@
 package dev.ngb.core_billing.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
@@ -15,9 +18,6 @@ import dev.ngb.core_billing.session.application.portal.port.ReturnUrlRepository;
 import dev.ngb.core_billing.session.application.portal.service.PortalSessionsService;
 import dev.ngb.core_billing.session.application.portal.service.SessionSettings;
 import dev.ngb.core_billing.session.application.portal.service.SessionTokens;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.security.SecureRandom;
 import java.time.Duration;
 import org.jooq.DSLContext;

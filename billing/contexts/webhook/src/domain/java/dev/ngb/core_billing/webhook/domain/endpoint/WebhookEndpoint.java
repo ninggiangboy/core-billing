@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.webhook.domain.endpoint;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import java.time.Instant;
 import java.util.Collection;

@@ -2,14 +2,14 @@ package dev.ngb.core_billing.customer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.adapter.customer.persistence.JooqCustomerRepository;
 import dev.ngb.core_billing.customer.application.customer.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import java.sql.Connection;
 import java.sql.DriverManager;

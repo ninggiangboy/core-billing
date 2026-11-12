@@ -1,20 +1,20 @@
 package dev.ngb.core_billing.boot.config;
 
-import dev.ngb.core_billing.customer.adapter.customer.persistence.JooqCustomerRepository;
+import dev.ngb.core.event.EventPublisher;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.adapter.customer.persistence.JooqCustomerReadRepository;
+import dev.ngb.core_billing.customer.adapter.customer.persistence.JooqCustomerRepository;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.application.customer.command.CreateCustomerUseCase;
 import dev.ngb.core_billing.customer.application.customer.command.ManageCustomerUseCase;
-import dev.ngb.core_billing.customer.application.customer.service.CustomerLookupService;
+import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 import dev.ngb.core_billing.customer.application.customer.query.CustomerQueries;
 import dev.ngb.core_billing.customer.application.customer.query.CustomerReadRepository;
-import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
+import dev.ngb.core_billing.customer.application.customer.service.CustomerLookupService;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import org.jooq.DSLContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

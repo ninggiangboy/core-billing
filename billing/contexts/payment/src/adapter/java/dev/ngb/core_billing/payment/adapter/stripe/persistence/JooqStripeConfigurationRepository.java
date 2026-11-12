@@ -2,13 +2,13 @@ package dev.ngb.core_billing.payment.adapter.stripe.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.STRIPE_CONFIGURATIONS;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.domain.stripe.ConnectionStatus;
 import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.StripeConfigurationsRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;

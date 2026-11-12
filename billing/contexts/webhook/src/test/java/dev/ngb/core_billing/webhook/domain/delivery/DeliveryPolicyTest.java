@@ -3,7 +3,7 @@ package dev.ngb.core_billing.webhook.domain.delivery;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.ngb.core_billing.sharedkernel.util.Backoff;
+import dev.ngb.core.util.Backoff;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 

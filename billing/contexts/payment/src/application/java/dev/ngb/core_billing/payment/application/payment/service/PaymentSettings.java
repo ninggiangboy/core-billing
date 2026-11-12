@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.payment.application.payment.service;
 
+import dev.ngb.core.util.Backoff;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
-import dev.ngb.core_billing.sharedkernel.util.Backoff;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;

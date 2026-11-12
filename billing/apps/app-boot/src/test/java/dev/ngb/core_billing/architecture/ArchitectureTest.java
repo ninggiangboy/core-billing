@@ -21,14 +21,20 @@ class ArchitectureTest {
     static final String ROOT = "dev.ngb.core_billing";
 
     private static JavaClasses production;
+    private static JavaClasses core;
 
     @BeforeAll
     static void importProduction() {
         production = new ClassFileImporter()
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
                 .importPackages(ROOT);
+        core = new ClassFileImporter()
+                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                .importPackages(ArchitectureRules.CORE);
         // Guards against an import that silently matches nothing and makes every rule pass.
         assertThat(production.contain("dev.ngb.core_billing.sharedkernel.money.Money")).isTrue();
+        assertThat(core.contain("dev.ngb.core.runtime.UnitOfWork")).isTrue();
+        assertThat(core.contain("dev.ngb.core.spring.runtime.SpringUnitOfWork")).isTrue();
     }
 
     @org.junit.jupiter.api.Test
@@ -160,5 +166,15 @@ class ArchitectureTest {
     @MethodSource("rules")
     void productionCodeObeysRule(ArchitectureRules.NamedRule rule) {
         rule.rule().check(production);
+    }
+
+    static Stream<ArchitectureRules.NamedRule> coreRules() {
+        return ArchitectureRules.core(ArchitectureRules.CORE).stream();
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("coreRules")
+    void coreObeysRule(ArchitectureRules.NamedRule rule) {
+        rule.rule().check(core);
     }
 }

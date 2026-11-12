@@ -1,16 +1,16 @@
 package dev.ngb.core_billing.money.domain.event;
 
+import dev.ngb.core.event.DomainEvent;
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.money.api.event.MoneyEventTypes;
-import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
+import dev.ngb.core_billing.money.domain.charge.Charge;
+import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
+import dev.ngb.core_billing.money.domain.reservation.Reservation;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import dev.ngb.core_billing.money.domain.charge.Charge;
-import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
-import dev.ngb.core_billing.money.domain.reservation.Reservation;
 
 /**
  * Everything the money path announces. Each event is written to the outbox in the same transaction as the

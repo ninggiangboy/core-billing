@@ -2,6 +2,8 @@ package dev.ngb.core_billing.payment.adapter.refund.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.REFUNDS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.payment.application.refund.port.RefundRepository;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.refund.Refund;
@@ -10,8 +12,6 @@ import dev.ngb.core_billing.payment.domain.refund.RefundStatus;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.tables.records.RefundsRecord;
 import java.util.Optional;

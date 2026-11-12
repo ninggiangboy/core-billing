@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.platform.application.tenantsystem.query;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import java.util.UUID;
 

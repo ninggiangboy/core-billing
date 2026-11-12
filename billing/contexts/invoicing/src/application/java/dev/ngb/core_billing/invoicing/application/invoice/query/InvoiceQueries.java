@@ -1,11 +1,11 @@
 package dev.ngb.core_billing.invoicing.application.invoice.query;
 
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core.util.PageSize;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.invoicing.domain.invoice.InvoiceStatus;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.util.PageSize;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import java.util.UUID;
 

@@ -17,8 +17,8 @@ import com.tngtech.archunit.lang.syntax.elements.GivenClassesConjunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,6 +40,9 @@ final class ArchitectureRules {
     record NamedRule(String id, ArchRule rule) {}
 
     private static final Set<String> NON_CONTEXT = Set.of("sharedkernel", "boot");
+
+    /** The shared core lives in its own Gradle build; every layer may name it exactly where it may name the kernel. */
+    static final String CORE = "dev.ngb.core";
 
     /** Which context owns each generated table; boot owns the tables every context shares. */
     private static final Map<String, String> TABLE_OWNER = new HashMap<>();
@@ -134,6 +137,18 @@ final class ArchitectureRules {
                 new NamedRule("shared-kernel-classes-in-a-group", sharedKernelClassesInAGroup(root)));
     }
 
+    /**
+     * The rules that guard the shared core. They are separate from the application rules because the core is a
+     * different build with a different vocabulary: it knows no context, no layer and no framework.
+     *
+     * @param core the core's root package, so the same rules run against the production code and the fixtures
+     */
+    static List<NamedRule> core(String core) {
+        return List.of(
+                new NamedRule("core-is-self-contained", coreIsSelfContained(core)),
+                new NamedRule("core-spring-is-self-contained", coreSpringIsSelfContained(core)));
+    }
+
     /** adapter -> application -> domain; never the other way. */
     private static ArchRule layerDirection(String root) {
         ArchRule domainStaysInside = noClasses().that().resideInAPackage(root + ".*.domain..")
@@ -146,10 +161,10 @@ final class ArchitectureRules {
         return CompositeArchRule.of(domainStaysInside).and(applicationStaysInside);
     }
 
-    /** domain and application know only the JDK and project code; no framework, no JPA, no Jackson. */
+    /** domain and application know only the JDK, project code and the shared core; no framework, no JPA, no Jackson. */
     private static ArchRule innerLayerPurity(String root) {
         return classes().that().resideInAnyPackage(root + ".*.domain..", root + ".*.application..")
-                .should().onlyDependOnClassesThat().resideInAnyPackage(JAVA, root + "..")
+                .should().onlyDependOnClassesThat().resideInAnyPackage(JAVA, root + "..", CORE + "..")
                 .because("domain and application are plain Java");
     }
 
@@ -173,12 +188,12 @@ final class ArchitectureRules {
                 .because("the money path commits in one transaction opened by the use case");
     }
 
-    /** The api package is the contract: it may name only the JDK, the kernel and other api packages. */
+    /** The api package is the contract: it may name only the JDK, the kernel, the shared core and other api packages. */
     private static ArchRule apiExposesNoInternals(String root) {
         GivenClassesConjunction api = classes().that().resideInAPackage(root + ".*.api..")
                 .and().doNotHaveSimpleName("package-info");
         return api.should().onlyDependOnClassesThat()
-                .resideInAnyPackage(JAVA, root + ".sharedkernel..", root + ".*.api..")
+                .resideInAnyPackage(JAVA, root + ".sharedkernel..", CORE + "..", root + ".*.api..")
                 .because("the api package must not leak domain or adapter types");
     }
 
@@ -234,8 +249,27 @@ final class ArchitectureRules {
 
     private static ArchRule sharedKernelIsIndependent(String root) {
         return classes().that().resideInAPackage(root + ".sharedkernel..")
-                .should().onlyDependOnClassesThat().resideInAnyPackage(JAVA, root + ".sharedkernel..")
+                .should().onlyDependOnClassesThat().resideInAnyPackage(JAVA, root + ".sharedkernel..", CORE + "..")
                 .because("the kernel takes no module dependency");
+    }
+
+    /**
+     * The shared core is shared by more than one application build, so it may name only the JDK and itself. The
+     * Spring implementation module also sees the Spring types its implementations are built from; neither may
+     * reach back into an application.
+     */
+    private static ArchRule coreIsSelfContained(String core) {
+        return classes().that().resideInAnyPackage(core + "..")
+                .and().resideOutsideOfPackage(core + ".spring..")
+                .should().onlyDependOnClassesThat().resideInAnyPackage(JAVA, core + "..")
+                .because("the core is shared by every application build and depends on nothing of theirs");
+    }
+
+    private static ArchRule coreSpringIsSelfContained(String core) {
+        return classes().that().resideInAPackage(core + ".spring..")
+                .should().onlyDependOnClassesThat()
+                .resideInAnyPackage(JAVA, "javax..", core + "..", "org.springframework..")
+                .because("the core's Spring implementation sees the JDK, the core and Spring only");
     }
 
     /**

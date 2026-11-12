@@ -2,10 +2,10 @@ name: billing
 
 on:
   pull_request:
-    paths: ["billing/**", ".github/workflows/billing.yml"]
+    paths: ["billing/**", "core/**", ".github/workflows/billing.yml"]
   push:
     branches: [main, dev]
-    paths: ["billing/**", ".github/workflows/billing.yml"]
+    paths: ["billing/**", "core/**", ".github/workflows/billing.yml"]
 
 jobs:
   verify:

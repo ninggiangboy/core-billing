@@ -1,0 +1,10 @@
+# Versions the core build needs: the JDK toolchain and the BOM that manages the test libraries.
+[versions]
+spring-boot = "4.1.2"
+jdk = "25"
+
+[libraries]
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
+
+[plugins]

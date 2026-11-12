@@ -3,7 +3,7 @@ package dev.ngb.core_billing.platform.domain.tenant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

@@ -2,8 +2,8 @@ package dev.ngb.core_billing.session.adapter.portal.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.PORTAL_RETURN_URLS;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.session.application.portal.port.ReturnUrlRepository;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.Set;
 import org.jooq.DSLContext;
 

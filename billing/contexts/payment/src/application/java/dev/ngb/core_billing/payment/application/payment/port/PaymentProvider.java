@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.payment.application.payment.port;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.refund.RefundId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.List;
 

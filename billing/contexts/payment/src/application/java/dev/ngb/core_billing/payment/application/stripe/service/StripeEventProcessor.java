@@ -1,24 +1,24 @@
 package dev.ngb.core_billing.payment.application.stripe.service;
 
-import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
-import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
-import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
-import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
-import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
-import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
-import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
-import java.time.Instant;
-import java.util.function.DoubleSupplier;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
+import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
 import dev.ngb.core_billing.payment.application.payment.service.PaymentSettlement;
-import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
+import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
+import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
+import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
+import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
+import dev.ngb.core_billing.platform.api.error.NotFoundException;
+import java.time.Instant;
+import java.util.function.DoubleSupplier;
 
 /**
  * Acts on a stored Stripe event. One attempt is one transaction: the payment (or refund) change, the wallet

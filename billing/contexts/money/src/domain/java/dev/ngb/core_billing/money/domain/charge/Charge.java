@@ -1,15 +1,15 @@
 package dev.ngb.core_billing.money.domain.charge;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.charge.ChargeSource;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Objects;
-import dev.ngb.core_billing.money.domain.wallet.Wallet;
 
 /** The actual cost incurred, and whether the wallet could pay it. A failed charge is kept as a record. */
 public final class Charge {

@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.webhook.adapter.delivery.messaging;
 
-import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
+import dev.ngb.core.event.EventEnvelope;
 import dev.ngb.core_billing.webhook.application.delivery.command.RecordDeliveriesUseCase;
 import org.springframework.context.event.EventListener;
 

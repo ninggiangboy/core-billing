@@ -1,11 +1,11 @@
 package dev.ngb.core_billing.money.application.wallet.service;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core_billing.money.application.wallet.query.WalletReadRepository;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import java.util.Optional;
-import dev.ngb.core_billing.money.application.wallet.query.WalletReadRepository;
 
 public class WalletLookupService implements WalletLookup {
 

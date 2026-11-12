@@ -1,6 +1,6 @@
 package dev.ngb.core_billing.platform.domain.tenant;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
 import java.time.Instant;
 import java.util.Objects;
 

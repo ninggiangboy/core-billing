@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.customer.domain.customer;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;

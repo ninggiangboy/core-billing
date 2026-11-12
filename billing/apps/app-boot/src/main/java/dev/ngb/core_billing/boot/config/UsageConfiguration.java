@@ -1,22 +1,22 @@
 package dev.ngb.core_billing.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.pricing.api.metric.MetricCatalog;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
-import dev.ngb.core_billing.usage.adapter.usage.persistence.JooqUsageEventRepository;
 import dev.ngb.core_billing.usage.adapter.usage.persistence.JooqUsageEventReadRepository;
-import dev.ngb.core_billing.usage.application.usage.port.MetricUnits;
+import dev.ngb.core_billing.usage.adapter.usage.persistence.JooqUsageEventRepository;
 import dev.ngb.core_billing.usage.application.usage.command.RecordUsageUseCase;
+import dev.ngb.core_billing.usage.application.usage.port.MetricUnits;
 import dev.ngb.core_billing.usage.application.usage.port.UsageEventRepository;
 import dev.ngb.core_billing.usage.application.usage.query.UsageEventReadRepository;
 import dev.ngb.core_billing.usage.application.usage.query.UsageQueries;
 import dev.ngb.core_billing.usage.application.usage.service.UsageLookupService;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.jooq.DSLContext;
 
 /**
  * Wires the usage module. Holds no business rules. The one connection between usage and pricing lives here:

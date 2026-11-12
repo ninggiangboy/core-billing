@@ -4,6 +4,8 @@ import static dev.ngb.core_billing_jooq.Tables.BILLING_USERS;
 import static dev.ngb.core_billing_jooq.Tables.ROLE_ASSIGNMENTS;
 import static dev.ngb.core_billing_jooq.Tables.USER_PERMISSIONS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.platform.api.actor.Permission;
 import dev.ngb.core_billing.platform.api.actor.PermissionScope;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
@@ -12,8 +14,6 @@ import dev.ngb.core_billing.platform.domain.role.RoleId;
 import dev.ngb.core_billing.platform.domain.user.BillingUser;
 import dev.ngb.core_billing.platform.domain.user.BillingUserId;
 import dev.ngb.core_billing.platform.domain.user.UserStatus;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.BillingUsersRecord;
 import java.util.HashSet;
 import java.util.Optional;

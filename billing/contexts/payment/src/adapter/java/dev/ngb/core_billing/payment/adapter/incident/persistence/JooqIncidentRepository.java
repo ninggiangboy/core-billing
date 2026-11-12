@@ -2,11 +2,11 @@ package dev.ngb.core_billing.payment.adapter.incident.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.STRIPE_INCIDENTS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Text;
 import dev.ngb.core_billing.payment.application.incident.port.IncidentRepository;
 import dev.ngb.core_billing.payment.domain.incident.IncidentKind;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.util.Text;
 import java.time.Instant;
 import java.util.UUID;
 import org.jooq.DSLContext;

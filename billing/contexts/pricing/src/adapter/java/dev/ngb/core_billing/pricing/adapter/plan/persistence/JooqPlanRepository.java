@@ -3,16 +3,17 @@ package dev.ngb.core_billing.pricing.adapter.plan.persistence;
 import static dev.ngb.core_billing_jooq.Tables.PRICING_PLANS;
 import static dev.ngb.core_billing_jooq.Tables.PRICING_PLAN_VERSIONS;
 
-import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.pricing.adapter.plan.json.RuleDto;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
-import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
-import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
+import dev.ngb.core_billing.pricing.application.plan.port.PlanRepository;
 import dev.ngb.core_billing.pricing.domain.plan.PlanStatus;
 import dev.ngb.core_billing.pricing.domain.plan.PlanVersion;
 import dev.ngb.core_billing.pricing.domain.plan.PricingPlan;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
 import dev.ngb.core_billing.pricing.domain.plan.RoundingPolicy;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.PricingPlanVersionsRecord;
 import dev.ngb.core_billing_jooq.tables.records.PricingPlansRecord;
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import tools.jackson.databind.json.JsonMapper;
-import dev.ngb.core_billing.pricing.adapter.plan.json.RuleDto;
 
 public class JooqPlanRepository implements PlanRepository {
 

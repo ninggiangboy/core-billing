@@ -2,26 +2,26 @@ package dev.ngb.core_billing.money.domain.wallet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.money.api.charge.ChargeSource;
 import dev.ngb.core_billing.money.api.charge.ChargeStatus;
-import dev.ngb.core_billing.money.api.wallet.InsufficientFundsException;
+import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
+import dev.ngb.core_billing.money.api.wallet.InsufficientFundsException;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
 import dev.ngb.core_billing.money.domain.charge.ChargeService;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
 import dev.ngb.core_billing.money.domain.reservation.Reservation;
-import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
 
 /**
  * Property-style tests: thousands of random operations on a wallet, with the invariants checked after every

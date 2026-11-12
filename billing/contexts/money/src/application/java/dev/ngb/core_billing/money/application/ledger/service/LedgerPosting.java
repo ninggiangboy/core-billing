@@ -1,16 +1,16 @@
 package dev.ngb.core_billing.money.application.ledger.service;
 
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
 import dev.ngb.core_billing.money.api.ledger.LedgerPostingResult;
+import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
+import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
 import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Optional;
-import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
-import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 
 /**
  * Posts one signed amount to a locked wallet: assigns the sequence, writes the entry and the new projection

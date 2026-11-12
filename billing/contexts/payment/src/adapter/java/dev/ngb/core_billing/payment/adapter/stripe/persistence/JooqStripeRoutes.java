@@ -2,10 +2,10 @@ package dev.ngb.core_billing.payment.adapter.stripe.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.STRIPE_ROUTES;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.StripeRoutesRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;

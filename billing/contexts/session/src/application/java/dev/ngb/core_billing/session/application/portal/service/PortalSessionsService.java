@@ -1,13 +1,13 @@
 package dev.ngb.core_billing.session.application.portal.service;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.session.api.portal.PortalSessions;
 import dev.ngb.core_billing.session.api.portal.PortalVisitor;
 import dev.ngb.core_billing.session.application.portal.command.ExchangeBillingSessionUseCase;
 import dev.ngb.core_billing.session.application.portal.exception.InvalidPortalSessionException;
 import dev.ngb.core_billing.session.application.portal.port.BillingSessionRepository;
 import dev.ngb.core_billing.session.domain.portal.BillingSession;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.Optional;
 
 /** Serves the portal-session operations at the HTTP edge. */

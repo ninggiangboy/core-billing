@@ -1,16 +1,16 @@
 package dev.ngb.core_billing.pricing.domain.plan;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
+import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
+import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import dev.ngb.core_billing.pricing.domain.rule.PriceRule;
-import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
 
 /**
  * A named price list for one pricing model and one currency. Its terms live in immutable {@link PlanVersion}s;

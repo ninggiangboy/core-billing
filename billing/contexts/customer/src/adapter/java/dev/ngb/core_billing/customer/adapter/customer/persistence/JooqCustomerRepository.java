@@ -3,15 +3,15 @@ package dev.ngb.core_billing.customer.adapter.customer.persistence;
 import static dev.ngb.core_billing_jooq.Tables.CUSTOMERS;
 import static dev.ngb.core_billing_jooq.Tables.CUSTOMER_MAPPINGS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.customer.application.customer.port.CustomerRepository;
 import dev.ngb.core_billing.customer.domain.customer.Customer;
 import dev.ngb.core_billing.customer.domain.customer.CustomerStatus;
 import dev.ngb.core_billing.customer.domain.customer.ExternalIdentity;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;

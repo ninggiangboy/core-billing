@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.platform.application.tenant.query;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.platform.application.tenant.exception.TenantNotFoundException;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.List;
 import java.util.UUID;
 

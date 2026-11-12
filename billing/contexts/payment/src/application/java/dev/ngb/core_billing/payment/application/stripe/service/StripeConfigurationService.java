@@ -1,26 +1,26 @@
 package dev.ngb.core_billing.payment.application.stripe.service;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core.security.SecretCipher;
+import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
+import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
+import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
+import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;
+import dev.ngb.core_billing.payment.domain.stripe.ConnectionStatus;
 import dev.ngb.core_billing.payment.domain.stripe.IntegrationMode;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.time.Instant;
 import java.util.Optional;
-import dev.ngb.core_billing.payment.application.payment.service.PaymentSettings;
-import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
-import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.sharedkernel.security.SecretCipher;
-import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
-import dev.ngb.core_billing.payment.application.stripe.port.StripeRoutes;
-import dev.ngb.core_billing.payment.domain.stripe.ConnectionStatus;
 
 /**
  * Connects the current tenant to Stripe, in either mode, and keeps that connection's status current. The

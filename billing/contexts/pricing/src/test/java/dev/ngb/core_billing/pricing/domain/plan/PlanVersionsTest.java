@@ -3,15 +3,15 @@ package dev.ngb.core_billing.pricing.domain.plan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.pricing.domain.rule.EventBased;
+import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
 import dev.ngb.core_billing.pricing.domain.rule.Hybrid;
 import dev.ngb.core_billing.pricing.domain.rule.PricingModel;
-import dev.ngb.core_billing.pricing.domain.rule.FixedPrice;
 import dev.ngb.core_billing.pricing.domain.rule.TimeBased;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;

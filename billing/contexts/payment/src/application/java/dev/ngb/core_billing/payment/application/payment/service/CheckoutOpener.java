@@ -1,5 +1,7 @@
 package dev.ngb.core_billing.payment.application.payment.service;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
@@ -8,8 +10,6 @@ import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 
 /**
  * Opens Stripe's hosted Checkout for a payment that is already stored, outside any transaction, and attaches the

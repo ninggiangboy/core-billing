@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.support;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.UnitOfWork;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;

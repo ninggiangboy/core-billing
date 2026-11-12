@@ -1,11 +1,11 @@
 package dev.ngb.core_billing.platform.api.actor;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import dev.ngb.core_billing.platform.api.tenant.TenantSystemId;
 
 /**
  * Who is acting, resolved once per request. The tenant always comes from the authenticated identity

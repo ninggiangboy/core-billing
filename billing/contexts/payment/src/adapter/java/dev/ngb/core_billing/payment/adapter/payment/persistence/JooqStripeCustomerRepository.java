@@ -2,10 +2,10 @@ package dev.ngb.core_billing.payment.adapter.payment.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.STRIPE_CUSTOMERS;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.payment.application.payment.port.StripeCustomerRepository;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.time.Instant;
 import java.util.Optional;
 import org.jooq.DSLContext;

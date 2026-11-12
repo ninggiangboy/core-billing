@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.platform.api.tenant;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import java.util.function.Supplier;
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
+import java.util.function.Supplier;
 
 /** Access to the current {@link RequestScope}; the implementation binds it for the duration of a call. */
 public interface TenantContext {

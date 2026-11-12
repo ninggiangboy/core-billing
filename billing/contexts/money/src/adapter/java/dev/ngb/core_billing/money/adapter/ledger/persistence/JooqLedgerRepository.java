@@ -2,6 +2,8 @@ package dev.ngb.core_billing.money.adapter.ledger.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.LEDGER_ENTRIES;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.money.api.charge.ChargeId;
 import dev.ngb.core_billing.money.api.ledger.EntryType;
 import dev.ngb.core_billing.money.api.ledger.LedgerEntryId;
@@ -10,11 +12,9 @@ import dev.ngb.core_billing.money.application.ledger.port.LedgerRepository;
 import dev.ngb.core_billing.money.domain.ledger.LedgerEntry;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.IdempotencyConflictException;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
+import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.id.WalletId;
 import dev.ngb.core_billing_jooq.Keys;
 import dev.ngb.core_billing_jooq.tables.records.LedgerEntriesRecord;
 import java.util.Optional;

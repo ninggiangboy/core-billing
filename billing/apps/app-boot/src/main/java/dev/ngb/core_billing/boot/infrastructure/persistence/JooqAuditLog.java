@@ -2,9 +2,9 @@ package dev.ngb.core_billing.boot.infrastructure.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.AUDIT_LOG;
 
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
 import org.jooq.DSLContext;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 

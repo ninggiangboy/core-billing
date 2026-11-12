@@ -1,6 +1,11 @@
 package dev.ngb.core_billing.invoicing.application.cycle.command;
 
+import dev.ngb.core.event.DomainEvent;
+import dev.ngb.core.event.EventInbox;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.invoicing.application.cycle.port.UnbilledLineRepository;
+import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
 import dev.ngb.core_billing.invoicing.application.invoice.service.ChargeLineFactory;
 import dev.ngb.core_billing.invoicing.application.messaging.service.InvoicingConsumers;
 import dev.ngb.core_billing.invoicing.domain.cycle.UnbilledLine;
@@ -9,18 +14,13 @@ import dev.ngb.core_billing.money.api.event.MoneyEventTypes;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.money.Currency;
-import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.event.EventInbox;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import dev.ngb.core_billing.invoicing.application.cycle.service.CycleSettings;
 
 /**
  * Consumes {@code charge.succeeded}: a charge on a Postpaid wallet becomes an unbilled line of the calendar period

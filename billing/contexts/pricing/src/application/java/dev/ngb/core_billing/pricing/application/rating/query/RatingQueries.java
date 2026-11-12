@@ -1,8 +1,8 @@
 package dev.ngb.core_billing.pricing.application.rating.query;
 
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import java.util.UUID;
 
 /** Reads stored ratings of the current tenant. */

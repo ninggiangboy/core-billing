@@ -1,18 +1,18 @@
 package dev.ngb.core_billing.webhook.application.delivery.command;
 
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.event.EventInbox;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
-import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
-import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
-import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpoint;
-import java.util.List;
+import dev.ngb.core.event.DomainEvent;
+import dev.ngb.core.event.EventInbox;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.webhook.application.delivery.port.EventBodyWriter;
 import dev.ngb.core_billing.webhook.application.delivery.port.WebhookDeliveryRepository;
 import dev.ngb.core_billing.webhook.application.endpoint.port.WebhookEndpointRepository;
 import dev.ngb.core_billing.webhook.application.messaging.service.WebhookConsumers;
+import dev.ngb.core_billing.webhook.domain.delivery.WebhookDelivery;
+import dev.ngb.core_billing.webhook.domain.delivery.WebhookDeliveryId;
+import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpoint;
+import java.util.List;
 
 /**
  * The webhook module's consumer of outbox events: for each subscribed endpoint of the event's tenant it queues

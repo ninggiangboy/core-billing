@@ -2,8 +2,8 @@ package dev.ngb.core_billing.boot.infrastructure.messaging;
 
 import static dev.ngb.core_billing_jooq.Tables.OUTBOX;
 
-import dev.ngb.core_billing.sharedkernel.event.DomainEvent;
-import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
+import dev.ngb.core.event.DomainEvent;
+import dev.ngb.core.event.EventPublisher;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.transaction.support.TransactionSynchronizationManager;

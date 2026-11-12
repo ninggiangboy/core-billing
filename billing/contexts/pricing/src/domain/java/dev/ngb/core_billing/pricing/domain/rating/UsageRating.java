@@ -1,15 +1,15 @@
 package dev.ngb.core_billing.pricing.domain.rating;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
+import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import dev.ngb.core_billing.pricing.domain.plan.PricingPlanId;
-import dev.ngb.core_billing.pricing.domain.rule.PriceLine;
 
 /**
  * The record that a set of usage events was priced under a specific plan version and charged (or came to nothing).

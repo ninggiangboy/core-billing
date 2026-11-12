@@ -2,10 +2,10 @@ package dev.ngb.core_billing.webhook;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformAdminUseCase;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.support.EventSchemas;
 import dev.ngb.core_billing.support.HttpWorld;
 import dev.ngb.core_billing.support.HttpWorld.Account;

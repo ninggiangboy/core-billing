@@ -22,6 +22,9 @@ class ArchitectureMetaTest {
 
     private static final String FIXTURE_ROOT = "archfixtures";
 
+    /** The core's root package as the fixtures spell it, so the core rules can be pointed at them too. */
+    private static final String FIXTURE_CORE = "archfixtures.sharedcore";
+
     /** Each rule and the fixture class that must be named in its failure report. */
     private static final Map<String, String> CULPRIT_BY_RULE_ID = new LinkedHashMap<>();
 
@@ -66,10 +69,35 @@ class ArchitectureMetaTest {
     static void importFixtures() {
         fixtures = new ClassFileImporter().importPackages(FIXTURE_ROOT);
         assertThat(fixtures).isNotEmpty();
+        assertThat(fixtures.contain(FIXTURE_CORE + ".CoreKnowsAnApplication")).isTrue();
     }
 
     static Stream<ArchitectureRules.NamedRule> rules() {
         return ArchitectureRules.all(FIXTURE_ROOT).stream();
+    }
+
+    /** The core rules, pointed at fixtures that spell the core's package the way the fixtures spell an application. */
+    static Stream<ArchitectureRules.NamedRule> coreRules() {
+        return ArchitectureRules.core(FIXTURE_CORE).stream();
+    }
+
+    private static final Map<String, String> CULPRIT_BY_CORE_RULE_ID = Map.of(
+            "core-is-self-contained", "CoreKnowsAnApplication",
+            "core-spring-is-self-contained", "CoreSpringKnowsAnApplication");
+
+    @Test
+    void coreRuleSetIsExactlyTheExpectedOne() {
+        assertThat(ArchitectureRules.core(FIXTURE_CORE))
+                .extracting(ArchitectureRules.NamedRule::id)
+                .containsExactlyElementsOf(CULPRIT_BY_CORE_RULE_ID.keySet().stream().sorted().toList());
+    }
+
+    @ParameterizedTest(name = "{0} fails on its core fixture")
+    @MethodSource("coreRules")
+    void everyCoreRuleReportsAViolationOnFixtures(ArchitectureRules.NamedRule rule) {
+        assertThatThrownBy(() -> rule.rule().check(fixtures))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining(CULPRIT_BY_CORE_RULE_ID.get(rule.id()));
     }
 
     @Test

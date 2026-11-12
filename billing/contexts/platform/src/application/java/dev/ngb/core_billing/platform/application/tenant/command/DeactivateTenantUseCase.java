@@ -1,14 +1,14 @@
 package dev.ngb.core_billing.platform.application.tenant.command;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
-import dev.ngb.core_billing.platform.api.actor.RequestScope;
-import dev.ngb.core_billing.platform.domain.tenant.Tenant;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
-import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
 import dev.ngb.core_billing.platform.application.tenant.exception.TenantNotFoundException;
+import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
+import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 
 /** Deactivates a Tenant; its hostnames stop resolving. Runs at Platform scope. */
 public class DeactivateTenantUseCase {

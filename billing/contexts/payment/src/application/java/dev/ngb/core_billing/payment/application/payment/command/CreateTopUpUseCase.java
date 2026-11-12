@@ -1,31 +1,31 @@
 package dev.ngb.core_billing.payment.application.payment.command;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletLookup;
 import dev.ngb.core_billing.money.api.wallet.WalletSummary;
-import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
+import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
+import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
+import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
 import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfiguration;
+import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
 import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
+import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import dev.ngb.core_billing.payment.application.payment.port.PaymentRepository;
-import dev.ngb.core_billing.platform.api.audit.Audit;
-import dev.ngb.core_billing.payment.application.stripe.port.StripeConfigurationRepository;
-import dev.ngb.core_billing.platform.api.idempotency.Fingerprint;
-import dev.ngb.core_billing.payment.application.payment.service.CheckoutOpener;
 
 /**
  * Starts a wallet top-up through the Tenant's Stripe configuration. The payment is stored first, in

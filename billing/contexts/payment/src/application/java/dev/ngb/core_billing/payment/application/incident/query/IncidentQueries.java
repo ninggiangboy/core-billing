@@ -1,7 +1,7 @@
 package dev.ngb.core_billing.payment.application.incident.query;
 
-import dev.ngb.core_billing.sharedkernel.util.PageSize;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.core.util.PageSize;
 import java.util.List;
 
 /** Reads incidents for the GET handler. */

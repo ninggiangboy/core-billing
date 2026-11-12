@@ -1,9 +1,9 @@
 package dev.ngb.core_billing.payment.domain.incident;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import java.time.Instant;
 import java.util.UUID;
-import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 
 /** Something a person should look at. The same open finding seen again raises {@code occurrences}. */
 public record Incident(

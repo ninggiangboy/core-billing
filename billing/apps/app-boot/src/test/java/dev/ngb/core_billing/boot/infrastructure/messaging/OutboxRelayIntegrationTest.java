@@ -2,11 +2,11 @@ package dev.ngb.core_billing.boot.infrastructure.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.event.EventEnvelope;
+import dev.ngb.core.event.EventPublisher;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.Application;
-import dev.ngb.core_billing.sharedkernel.event.EventEnvelope;
-import dev.ngb.core_billing.sharedkernel.event.EventPublisher;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.support.OwnerDatabase;
 import dev.ngb.core_billing.support.PostgresContainerConfig;
 import dev.ngb.core_billing.support.ScopeTestSupport;
@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,10 +25,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import static dev.ngb.core_billing_jooq.Tables.EVENT_INBOX;
 
-import org.jooq.DSLContext;
+import org.springframework.core.annotation.Order;
 
 /** The relay's own guarantees, independent of any consumer: claim, retry with backoff, dead-letter, rollback of a failed consumer. */
 @SpringBootTest(classes = Application.class)

@@ -1,9 +1,9 @@
 package dev.ngb.core_billing.platform.api.audit;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import java.time.Instant;
 import java.util.Objects;
-import dev.ngb.core_billing.platform.api.actor.RequestScope;
 
 /** One traced administrative action; Platform-scope actions belong to the reserved platform tenant. */
 public record AuditEntry(

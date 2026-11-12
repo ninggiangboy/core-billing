@@ -1,5 +1,7 @@
 package dev.ngb.core_billing.payment.application.payment.command;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.api.lookup.CustomerSummary;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
@@ -11,8 +13,6 @@ import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 
 /**
  * Opens the Tenant's Stripe-hosted page where a Customer manages payment methods. A provider customer is created

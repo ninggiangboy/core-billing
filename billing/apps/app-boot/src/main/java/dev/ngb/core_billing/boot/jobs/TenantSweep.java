@@ -1,11 +1,10 @@
 package dev.ngb.core_billing.boot.jobs;
 
-import org.springframework.context.annotation.Profile;
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.platform.api.actor.RequestScope;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantQueries;
 import dev.ngb.core_billing.platform.application.tenant.query.TenantView;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +14,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**

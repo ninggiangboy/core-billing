@@ -2,6 +2,7 @@ package dev.ngb.core_billing.invoicing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.Application;
 import dev.ngb.core_billing.boot.infrastructure.messaging.OutboxRelay;
 import dev.ngb.core_billing.invoicing.application.cycle.command.CloseBillingCycleUseCase;
@@ -12,7 +13,6 @@ import dev.ngb.core_billing.platform.application.user.command.BootstrapPlatformA
 import dev.ngb.core_billing.pricing.PricingTestWorld;
 import dev.ngb.core_billing.pricing.api.plan.BillingCycle;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing.support.FakePaymentProvider;
 import dev.ngb.core_billing.support.FakePaymentProviderConfig;
 import dev.ngb.core_billing.support.HttpWorld;

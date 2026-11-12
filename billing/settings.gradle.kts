@@ -2,6 +2,8 @@ pluginManagement {
     includeBuild("build-logic")
 }
 
+includeBuild("../core")
+
 dependencyResolutionManagement {
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
     repositories { mavenCentral() }

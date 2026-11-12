@@ -1,10 +1,10 @@
 package dev.ngb.core_billing.webhook.domain.delivery;
 
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpointId;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
-import dev.ngb.core_billing.webhook.domain.endpoint.WebhookEndpointId;
 
 /**
  * One event owed to one endpoint. {@code body} is the exact text that is signed and sent. {@code attempts}

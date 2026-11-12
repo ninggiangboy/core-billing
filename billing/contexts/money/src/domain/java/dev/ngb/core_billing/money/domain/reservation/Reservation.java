@@ -1,13 +1,13 @@
 package dev.ngb.core_billing.money.domain.reservation;
 
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.money.api.reservation.ReservationId;
 import dev.ngb.core_billing.money.api.reservation.ReservationStatus;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
+import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.time.Instant;
 import java.util.Objects;
-import dev.ngb.core_billing.money.domain.wallet.Wallet;
 
 /**
  * A budget held on a wallet before a resource runs. A hold is not a ledger posting: the amount lives here and

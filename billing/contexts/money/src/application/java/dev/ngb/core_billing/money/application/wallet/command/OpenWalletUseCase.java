@@ -1,8 +1,13 @@
 package dev.ngb.core_billing.money.application.wallet.command;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.core_billing.customer.api.lookup.CustomerLookup;
 import dev.ngb.core_billing.customer.api.lookup.CustomerSummary;
 import dev.ngb.core_billing.money.api.wallet.WalletMode;
+import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.platform.api.audit.Audit;
 import dev.ngb.core_billing.platform.api.audit.AuditEntry;
@@ -10,16 +15,11 @@ import dev.ngb.core_billing.platform.api.audit.AuditLog;
 import dev.ngb.core_billing.platform.api.error.ConflictException;
 import dev.ngb.core_billing.platform.api.error.NotFoundException;
 import dev.ngb.core_billing.platform.api.tenant.TenantContext;
-import dev.ngb.core_billing.sharedkernel.runtime.Clock;
-import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.id.CustomerId;
-import dev.ngb.core_billing.sharedkernel.runtime.IdGenerator;
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.runtime.UnitOfWork;
 import dev.ngb.core_billing.sharedkernel.id.WalletId;
+import dev.ngb.core_billing.sharedkernel.money.Currency;
+import dev.ngb.core_billing.sharedkernel.money.Money;
 import java.util.UUID;
-import dev.ngb.core_billing.money.application.wallet.port.WalletRepository;
 
 /**
  * Opens the wallet of a customer in one currency. Asking again with the same settings returns the existing

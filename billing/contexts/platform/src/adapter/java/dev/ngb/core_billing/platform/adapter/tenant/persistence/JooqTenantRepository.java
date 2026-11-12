@@ -2,13 +2,13 @@ package dev.ngb.core_billing.platform.adapter.tenant.persistence;
 
 import static dev.ngb.core_billing_jooq.Tables.TENANTS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Causes;
 import dev.ngb.core_billing.platform.application.tenant.exception.TenantCodeAlreadyUsedException;
 import dev.ngb.core_billing.platform.application.tenant.port.TenantRepository;
 import dev.ngb.core_billing.platform.domain.tenant.Tenant;
 import dev.ngb.core_billing.platform.domain.tenant.TenantCode;
 import dev.ngb.core_billing.platform.domain.tenant.TenantStatus;
-import dev.ngb.core_billing.sharedkernel.util.Causes;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import dev.ngb.core_billing_jooq.tables.records.TenantsRecord;
 import java.util.Optional;
 import org.jooq.DSLContext;

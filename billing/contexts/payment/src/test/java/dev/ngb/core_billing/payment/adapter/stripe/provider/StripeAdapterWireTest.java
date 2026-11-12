@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core_billing.money.domain.wallet.Wallet;
 import dev.ngb.core_billing.payment.application.payment.port.PaymentProvider;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderRejectedException;
 import dev.ngb.core_billing.payment.application.stripe.exception.ProviderUnavailableException;
@@ -13,7 +15,6 @@ import dev.ngb.core_billing.payment.domain.refund.RefundId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEnvironment;
 import dev.ngb.core_billing.sharedkernel.money.Currency;
 import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
@@ -28,7 +29,6 @@ import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import dev.ngb.core_billing.money.domain.wallet.Wallet;
 
 /**
  * What the adapter actually puts on the wire, checked against a local stand-in for Stripe: the credentials and

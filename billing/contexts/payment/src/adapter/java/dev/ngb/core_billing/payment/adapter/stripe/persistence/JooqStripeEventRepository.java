@@ -3,14 +3,14 @@ package dev.ngb.core_billing.payment.adapter.stripe.persistence;
 import static dev.ngb.core_billing_jooq.Tables.STRIPE_EVENTS;
 import static dev.ngb.core_billing_jooq.Tables.STRIPE_EVENT_ATTEMPTS;
 
+import dev.ngb.core.id.TenantId;
+import dev.ngb.core.util.Text;
 import dev.ngb.core_billing.payment.application.stripe.port.StripeEventRepository;
 import dev.ngb.core_billing.payment.domain.stripe.EventAttempt;
 import dev.ngb.core_billing.payment.domain.stripe.EventStatus;
-import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeConfigurationId;
 import dev.ngb.core_billing.payment.domain.stripe.StripeEvent;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import dev.ngb.core_billing.sharedkernel.util.Text;
+import dev.ngb.core_billing.payment.domain.stripe.StripeEventId;
 import dev.ngb.core_billing_jooq.tables.records.StripeEventsRecord;
 import java.sql.Timestamp;
 import java.time.Duration;

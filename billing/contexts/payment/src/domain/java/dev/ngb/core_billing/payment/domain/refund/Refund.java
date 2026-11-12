@@ -1,13 +1,13 @@
 package dev.ngb.core_billing.payment.domain.refund;
 
-import dev.ngb.core_billing.sharedkernel.money.Money;
-import dev.ngb.core_billing.sharedkernel.id.TenantId;
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
+import dev.ngb.core.id.TenantId;
 import dev.ngb.core_billing.payment.domain.payment.Payment;
 import dev.ngb.core_billing.payment.domain.payment.PaymentId;
 import dev.ngb.core_billing.payment.domain.payment.PaymentStatus;
+import dev.ngb.core_billing.sharedkernel.money.Money;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Money sent back to a customer's card. While Stripe works the unspent balance is held ({@code reservationId}),

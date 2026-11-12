@@ -63,6 +63,15 @@ class AuthHttpIntegrationTest extends HttpIntegrationTest {
     }
 
     @Test
+    void refusesARegistrationWithoutADisplayNameInsteadOfFailing() {
+        MvcResult result = world.call(HttpMethod.POST, null, "/api/auth/register", HttpWorld.map(
+                "email", "nameless-" + System.nanoTime() + "@example.com", "password", HttpWorld.PASSWORD));
+
+        world.requireStatus(result, 400);
+        assertThat(world.parse(result).get("detail").asString()).isEqualTo("a display name is required");
+    }
+
+    @Test
     void logoutInvalidatesTheSession() {
         HttpWorld.Account account = world.registerViaApi();
 

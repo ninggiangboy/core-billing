@@ -30,7 +30,10 @@ public record User(
     }
 
     public static User register(IdGenerator ids, String email, String displayName, String passwordHash, Role role, Instant now) {
-        return new User(ids.newId(), email.trim().toLowerCase(Locale.ROOT), displayName.trim(), passwordHash, role, UserStatus.ACTIVE, now);
+        // A missing value must reach the constructor's validation, which answers 400, not fail on trim().
+        String normalizedEmail = email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+        String normalizedName = displayName == null ? null : displayName.trim();
+        return new User(ids.newId(), normalizedEmail, normalizedName, passwordHash, role, UserStatus.ACTIVE, now);
     }
 
     public User withRole(Role next) {

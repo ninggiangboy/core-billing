@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/invoice.paid.schema.json",
+  "$id": "https://billing.io/events/invoice.paid.schema.json",
   "title": "Invoice paid",
   "description": "An invoice was paid: a verified Stripe payment succeeded and the wallet was credited by the invoice total (the Postpaid debt was paid off), or the invoice documents a charge the wallet had already paid. A browser redirect never causes it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

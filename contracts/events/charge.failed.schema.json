@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/charge.failed.schema.json",
+  "$id": "https://billing.io/events/charge.failed.schema.json",
   "title": "Charge failed",
   "description": "A charge could not be paid and was recorded as failed; nothing was posted to the ledger. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

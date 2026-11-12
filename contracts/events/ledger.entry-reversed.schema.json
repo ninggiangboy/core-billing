@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/ledger.entry-reversed.schema.json",
+  "$id": "https://billing.io/events/ledger.entry-reversed.schema.json",
   "title": "Ledger entry reversed",
   "description": "An earlier ledger entry was corrected by a reversal entry; the original is never edited. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

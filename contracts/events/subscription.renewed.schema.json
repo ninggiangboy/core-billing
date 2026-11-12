@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/subscription.renewed.schema.json",
+  "$id": "https://billing.io/events/subscription.renewed.schema.json",
   "title": "Subscription renewed",
   "description": "A period of a subscription was paid from the customer's wallet. Period 0 is the first one and is reported when the subscription starts. Billing only reports this fact: it never provisions or stops anything for the Tenant System, which decides what the renewal means for it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

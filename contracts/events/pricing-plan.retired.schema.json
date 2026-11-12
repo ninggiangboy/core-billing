@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/pricing-plan.retired.schema.json",
+  "$id": "https://billing.io/events/pricing-plan.retired.schema.json",
   "title": "Pricing plan retired",
   "description": "A pricing plan was retired: it takes no new versions and should no longer be offered. Its versions stay readable. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

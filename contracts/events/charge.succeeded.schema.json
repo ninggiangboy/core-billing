@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/charge.succeeded.schema.json",
+  "$id": "https://billing.io/events/charge.succeeded.schema.json",
   "title": "Charge succeeded",
   "description": "A charge was recorded against a wallet and a ledger entry posted. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

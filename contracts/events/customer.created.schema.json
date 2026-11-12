@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/customer.created.schema.json",
+  "$id": "https://billing.io/events/customer.created.schema.json",
   "title": "Customer created",
   "description": "A Customer now exists in the tenant. It carries no email or other contact data. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

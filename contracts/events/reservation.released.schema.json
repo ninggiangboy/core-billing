@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/reservation.released.schema.json",
+  "$id": "https://billing.io/events/reservation.released.schema.json",
   "title": "Reservation released",
   "description": "A reservation was released by the caller and its hold returned to the wallet. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/refund.succeeded.schema.json",
+  "$id": "https://billing.io/events/refund.succeeded.schema.json",
   "title": "Refund succeeded",
   "description": "Money was sent back to the customer's card through Stripe and the wallet was debited for it. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

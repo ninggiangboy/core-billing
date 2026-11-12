@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/reservation.created.schema.json",
+  "$id": "https://billing.io/events/reservation.created.schema.json",
   "title": "Reservation created",
   "description": "A budget was held on a wallet before a resource is executed. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

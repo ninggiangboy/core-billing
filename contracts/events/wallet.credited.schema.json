@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/wallet.credited.schema.json",
+  "$id": "https://billing.io/events/wallet.credited.schema.json",
   "title": "Wallet credited",
   "description": "Money was added to a wallet. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/usage.rated.schema.json",
+  "$id": "https://billing.io/events/usage.rated.schema.json",
   "title": "Usage rated",
   "description": "A customer's usage for a period was priced under a specific plan version and accounted for: charged to the wallet, or rated to nothing. A rating whose charge failed announces charge.failed instead and leaves the usage free to rate again. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

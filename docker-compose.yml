@@ -4,8 +4,8 @@ services:
   postgres:
     image: postgres:18
     environment:
-      POSTGRES_DB: corebilling
-      POSTGRES_USER: corebilling
+      POSTGRES_DB: billing
+      POSTGRES_USER: billing
       POSTGRES_PASSWORD: ${BILLING_MIGRATION_DB_PASSWORD:?set it in .env}
     ports:
       - "5432:5432"
@@ -25,17 +25,17 @@ services:
     volumes:
       - ./ops/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
 
-  sample-tenant-postgres:
+  tenant-postgres:
     image: postgres:18
     environment:
-      POSTGRES_DB: sampletenant
-      POSTGRES_USER: sampletenant
-      POSTGRES_PASSWORD: ${SAMPLE_TENANT_DB_PASSWORD:-sampletenant}
+      POSTGRES_DB: tenant
+      POSTGRES_USER: tenant
+      POSTGRES_PASSWORD: ${SAMPLE_TENANT_DB_PASSWORD:-tenant}
     ports:
       - "5433:5432"
     volumes:
-      - sample-tenant-postgres-data:/var/lib/postgresql
+      - tenant-postgres-data:/var/lib/postgresql
 
 volumes:
   postgres-data:
-  sample-tenant-postgres-data:
+  tenant-postgres-data:

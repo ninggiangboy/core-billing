@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/subscription.payment_failed.schema.json",
+  "$id": "https://billing.io/events/subscription.payment_failed.schema.json",
   "title": "Subscription payment failed",
   "description": "A period of a subscription could not be paid from the customer's wallet (for example for lack of funds). The subscription is now past due. Billing retries on a bounded schedule and reports every failed attempt; it never provisions or stops anything for the Tenant System, which decides what past due means for it. When `willRetry` is false the attempts have run out and Billing stops trying on its own. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

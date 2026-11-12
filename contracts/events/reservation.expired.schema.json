@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://corebilling.io/events/reservation.expired.schema.json",
+  "$id": "https://billing.io/events/reservation.expired.schema.json",
   "title": "Reservation expired",
   "description": "A reservation passed its expiry without being captured and its hold returned to the wallet. This schema describes the `data` member of the delivered document; the envelope (id, type, tenantId, occurredAt, data) is described in README.md.",
   "type": "object",

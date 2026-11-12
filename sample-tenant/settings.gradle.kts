@@ -22,4 +22,5 @@ include(
     "modules:billing-client",
     "modules:webhook-receiver",
     "apps:app-boot",
+    "testing:arch-fixtures",
 )

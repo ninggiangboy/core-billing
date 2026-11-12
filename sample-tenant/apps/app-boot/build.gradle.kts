@@ -26,4 +26,5 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.assertj:assertj-core")
     testImplementation(libs.archunit.junit5)
+    testImplementation(project(":testing:arch-fixtures"))
 }

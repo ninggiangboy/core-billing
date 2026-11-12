@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.execution.application.port;
+package dev.ngb.sampletenant.execution.application.queue.port;
 
 import java.util.List;
 import java.util.UUID;

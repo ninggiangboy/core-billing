@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.boot.jobs;
 
-import dev.ngb.sampletenant.execution.application.ExecuteOrdersUseCase;
+import dev.ngb.sampletenant.execution.application.queue.command.ExecuteOrdersUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

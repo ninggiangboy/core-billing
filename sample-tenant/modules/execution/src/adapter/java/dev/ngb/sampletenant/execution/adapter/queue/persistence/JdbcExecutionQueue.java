@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.execution.adapter.persistence;
+package dev.ngb.sampletenant.execution.adapter.queue.persistence;
 
 import dev.ngb.core.runtime.Clock;
-import dev.ngb.sampletenant.execution.application.port.ExecutionQueue;
+import dev.ngb.sampletenant.execution.application.queue.port.ExecutionQueue;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;

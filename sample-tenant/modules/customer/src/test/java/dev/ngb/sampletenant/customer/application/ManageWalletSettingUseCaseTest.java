@@ -8,7 +8,6 @@ import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
-import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
 import dev.ngb.sampletenant.customer.application.customer.service.CustomerDirectoryService;
 import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
 import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
@@ -34,7 +33,7 @@ class ManageWalletSettingUseCaseTest {
     private final FakeWallets wallets = new FakeWallets();
     private final IdGenerator ids = () -> UUID.randomUUID();
     private final ManageWalletSettingUseCase useCase = new ManageWalletSettingUseCase(
-            new CustomerDirectoryService(new CustomerQueries(customers)), settings, wallets, () -> NOW);
+            new CustomerDirectoryService(customers), settings, wallets, () -> NOW);
 
     @Test
     void theDefaultSettingIsPrepaidInUsd() {

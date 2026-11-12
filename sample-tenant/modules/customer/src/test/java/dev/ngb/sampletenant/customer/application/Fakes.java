@@ -3,6 +3,8 @@ package dev.ngb.sampletenant.customer.application;
 import dev.ngb.sampletenant.billing.api.client.BillingCustomers;
 import dev.ngb.sampletenant.billing.api.model.Customer;
 import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerReadRepository;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerView;
 import dev.ngb.sampletenant.customer.domain.customer.CustomerStatus;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
 import java.time.Instant;
@@ -17,7 +19,7 @@ final class Fakes {
 
     private Fakes() {}
 
-    static final class Customers implements CustomerRepository {
+    static final class Customers implements CustomerRepository, CustomerReadRepository {
         private final Map<UUID, dev.ngb.sampletenant.customer.domain.customer.Customer> byId = new LinkedHashMap<>();
 
         @Override
@@ -36,8 +38,24 @@ final class Fakes {
         }
 
         @Override
-        public List<dev.ngb.sampletenant.customer.domain.customer.Customer> findAll() {
-            return new ArrayList<>(byId.values());
+        public List<CustomerView> list() {
+            return byId.values().stream().map(Customers::view).toList();
+        }
+
+        @Override
+        public Optional<CustomerView> byId(UUID id) {
+            return findById(id).map(Customers::view);
+        }
+
+        @Override
+        public Optional<CustomerView> byUserId(UUID userId) {
+            return findByUserId(userId).map(Customers::view);
+        }
+
+        private static CustomerView view(dev.ngb.sampletenant.customer.domain.customer.Customer customer) {
+            return new CustomerView(
+                    customer.id(), customer.userId(), customer.billingCustomerId(), customer.displayName(),
+                    customer.email(), customer.status(), customer.createdAt());
         }
     }
 

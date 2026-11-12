@@ -6,7 +6,10 @@ import dev.ngb.sampletenant.identity.api.security.RequiresPermission;
 import dev.ngb.sampletenant.identity.api.security.Role;
 import dev.ngb.sampletenant.identity.application.user.command.ManageUsersUseCase;
 import dev.ngb.sampletenant.identity.application.user.command.RegisterUserUseCase;
+import dev.ngb.sampletenant.identity.application.user.query.UserReadRepository;
+import dev.ngb.sampletenant.identity.application.user.query.UserView;
 import dev.ngb.sampletenant.identity.domain.user.User;
+import dev.ngb.sampletenant.shared.error.NotFoundException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +33,10 @@ public class UserController {
         static UserResponse of(User user) {
             return new UserResponse(user.id(), user.email(), user.displayName(), user.role(), user.status().name(), user.createdAt());
         }
+
+        static UserResponse of(UserView user) {
+            return new UserResponse(user.id(), user.email(), user.displayName(), user.role(), user.status().name(), user.createdAt());
+        }
     }
 
     public record CreateUserRequest(String email, String displayName, String password, Role role) {}
@@ -38,27 +45,29 @@ public class UserController {
 
     private final ManageUsersUseCase manage;
     private final RegisterUserUseCase register;
+    private final UserReadRepository users;
 
-    public UserController(ManageUsersUseCase manage, RegisterUserUseCase register) {
+    public UserController(ManageUsersUseCase manage, RegisterUserUseCase register, UserReadRepository users) {
         this.manage = manage;
         this.register = register;
+        this.users = users;
     }
 
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return UserResponse.of(manage.get(principal.id()));
+        return UserResponse.of(users.byId(principal.id()).orElseThrow(() -> new NotFoundException("user not found")));
     }
 
     @GetMapping
     @RequiresPermission(Permission.USER_MANAGE)
     public List<UserResponse> list() {
-        return manage.list().stream().map(UserResponse::of).toList();
+        return users.list().stream().map(UserResponse::of).toList();
     }
 
     @GetMapping("/{id}")
     @RequiresPermission(Permission.USER_MANAGE)
     public UserResponse get(@PathVariable UUID id) {
-        return UserResponse.of(manage.get(id));
+        return UserResponse.of(users.byId(id).orElseThrow(() -> new NotFoundException("user not found")));
     }
 
     @PostMapping

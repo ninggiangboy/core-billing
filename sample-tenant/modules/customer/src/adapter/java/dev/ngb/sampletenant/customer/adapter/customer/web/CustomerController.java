@@ -1,7 +1,8 @@
 package dev.ngb.sampletenant.customer.adapter.customer.web;
 
-import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
 import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustomerUseCase;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerView;
 import dev.ngb.sampletenant.customer.domain.customer.Customer;
 import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.security.Permission;
@@ -29,6 +30,17 @@ public class CustomerController {
             String email,
             String status,
             Instant createdAt) {
+        static CustomerResponse of(CustomerView customer) {
+            return new CustomerResponse(
+                    customer.id(),
+                    customer.userId(),
+                    customer.billingCustomerId(),
+                    customer.displayName(),
+                    customer.email(),
+                    customer.status().name(),
+                    customer.createdAt());
+        }
+
         static CustomerResponse of(Customer customer) {
             return new CustomerResponse(
                     customer.id(),

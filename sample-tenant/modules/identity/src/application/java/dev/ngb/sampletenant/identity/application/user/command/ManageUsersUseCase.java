@@ -6,7 +6,6 @@ import dev.ngb.sampletenant.identity.api.account.RegisteredAccount;
 import dev.ngb.sampletenant.identity.application.user.port.UserRepository;
 import dev.ngb.sampletenant.identity.domain.user.User;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
-import java.util.List;
 import java.util.UUID;
 
 /** Administrative operations on local accounts: listing, roles and deactivation. */
@@ -18,10 +17,6 @@ public class ManageUsersUseCase {
     public ManageUsersUseCase(UserRepository users, AccountListener listener) {
         this.users = users;
         this.listener = listener;
-    }
-
-    public List<User> list() {
-        return users.findAll();
     }
 
     public User get(UUID id) {

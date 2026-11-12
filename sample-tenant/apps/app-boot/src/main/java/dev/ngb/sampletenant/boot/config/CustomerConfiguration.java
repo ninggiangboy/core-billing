@@ -7,35 +7,41 @@ import dev.ngb.sampletenant.billing.api.client.BillingInvoices;
 import dev.ngb.sampletenant.billing.api.client.BillingPayments;
 import dev.ngb.sampletenant.billing.api.client.BillingSessions;
 import dev.ngb.sampletenant.billing.api.client.BillingWallets;
-import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.customer.adapter.customer.identity.CustomerAccountListener;
-import dev.ngb.sampletenant.customer.adapter.customer.persistence.CustomerJdbcRepository;
-import dev.ngb.sampletenant.customer.adapter.customer.persistence.JdbcCustomerRepository;
-import dev.ngb.sampletenant.customer.adapter.wallet.persistence.JdbcWalletSettingRepository;
+import dev.ngb.sampletenant.customer.adapter.customer.persistence.JooqCustomerReadRepository;
+import dev.ngb.sampletenant.customer.adapter.customer.persistence.JooqCustomerRepository;
+import dev.ngb.sampletenant.customer.adapter.wallet.persistence.JooqWalletSettingRepository;
+import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.customer.application.billing.command.OpenBillingSessionUseCase;
 import dev.ngb.sampletenant.customer.application.billing.command.TopUpUseCase;
 import dev.ngb.sampletenant.customer.application.billing.query.CustomerBillingQueries;
-import dev.ngb.sampletenant.customer.application.customer.service.CustomerDirectoryService;
-import dev.ngb.sampletenant.customer.application.customer.service.CustomerMapping;
-import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
-import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
 import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustomerUseCase;
 import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerQueries;
+import dev.ngb.sampletenant.customer.application.customer.query.CustomerReadRepository;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerDirectoryService;
+import dev.ngb.sampletenant.customer.application.customer.service.CustomerMapping;
+import dev.ngb.sampletenant.customer.application.wallet.command.ManageWalletSettingUseCase;
 import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
 import dev.ngb.sampletenant.identity.api.account.AccountListener;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Wires the customer mapping and the registration listener identity calls. */
 @Configuration(proxyBeanMethods = false)
 class CustomerConfiguration {
 
     @Bean
-    CustomerRepository customerRepository(CustomerJdbcRepository rows, JdbcTemplate jdbc) {
-        return new JdbcCustomerRepository(rows, jdbc);
+    CustomerRepository customerRepository(DSLContext dsl) {
+        return new JooqCustomerRepository(dsl);
+    }
+
+    @Bean
+    CustomerReadRepository customerReadRepository(DSLContext dsl) {
+        return new JooqCustomerReadRepository(dsl);
     }
 
     @Bean
@@ -53,12 +59,12 @@ class CustomerConfiguration {
     }
 
     @Bean
-    CustomerQueries customerQueries(CustomerRepository customers) {
+    CustomerQueries customerQueries(CustomerReadRepository customers) {
         return new CustomerQueries(customers);
     }
 
     @Bean
-    CustomerDirectoryService customerDirectoryService(CustomerQueries customers) {
+    CustomerDirectoryService customerDirectoryService(CustomerReadRepository customers) {
         return new CustomerDirectoryService(customers);
     }
 
@@ -88,8 +94,8 @@ class CustomerConfiguration {
     }
 
     @Bean
-    WalletSettingRepository walletSettingRepository(JdbcTemplate jdbc) {
-        return new JdbcWalletSettingRepository(jdbc);
+    WalletSettingRepository walletSettingRepository(DSLContext dsl) {
+        return new JooqWalletSettingRepository(dsl);
     }
 
     @Bean

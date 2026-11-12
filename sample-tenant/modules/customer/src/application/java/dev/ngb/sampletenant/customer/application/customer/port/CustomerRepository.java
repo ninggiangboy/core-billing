@@ -1,7 +1,6 @@
 package dev.ngb.sampletenant.customer.application.customer.port;
 
 import dev.ngb.sampletenant.customer.domain.customer.Customer;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +12,4 @@ public interface CustomerRepository {
     Optional<Customer> findById(UUID id);
 
     Optional<Customer> findByUserId(UUID userId);
-
-    List<Customer> findAll();
 }

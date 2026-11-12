@@ -5,6 +5,8 @@ import dev.ngb.sampletenant.identity.domain.session.UserSession;
 import dev.ngb.sampletenant.identity.application.user.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.session.port.SessionRepository;
 import dev.ngb.sampletenant.identity.application.user.port.UserRepository;
+import dev.ngb.sampletenant.identity.application.user.query.UserReadRepository;
+import dev.ngb.sampletenant.identity.application.user.query.UserView;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,7 +20,7 @@ final class Fakes {
 
     private Fakes() {}
 
-    static final class Users implements UserRepository {
+    static final class Users implements UserRepository, UserReadRepository {
         private final Map<UUID, User> byId = new LinkedHashMap<>();
 
         @Override
@@ -32,8 +34,13 @@ final class Fakes {
         }
 
         @Override
-        public List<User> findAll() {
-            return new ArrayList<>(byId.values());
+        public List<UserView> list() {
+            return byId.values().stream().map(Users::view).toList();
+        }
+
+        @Override
+        public Optional<UserView> byId(UUID id) {
+            return findById(id).map(Users::view);
         }
 
         @Override
@@ -42,8 +49,18 @@ final class Fakes {
         }
 
         @Override
+        public boolean anyExists() {
+            return !byId.isEmpty();
+        }
+
+        @Override
         public void save(User user) {
             byId.put(user.id(), user);
+        }
+
+        private static UserView view(User user) {
+            return new UserView(
+                    user.id(), user.email(), user.displayName(), user.role(), user.status(), user.createdAt());
         }
     }
 

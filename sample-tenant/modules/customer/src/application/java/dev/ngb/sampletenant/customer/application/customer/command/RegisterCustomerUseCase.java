@@ -7,7 +7,6 @@ import dev.ngb.sampletenant.customer.application.customer.service.CustomerMappin
 import dev.ngb.sampletenant.customer.domain.customer.Customer;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,9 +50,5 @@ public class RegisterCustomerUseCase {
         } catch (UpstreamUnavailableException unavailable) {
             return customer;
         }
-    }
-
-    public List<Customer> list() {
-        return customers.findAll();
     }
 }

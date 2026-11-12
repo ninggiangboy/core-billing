@@ -52,6 +52,6 @@ public class RegisterUserUseCase {
     }
 
     public boolean anyUserExists() {
-        return !users.findAll().isEmpty();
+        return users.anyExists();
     }
 }

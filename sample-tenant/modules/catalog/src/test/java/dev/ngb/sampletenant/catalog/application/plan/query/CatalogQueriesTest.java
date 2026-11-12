@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.sampletenant.catalog.application.plan.command.AttachBillingPlanUseCase;
 import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
+import dev.ngb.sampletenant.catalog.application.plan.service.CatalogLookupService;
 import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
 import dev.ngb.sampletenant.catalog.domain.plan.ResourceType;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
@@ -20,6 +21,7 @@ class CatalogQueriesTest {
 
     private final InMemoryPlans plans = new InMemoryPlans();
     private final CatalogQueries queries = new CatalogQueries(plans);
+    private final CatalogLookupService lookup = new CatalogLookupService(plans);
     private final AttachBillingPlanUseCase attach = new AttachBillingPlanUseCase(plans);
 
     @Test
@@ -27,7 +29,7 @@ class CatalogQueriesTest {
         plans.save(plan("compute-standard", ResourceType.COMPUTE, true, null));
         plans.save(plan("storage-standard", ResourceType.STORAGE, false, null));
 
-        assertThat(queries.listActive()).extracting(CatalogPlan::code).containsExactly("compute-standard");
+        assertThat(queries.listActive()).extracting(PlanView::code).containsExactly("compute-standard");
     }
 
     @Test
@@ -38,7 +40,7 @@ class CatalogQueriesTest {
         CatalogPlan bound = attach.attachByCode("compute-standard", "bplan_1");
 
         assertThat(bound.billingPlanId()).isEqualTo("bplan_1");
-        assertThat(queries.get(plan.id()).billable()).isTrue();
+        assertThat(lookup.get(plan.id()).billable()).isTrue();
     }
 
     @Test
@@ -51,7 +53,7 @@ class CatalogQueriesTest {
                 UUID.randomUUID(), code, type.label(), type, "description", billingPlanId, active, Instant.parse("2026-11-11T00:00:00Z"));
     }
 
-    private static final class InMemoryPlans implements CatalogPlanRepository {
+    private static final class InMemoryPlans implements CatalogPlanRepository, CatalogPlanReadRepository {
         private final Map<UUID, CatalogPlan> byId = new LinkedHashMap<>();
 
         @Override
@@ -70,8 +72,29 @@ class CatalogQueriesTest {
         }
 
         @Override
-        public List<CatalogPlan> findAll() {
-            return List.copyOf(byId.values());
+        public List<PlanView> listActive() {
+            return all().stream().filter(PlanView::active).toList();
+        }
+
+        @Override
+        public List<PlanView> all() {
+            return byId.values().stream().map(InMemoryPlans::view).toList();
+        }
+
+        @Override
+        public Optional<PlanView> byId(UUID id) {
+            return Optional.ofNullable(byId.get(id)).map(InMemoryPlans::view);
+        }
+
+        @Override
+        public Optional<PlanView> byCode(String code) {
+            return findByCode(code).map(InMemoryPlans::view);
+        }
+
+        private static PlanView view(CatalogPlan plan) {
+            return new PlanView(
+                    plan.id(), plan.code(), plan.name(), plan.resourceType(), plan.description(),
+                    plan.billingPlanId(), plan.active(), plan.createdAt());
         }
     }
 }

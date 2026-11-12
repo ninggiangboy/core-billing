@@ -1,8 +1,5 @@
 package dev.ngb.sampletenant.catalog.application.plan.query;
 
-import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
-import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
-import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import java.util.List;
 import java.util.UUID;
@@ -10,42 +7,25 @@ import java.util.UUID;
 /** Read side of the offer catalog. */
 public class CatalogQueries {
 
-    private final CatalogPlanRepository plans;
+    private final CatalogPlanReadRepository plans;
 
-    public CatalogQueries(CatalogPlanRepository plans) {
+    public CatalogQueries(CatalogPlanReadRepository plans) {
         this.plans = plans;
     }
 
-    public CatalogLookup.PlanSnapshot get(UUID id) {
-        return snapshot(plan(id));
+    public List<PlanView> listActive() {
+        return plans.listActive();
     }
 
-    public List<CatalogPlan> listActive() {
-        return plans.findAll().stream().filter(CatalogPlan::active).toList();
+    public List<PlanView> all() {
+        return plans.all();
     }
 
-    public List<CatalogPlan> all() {
-        return plans.findAll();
+    public PlanView plan(UUID id) {
+        return plans.byId(id).orElseThrow(() -> new NotFoundException("catalog plan not found"));
     }
 
-    public CatalogPlan plan(UUID id) {
-        return plans.findById(id).orElseThrow(() -> new NotFoundException("catalog plan not found"));
-    }
-
-    public CatalogPlan getByCode(String code) {
-        return plans.findByCode(code).orElseThrow(() -> new NotFoundException("catalog plan not found"));
-    }
-
-    private static CatalogLookup.PlanSnapshot snapshot(CatalogPlan plan) {
-        return new CatalogLookup.PlanSnapshot(
-                plan.id(),
-                plan.code(),
-                plan.name(),
-                plan.billingPlanId(),
-                plan.resourceType().name(),
-                plan.resourceType().pricingModel().name(),
-                plan.resourceType().metric(),
-                plan.resourceType().unit(),
-                plan.billable());
+    public PlanView getByCode(String code) {
+        return plans.byCode(code).orElseThrow(() -> new NotFoundException("catalog plan not found"));
     }
 }

@@ -7,7 +7,7 @@ import dev.ngb.sampletenant.billing.api.client.BillingWebhooks;
 import dev.ngb.sampletenant.billing.api.model.PricingPlan;
 import dev.ngb.sampletenant.catalog.application.plan.command.AttachBillingPlanUseCase;
 import dev.ngb.sampletenant.catalog.application.plan.query.CatalogQueries;
-import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
+import dev.ngb.sampletenant.catalog.application.plan.query.PlanView;
 import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
@@ -69,7 +69,7 @@ class BootstrapRunner implements ApplicationRunner {
                 tenantSettings.maxAttempts(),
                 tenantSettings.retryBackoff()));
         List<PricingPlan> existing = admin.plans(null);
-        for (CatalogPlan plan : catalog.all()) {
+        for (PlanView plan : catalog.all()) {
             if (plan.billingPlanId() != null && !plan.billingPlanId().isBlank()) {
                 continue;
             }

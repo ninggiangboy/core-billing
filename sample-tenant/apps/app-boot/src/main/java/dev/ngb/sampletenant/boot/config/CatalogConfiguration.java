@@ -1,32 +1,37 @@
 package dev.ngb.sampletenant.boot.config;
 
-import dev.ngb.sampletenant.catalog.adapter.plan.persistence.CatalogPlanJdbcRepository;
-import dev.ngb.sampletenant.catalog.adapter.plan.persistence.JdbcCatalogPlanRepository;
+import dev.ngb.sampletenant.catalog.adapter.plan.persistence.JooqCatalogPlanReadRepository;
+import dev.ngb.sampletenant.catalog.adapter.plan.persistence.JooqCatalogPlanRepository;
 import dev.ngb.sampletenant.catalog.application.plan.command.AttachBillingPlanUseCase;
-import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
+import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
+import dev.ngb.sampletenant.catalog.application.plan.query.CatalogPlanReadRepository;
 import dev.ngb.sampletenant.catalog.application.plan.query.CatalogQueries;
 import dev.ngb.sampletenant.catalog.application.plan.service.CatalogLookupService;
-import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
+import org.jooq.DSLContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Wires the offer catalog and the bootstrap's plan binding. */
 @Configuration(proxyBeanMethods = false)
 class CatalogConfiguration {
 
     @Bean
-    CatalogPlanRepository catalogPlanRepository(CatalogPlanJdbcRepository rows, JdbcTemplate jdbc) {
-        return new JdbcCatalogPlanRepository(rows, jdbc);
+    CatalogPlanRepository catalogPlanRepository(DSLContext dsl) {
+        return new JooqCatalogPlanRepository(dsl);
     }
 
     @Bean
-    CatalogQueries catalogQueries(CatalogPlanRepository plans) {
+    CatalogPlanReadRepository catalogPlanReadRepository(DSLContext dsl) {
+        return new JooqCatalogPlanReadRepository(dsl);
+    }
+
+    @Bean
+    CatalogQueries catalogQueries(CatalogPlanReadRepository plans) {
         return new CatalogQueries(plans);
     }
 
     @Bean
-    CatalogLookup catalogLookup(CatalogQueries plans) {
+    CatalogLookupService catalogLookupService(CatalogPlanReadRepository plans) {
         return new CatalogLookupService(plans);
     }
 

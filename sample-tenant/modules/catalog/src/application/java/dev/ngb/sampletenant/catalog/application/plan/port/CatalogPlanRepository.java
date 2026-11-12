@@ -1,7 +1,6 @@
 package dev.ngb.sampletenant.catalog.application.plan.port;
 
 import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +12,4 @@ public interface CatalogPlanRepository {
     Optional<CatalogPlan> findById(UUID id);
 
     Optional<CatalogPlan> findByCode(String code);
-
-    List<CatalogPlan> findAll();
 }

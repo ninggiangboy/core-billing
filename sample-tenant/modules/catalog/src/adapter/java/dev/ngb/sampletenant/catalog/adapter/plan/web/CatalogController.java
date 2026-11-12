@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.catalog.adapter.plan.web;
 
 import dev.ngb.sampletenant.catalog.application.plan.query.CatalogQueries;
-import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
+import dev.ngb.sampletenant.catalog.application.plan.query.PlanView;
 import dev.ngb.sampletenant.catalog.domain.plan.ResourceType;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +27,7 @@ public class CatalogController {
             String unit,
             String billingPlanId,
             boolean active) {
-        static PlanResponse of(CatalogPlan plan) {
+        static PlanResponse of(PlanView plan) {
             ResourceType type = plan.resourceType();
             return new PlanResponse(
                     plan.id(),

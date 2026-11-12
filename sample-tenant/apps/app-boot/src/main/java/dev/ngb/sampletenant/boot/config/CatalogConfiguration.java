@@ -3,7 +3,9 @@ package dev.ngb.sampletenant.boot.config;
 import dev.ngb.sampletenant.catalog.adapter.plan.persistence.CatalogPlanJdbcRepository;
 import dev.ngb.sampletenant.catalog.adapter.plan.persistence.JdbcCatalogPlanRepository;
 import dev.ngb.sampletenant.catalog.application.plan.command.AttachBillingPlanUseCase;
+import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
 import dev.ngb.sampletenant.catalog.application.plan.query.CatalogQueries;
+import dev.ngb.sampletenant.catalog.application.plan.service.CatalogLookupService;
 import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,11 @@ class CatalogConfiguration {
     @Bean
     CatalogQueries catalogQueries(CatalogPlanRepository plans) {
         return new CatalogQueries(plans);
+    }
+
+    @Bean
+    CatalogLookup catalogLookup(CatalogQueries plans) {
+        return new CatalogLookupService(plans);
     }
 
     @Bean

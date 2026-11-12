@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 /** Read side of the offer catalog. */
-public class CatalogQueries implements CatalogLookup {
+public class CatalogQueries {
 
     private final CatalogPlanRepository plans;
 
@@ -16,8 +16,7 @@ public class CatalogQueries implements CatalogLookup {
         this.plans = plans;
     }
 
-    @Override
-    public PlanSnapshot get(UUID id) {
+    public CatalogLookup.PlanSnapshot get(UUID id) {
         return snapshot(plan(id));
     }
 
@@ -37,8 +36,8 @@ public class CatalogQueries implements CatalogLookup {
         return plans.findByCode(code).orElseThrow(() -> new NotFoundException("catalog plan not found"));
     }
 
-    private static PlanSnapshot snapshot(CatalogPlan plan) {
-        return new PlanSnapshot(
+    private static CatalogLookup.PlanSnapshot snapshot(CatalogPlan plan) {
+        return new CatalogLookup.PlanSnapshot(
                 plan.id(),
                 plan.code(),
                 plan.name(),

@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.webhook.adapter.persistence;
+package dev.ngb.sampletenant.webhook.adapter.event.persistence;
 
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.webhook.application.port.DebtBook;
+import dev.ngb.sampletenant.webhook.application.event.port.DebtBook;
 import java.sql.Timestamp;
 import java.time.Instant;
 import org.springframework.jdbc.core.JdbcTemplate;

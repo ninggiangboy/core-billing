@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.webhook.application.port;
+package dev.ngb.sampletenant.webhook.application.event.port;
 
-import dev.ngb.sampletenant.webhook.domain.WebhookEvent;
+import dev.ngb.sampletenant.webhook.domain.event.WebhookEvent;
 import java.util.Optional;
 
 /** Persistence boundary for received events, keyed by Billing's event id. */

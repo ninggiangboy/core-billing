@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.webhook.adapter.web;
+package dev.ngb.sampletenant.webhook.adapter.event.web;
 
-import dev.ngb.sampletenant.webhook.application.ReceiveWebhookUseCase;
-import dev.ngb.sampletenant.webhook.application.WebhookEnvelope;
+import dev.ngb.sampletenant.webhook.application.event.command.ReceiveWebhookUseCase;
+import dev.ngb.sampletenant.webhook.application.event.service.WebhookEnvelope;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;

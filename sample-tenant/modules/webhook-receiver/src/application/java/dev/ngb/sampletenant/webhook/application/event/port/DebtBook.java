@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.webhook.application.port;
+package dev.ngb.sampletenant.webhook.application.event.port;
 
 import java.time.Instant;
 

@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.webhook.application;
+package dev.ngb.sampletenant.webhook.application.event.service;
 
 import java.time.Instant;
 import java.util.Map;

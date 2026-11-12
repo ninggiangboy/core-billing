@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.webhook.domain;
+package dev.ngb.sampletenant.webhook.domain.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

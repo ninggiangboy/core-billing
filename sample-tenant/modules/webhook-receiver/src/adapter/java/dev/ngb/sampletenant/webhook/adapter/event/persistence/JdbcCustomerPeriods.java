@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.webhook.adapter.persistence;
+package dev.ngb.sampletenant.webhook.adapter.event.persistence;
 
-import dev.ngb.sampletenant.webhook.application.port.CustomerPeriods;
+import dev.ngb.sampletenant.webhook.application.event.port.CustomerPeriods;
 import java.sql.Timestamp;
 import java.time.Instant;
 import org.springframework.jdbc.core.JdbcTemplate;

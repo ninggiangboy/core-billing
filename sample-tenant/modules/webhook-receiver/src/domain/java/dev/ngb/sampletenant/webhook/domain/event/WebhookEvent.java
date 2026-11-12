@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.webhook.domain;
+package dev.ngb.sampletenant.webhook.domain.event;
 
 import dev.ngb.core.ddd.AggregateRoot;
 import dev.ngb.core.runtime.IdGenerator;

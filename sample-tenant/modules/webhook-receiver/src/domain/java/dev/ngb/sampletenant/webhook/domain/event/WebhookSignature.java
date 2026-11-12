@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.webhook.domain;
+package dev.ngb.sampletenant.webhook.domain.event;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

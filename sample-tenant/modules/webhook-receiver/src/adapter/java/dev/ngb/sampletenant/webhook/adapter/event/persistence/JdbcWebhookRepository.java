@@ -1,7 +1,7 @@
-package dev.ngb.sampletenant.webhook.adapter.persistence;
+package dev.ngb.sampletenant.webhook.adapter.event.persistence;
 
-import dev.ngb.sampletenant.webhook.application.port.WebhookRepository;
-import dev.ngb.sampletenant.webhook.domain.WebhookEvent;
+import dev.ngb.sampletenant.webhook.application.event.port.WebhookRepository;
+import dev.ngb.sampletenant.webhook.domain.event.WebhookEvent;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.UUID;

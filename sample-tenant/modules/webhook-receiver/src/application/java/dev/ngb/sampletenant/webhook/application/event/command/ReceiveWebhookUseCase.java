@@ -1,11 +1,13 @@
-package dev.ngb.sampletenant.webhook.application;
+package dev.ngb.sampletenant.webhook.application.event.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.shared.error.UnauthorizedException;
-import dev.ngb.sampletenant.webhook.application.port.WebhookRepository;
-import dev.ngb.sampletenant.webhook.domain.WebhookEvent;
-import dev.ngb.sampletenant.webhook.domain.WebhookSignature;
+import dev.ngb.sampletenant.webhook.application.event.port.WebhookRepository;
+import dev.ngb.sampletenant.webhook.application.event.service.WebhookEnvelope;
+import dev.ngb.sampletenant.webhook.application.event.service.WebhookPolicy;
+import dev.ngb.sampletenant.webhook.domain.event.WebhookEvent;
+import dev.ngb.sampletenant.webhook.domain.event.WebhookSignature;
 import java.time.Duration;
 
 /** Verifies, deduplicates and applies one delivery. A duplicate answers without repeating the policy. */

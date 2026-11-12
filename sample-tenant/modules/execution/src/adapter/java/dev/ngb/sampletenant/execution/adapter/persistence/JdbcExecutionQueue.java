@@ -1,8 +1,8 @@
 package dev.ngb.sampletenant.execution.adapter.persistence;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.execution.application.port.ExecutionQueue;
 import java.sql.Timestamp;
-import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,7 +33,7 @@ public class JdbcExecutionQueue implements ExecutionQueue {
                 returning order_id, attempts
                 """,
                 (rs, row) -> new Claimed(rs.getObject("order_id", UUID.class), rs.getInt("attempts")),
-                Timestamp.from(clock.instant()),
+                Timestamp.from(clock.now()),
                 batchSize);
     }
 
@@ -41,7 +41,7 @@ public class JdbcExecutionQueue implements ExecutionQueue {
     public void finish(UUID orderId) {
         jdbc.update(
                 "update execution_queue set status = 'DONE', finished_at = ? where order_id = ?",
-                Timestamp.from(clock.instant()),
+                Timestamp.from(clock.now()),
                 orderId);
     }
 

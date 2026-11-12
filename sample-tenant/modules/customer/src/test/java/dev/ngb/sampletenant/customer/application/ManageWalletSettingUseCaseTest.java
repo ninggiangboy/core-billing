@@ -3,6 +3,8 @@ package dev.ngb.sampletenant.customer.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
@@ -11,9 +13,7 @@ import dev.ngb.sampletenant.customer.domain.Customer;
 import dev.ngb.sampletenant.customer.domain.CustomerWalletSetting;
 import dev.ngb.sampletenant.customer.domain.WalletMode;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +29,9 @@ class ManageWalletSettingUseCaseTest {
     private final Fakes.Customers customers = new Fakes.Customers();
     private final InMemorySettings settings = new InMemorySettings();
     private final FakeWallets wallets = new FakeWallets();
+    private final IdGenerator ids = () -> UUID.randomUUID();
     private final ManageWalletSettingUseCase useCase = new ManageWalletSettingUseCase(
-            new CustomerQueries(customers), settings, wallets, Clock.fixed(NOW, ZoneOffset.UTC));
+            new CustomerQueries(customers), settings, wallets, () -> NOW);
 
     @Test
     void theDefaultSettingIsPrepaidInUsd() {
@@ -78,7 +79,7 @@ class ManageWalletSettingUseCaseTest {
 
     @Test
     void refusesAnUnmappedCustomer() {
-        customers.save(Customer.pending(USER, "Ada", "ada@example.com", NOW));
+        customers.save(Customer.pending(ids, USER, "Ada", "ada@example.com", NOW));
 
         assertThatThrownBy(() -> useCase.update(USER, WalletMode.PREPAID, "USD", null))
                 .isInstanceOf(BadRequestException.class);
@@ -95,7 +96,7 @@ class ManageWalletSettingUseCaseTest {
     }
 
     private void mapped() {
-        customers.save(Customer.pending(USER, "Ada", "ada@example.com", NOW).mapped("cus_1"));
+        customers.save(Customer.pending(ids, USER, "Ada", "ada@example.com", NOW).mapped("cus_1"));
     }
 
     private static final class InMemorySettings implements WalletSettingRepository {

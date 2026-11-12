@@ -1,12 +1,12 @@
 package dev.ngb.sampletenant.execution.application;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.BillingCharges;
 import dev.ngb.sampletenant.billing.api.model.Charge;
 import dev.ngb.sampletenant.billing.api.model.ChargeUsageRequest;
 import dev.ngb.sampletenant.execution.application.port.ExecutionQueue;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.usage.api.UsageRecorder;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -84,7 +84,7 @@ public class ExecuteOrdersUseCase {
                     order.usageQuantity(),
                     order.unit(),
                     order.reference(),
-                    clock.instant()));
+                    clock.now()));
         }
         if ("HYBRID".equals(order.pricingModel())) {
             rateUsage(order);
@@ -104,7 +104,7 @@ public class ExecuteOrdersUseCase {
     }
 
     private void rateUsage(ExecutionOrders.ExecutionOrder order) {
-        Instant to = clock.instant();
+        Instant to = clock.now();
         charges.chargeUsage(new ChargeUsageRequest(
                 order.billingCustomerId(),
                 order.walletId(),

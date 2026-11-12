@@ -67,7 +67,7 @@ class CustomerBillingViewsTest {
 
     @Test
     void refusesAnUnmappedCustomer() {
-        customers.save(Customer.pending(USER, "Ada", "ada@example.com", NOW));
+        customers.save(Customer.pending(() -> UUID.randomUUID(), USER, "Ada", "ada@example.com", NOW));
 
         assertThatThrownBy(() -> views.openSession(USER, null, List.of(), null))
                 .isInstanceOf(BadRequestException.class);
@@ -92,7 +92,7 @@ class CustomerBillingViewsTest {
     }
 
     private void mapped() {
-        customers.save(Customer.pending(USER, "Ada", "ada@example.com", NOW).mapped("cus_1"));
+        customers.save(Customer.pending(() -> UUID.randomUUID(), USER, "Ada", "ada@example.com", NOW).mapped("cus_1"));
     }
 
     private static final class FakeSessions implements BillingSessions {

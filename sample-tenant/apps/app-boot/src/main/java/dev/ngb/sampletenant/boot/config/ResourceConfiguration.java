@@ -1,5 +1,8 @@
 package dev.ngb.sampletenant.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
+import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
@@ -15,7 +18,6 @@ import dev.ngb.sampletenant.resource.application.OrderExecutionService;
 import dev.ngb.sampletenant.resource.application.OrderQueries;
 import dev.ngb.sampletenant.resource.application.port.OrderRepository;
 import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
-import java.time.Clock;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,8 +35,8 @@ class ResourceConfiguration {
     }
 
     @Bean
-    OrderSubmission orderSubmission(JdbcOrderRepository rows, JdbcTemplate jdbc) {
-        return new JdbcOrderSubmission(rows, jdbc);
+    OrderSubmission orderSubmission(JdbcOrderRepository rows, JdbcTemplate jdbc, IdGenerator ids, UnitOfWork unitOfWork) {
+        return new JdbcOrderSubmission(rows, jdbc, ids, unitOfWork);
     }
 
     @Bean
@@ -46,9 +48,10 @@ class ResourceConfiguration {
             @Qualifier("billingWallets") BillingWallets wallets,
             OrderSubmission submission,
             Clock clock,
+            IdGenerator ids,
             @Value("${sampletenant.resource.reservation-ttl:PT15M}") Duration reservationTtl) {
         return new CreateOrderUseCase(
-                catalog, customers, pricing, subscriptions, wallets, submission, clock, reservationTtl);
+                catalog, customers, pricing, subscriptions, wallets, submission, clock, ids, reservationTtl);
     }
 
     @Bean

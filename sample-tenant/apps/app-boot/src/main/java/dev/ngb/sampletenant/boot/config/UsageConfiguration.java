@@ -1,12 +1,13 @@
 package dev.ngb.sampletenant.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.usage.adapter.persistence.JdbcUsageRepository;
 import dev.ngb.sampletenant.usage.adapter.persistence.UsageJdbcRepository;
 import dev.ngb.sampletenant.usage.application.RecordUsageUseCase;
 import dev.ngb.sampletenant.usage.application.UsageQueries;
 import dev.ngb.sampletenant.usage.application.port.UsageRepository;
-import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +24,8 @@ class UsageConfiguration {
 
     @Bean
     RecordUsageUseCase recordUsageUseCase(
-            UsageRepository usage, @Qualifier("billingUsage") BillingUsage billing, Clock clock) {
-        return new RecordUsageUseCase(usage, billing, clock);
+            UsageRepository usage, @Qualifier("billingUsage") BillingUsage billing, Clock clock, IdGenerator ids) {
+        return new RecordUsageUseCase(usage, billing, clock, ids);
     }
 
     @Bean

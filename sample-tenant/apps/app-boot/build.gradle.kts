@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":libs:shared-core"))
+    implementation("dev.ngb:core-spring")
     implementation(project(":modules:identity"))
     implementation(project(":modules:billing-client"))
     implementation(project(":modules:customer"))

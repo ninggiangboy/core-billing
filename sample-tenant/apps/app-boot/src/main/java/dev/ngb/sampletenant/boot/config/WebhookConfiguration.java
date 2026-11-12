@@ -1,5 +1,7 @@
 package dev.ngb.sampletenant.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.webhook.adapter.persistence.JdbcCustomerPeriods;
 import dev.ngb.sampletenant.webhook.adapter.persistence.JdbcDebtBook;
@@ -9,7 +11,6 @@ import dev.ngb.sampletenant.webhook.application.WebhookPolicy;
 import dev.ngb.sampletenant.webhook.application.port.CustomerPeriods;
 import dev.ngb.sampletenant.webhook.application.port.DebtBook;
 import dev.ngb.sampletenant.webhook.application.port.WebhookRepository;
-import java.time.Clock;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,8 +27,8 @@ class WebhookConfiguration {
     }
 
     @Bean
-    DebtBook debtBook(JdbcTemplate jdbc) {
-        return new JdbcDebtBook(jdbc);
+    DebtBook debtBook(JdbcTemplate jdbc, IdGenerator ids) {
+        return new JdbcDebtBook(jdbc, ids);
     }
 
     @Bean
@@ -45,8 +46,9 @@ class WebhookConfiguration {
             WebhookRepository events,
             WebhookPolicy policy,
             Clock clock,
+            IdGenerator ids,
             @Value("${sampletenant.webhooks.signing-secret:}") String signingSecret,
             @Value("${sampletenant.webhooks.tolerance:PT5M}") Duration tolerance) {
-        return new ReceiveWebhookUseCase(events, policy, clock, signingSecret, tolerance);
+        return new ReceiveWebhookUseCase(events, policy, clock, ids, signingSecret, tolerance);
     }
 }

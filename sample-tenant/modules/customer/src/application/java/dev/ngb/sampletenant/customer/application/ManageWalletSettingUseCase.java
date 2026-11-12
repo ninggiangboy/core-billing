@@ -1,5 +1,6 @@
 package dev.ngb.sampletenant.customer.application;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
@@ -9,7 +10,6 @@ import dev.ngb.sampletenant.customer.domain.WalletMode;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
-import java.time.Clock;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -58,7 +58,7 @@ public class ManageWalletSettingUseCase {
                 "wallet:" + customer.billingCustomerId() + ":" + normalized,
                 new BillingWallets.OpenWallet(customer.billingCustomerId(), normalized, mode.name(), limit));
         CustomerWalletSetting setting = new CustomerWalletSetting(
-                customer.id(), mode, normalized, limit, wallet.id(), clock.instant());
+                customer.id(), mode, normalized, limit, wallet.id(), clock.now());
         settings.save(setting);
         return setting;
     }

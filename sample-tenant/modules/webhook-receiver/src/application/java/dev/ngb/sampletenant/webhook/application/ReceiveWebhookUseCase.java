@@ -1,10 +1,11 @@
 package dev.ngb.sampletenant.webhook.application;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.shared.error.UnauthorizedException;
 import dev.ngb.sampletenant.webhook.application.port.WebhookRepository;
 import dev.ngb.sampletenant.webhook.domain.WebhookEvent;
 import dev.ngb.sampletenant.webhook.domain.WebhookSignature;
-import java.time.Clock;
 import java.time.Duration;
 
 /** Verifies, deduplicates and applies one delivery. A duplicate answers without repeating the policy. */
@@ -17,14 +18,21 @@ public class ReceiveWebhookUseCase {
     private final WebhookRepository events;
     private final WebhookPolicy policy;
     private final Clock clock;
+    private final IdGenerator ids;
     private final String signingSecret;
     private final Duration tolerance;
 
     public ReceiveWebhookUseCase(
-            WebhookRepository events, WebhookPolicy policy, Clock clock, String signingSecret, Duration tolerance) {
+            WebhookRepository events,
+            WebhookPolicy policy,
+            Clock clock,
+            IdGenerator ids,
+            String signingSecret,
+            Duration tolerance) {
         this.events = events;
         this.policy = policy;
         this.clock = clock;
+        this.ids = ids;
         this.signingSecret = signingSecret;
         this.tolerance = tolerance;
     }
@@ -35,7 +43,7 @@ public class ReceiveWebhookUseCase {
                 headers.timestamp(),
                 rawBody,
                 headers.signature(),
-                clock.instant().getEpochSecond(),
+                clock.now().getEpochSecond(),
                 tolerance.toSeconds());
         if (!valid || !envelope.id().equals(headers.eventId())) {
             throw new UnauthorizedException("the delivery signature could not be verified");
@@ -44,7 +52,7 @@ public class ReceiveWebhookUseCase {
             throw new UnauthorizedException("the event type header does not match the body");
         }
         WebhookEvent event = WebhookEvent.received(
-                envelope.id(), envelope.type(), envelope.tenantId(), envelope.occurredAt(), payload, clock.instant());
+                ids, envelope.id(), envelope.type(), envelope.tenantId(), envelope.occurredAt(), payload, clock.now());
         if (!events.saveIfAbsent(event)) {
             return new Outcome(true, WebhookPolicy.Decision.CONTINUE);
         }

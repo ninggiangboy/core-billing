@@ -2,6 +2,7 @@ package dev.ngb.sampletenant.execution.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.BillingCharges;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.Charge;
@@ -12,9 +13,7 @@ import dev.ngb.sampletenant.execution.application.port.ExecutionQueue;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
 import dev.ngb.sampletenant.usage.api.UsageRecorder;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +30,7 @@ class ExecuteOrdersUseCaseTest {
     private final FakeUsage usage = new FakeUsage();
     private final FakeCharges charges = new FakeCharges();
     private final ExecuteOrdersUseCase execute =
-            new ExecuteOrdersUseCase(queue, orders, usage, charges, Clock.fixed(NOW, ZoneOffset.UTC), 3);
+            new ExecuteOrdersUseCase(queue, orders, usage, charges, () -> NOW, 3);
 
     @Test
     void runsRecordsUsageCapturesReleasesAndCompletes() {

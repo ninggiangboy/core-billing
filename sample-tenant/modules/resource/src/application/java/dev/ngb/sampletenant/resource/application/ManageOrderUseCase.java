@@ -1,10 +1,10 @@
 package dev.ngb.sampletenant.resource.application;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.resource.application.port.OrderRepository;
 import dev.ngb.sampletenant.resource.domain.Order;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
-import java.time.Clock;
 import java.util.UUID;
 
 /** Order changes that reach Billing: cancelling a subscription-backed order keeps its paid period. */
@@ -31,7 +31,7 @@ public class ManageOrderUseCase {
         if (order.subscriptionId() != null) {
             subscriptions.cancel(order.subscriptionId());
         }
-        Order canceled = order.canceled(clock.instant());
+        Order canceled = order.canceled(clock.now());
         orders.save(canceled);
         return canceled;
     }

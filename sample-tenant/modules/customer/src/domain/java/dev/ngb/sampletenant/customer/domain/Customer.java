@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.customer.domain;
 
-import dev.ngb.sampletenant.shared.id.Ids;
+import dev.ngb.core.runtime.IdGenerator;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,8 +17,8 @@ public record Customer(
         CustomerStatus status,
         Instant createdAt) {
 
-    public static Customer pending(UUID userId, String displayName, String email, Instant now) {
-        return new Customer(Ids.newId(), userId, null, displayName, email, CustomerStatus.PENDING, now);
+    public static Customer pending(IdGenerator ids, UUID userId, String displayName, String email, Instant now) {
+        return new Customer(ids.newId(), userId, null, displayName, email, CustomerStatus.PENDING, now);
     }
 
     public Customer mapped(String nextBillingCustomerId) {

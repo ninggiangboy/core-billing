@@ -7,9 +7,9 @@ allprojects {
 }
 
 /*
- * The two systems share contracts, never code. This check fails the build when a sample-tenant
- * project declares a Gradle dependency on a project outside this build (the only such project
- * would be Billing), which also proves the module can be built and deployed on its own.
+ * The two systems share contracts and the technical core, never Billing code. This check fails the
+ * build when a sample-tenant project declares a Gradle dependency on a Billing project. The core is
+ * included as a separate build and found by its coordinates, so it does not trip the check.
  */
 tasks.register("checkNoBillingDependency") {
     group = "verification"

@@ -1,12 +1,13 @@
 package dev.ngb.sampletenant.usage.application;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
 import dev.ngb.sampletenant.billing.api.model.UsageEventRequest;
 import dev.ngb.sampletenant.usage.api.UsageRecorder;
 import dev.ngb.sampletenant.usage.application.port.UsageRepository;
 import dev.ngb.sampletenant.usage.domain.UsageRecord;
-import java.time.Clock;
 
 /**
  * Scenario 5: usage is recorded locally and sent to Billing with a deterministic idempotency key,
@@ -17,11 +18,13 @@ public class RecordUsageUseCase implements UsageRecorder {
     private final UsageRepository usage;
     private final BillingUsage billing;
     private final Clock clock;
+    private final IdGenerator ids;
 
-    public RecordUsageUseCase(UsageRepository usage, BillingUsage billing, Clock clock) {
+    public RecordUsageUseCase(UsageRepository usage, BillingUsage billing, Clock clock, IdGenerator ids) {
         this.usage = usage;
         this.billing = billing;
         this.clock = clock;
+        this.ids = ids;
     }
 
     @Override
@@ -43,6 +46,7 @@ public class RecordUsageUseCase implements UsageRecorder {
                 command.resourceRef(),
                 command.orderId().toString()));
         UsageRecord row = UsageRecord.recorded(
+                ids,
                 command.orderId(),
                 command.billingCustomerId(),
                 command.metric(),
@@ -51,7 +55,7 @@ public class RecordUsageUseCase implements UsageRecorder {
                 recorded.event().id(),
                 key,
                 command.occurredAt(),
-                clock.instant());
+                clock.now());
         usage.save(row);
         return new Recorded(row.id(), recorded.event().id());
     }

@@ -2,6 +2,8 @@ package dev.ngb.sampletenant.usage.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingUsage;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
 import dev.ngb.sampletenant.billing.api.model.UsageEvent;
@@ -9,9 +11,7 @@ import dev.ngb.sampletenant.billing.api.model.UsageEventRequest;
 import dev.ngb.sampletenant.usage.api.UsageRecorder;
 import dev.ngb.sampletenant.usage.application.port.UsageRepository;
 import dev.ngb.sampletenant.usage.domain.UsageRecord;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +27,7 @@ class RecordUsageUseCaseTest {
     private final InMemoryUsage usage = new InMemoryUsage();
     private final FakeBillingUsage billing = new FakeBillingUsage();
     private final RecordUsageUseCase record =
-            new RecordUsageUseCase(usage, billing, Clock.fixed(NOW, ZoneOffset.UTC));
+            new RecordUsageUseCase(usage, billing, () -> NOW, () -> UUID.randomUUID());
 
     @Test
     void recordsTheEventInBillingWithADeterministicKey() {

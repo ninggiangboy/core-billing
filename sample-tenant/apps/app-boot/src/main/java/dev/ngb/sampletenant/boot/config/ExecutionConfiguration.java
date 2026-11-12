@@ -1,12 +1,12 @@
 package dev.ngb.sampletenant.boot.config;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.billing.api.BillingCharges;
 import dev.ngb.sampletenant.execution.adapter.persistence.JdbcExecutionQueue;
 import dev.ngb.sampletenant.execution.application.ExecuteOrdersUseCase;
 import dev.ngb.sampletenant.execution.application.port.ExecutionQueue;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.usage.api.UsageRecorder;
-import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

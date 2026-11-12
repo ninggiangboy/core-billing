@@ -8,7 +8,9 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
 /** The layered build already hides Spring from inner layers; this also blocks a stray import. */
-@AnalyzeClasses(packages = "dev.ngb.sampletenant", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(
+        packages = {"dev.ngb.sampletenant", "dev.ngb.core"},
+        importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
     @ArchTest
@@ -34,4 +36,13 @@ class ArchitectureTest {
             .should()
             .dependOnClassesThat()
             .resideInAPackage("..adapter..");
+
+    /** The core is shared with other builds, so it may name neither this application nor Billing's. */
+    @ArchTest
+    static final ArchRule coreIsSelfContained = noClasses()
+            .that()
+            .resideInAnyPackage("dev.ngb.core..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("dev.ngb.sampletenant..", "dev.ngb.core_billing..");
 }

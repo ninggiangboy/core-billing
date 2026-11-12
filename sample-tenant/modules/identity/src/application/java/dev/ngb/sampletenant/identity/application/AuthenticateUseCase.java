@@ -1,5 +1,7 @@
 package dev.ngb.sampletenant.identity.application;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.port.SessionRepository;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;
@@ -8,7 +10,6 @@ import dev.ngb.sampletenant.identity.domain.User;
 import dev.ngb.sampletenant.identity.domain.UserSession;
 import dev.ngb.sampletenant.shared.error.ForbiddenException;
 import dev.ngb.sampletenant.shared.error.UnauthorizedException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
@@ -22,14 +23,21 @@ public class AuthenticateUseCase {
     private final SessionRepository sessions;
     private final PasswordHasher hasher;
     private final Clock clock;
+    private final IdGenerator ids;
     private final Duration sessionTtl;
 
     public AuthenticateUseCase(
-            UserRepository users, SessionRepository sessions, PasswordHasher hasher, Clock clock, Duration sessionTtl) {
+            UserRepository users,
+            SessionRepository sessions,
+            PasswordHasher hasher,
+            Clock clock,
+            IdGenerator ids,
+            Duration sessionTtl) {
         this.users = users;
         this.sessions = sessions;
         this.hasher = hasher;
         this.clock = clock;
+        this.ids = ids;
         this.sessionTtl = sessionTtl;
     }
 
@@ -42,10 +50,10 @@ public class AuthenticateUseCase {
         if (password == null || !hasher.matches(password, user.passwordHash())) {
             throw new UnauthorizedException("invalid email or password");
         }
-        Instant now = clock.instant();
+        Instant now = clock.now();
         String token = Tokens.generate();
         Instant expiresAt = now.plus(sessionTtl);
-        sessions.save(UserSession.open(user.id(), Tokens.digest(token), now, expiresAt));
+        sessions.save(UserSession.open(ids, user.id(), Tokens.digest(token), now, expiresAt));
         return new Result(token, expiresAt, user);
     }
 }

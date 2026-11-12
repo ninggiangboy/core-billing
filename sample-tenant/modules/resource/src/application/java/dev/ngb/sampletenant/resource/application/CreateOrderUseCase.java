@@ -1,5 +1,7 @@
 package dev.ngb.sampletenant.resource.application;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
@@ -15,7 +17,6 @@ import dev.ngb.sampletenant.resource.application.port.OrderSubmission;
 import dev.ngb.sampletenant.resource.domain.Order;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -36,6 +37,7 @@ public class CreateOrderUseCase {
     private final BillingWallets wallets;
     private final OrderSubmission submission;
     private final Clock clock;
+    private final IdGenerator ids;
     private final Duration reservationTtl;
 
     public CreateOrderUseCase(
@@ -46,6 +48,7 @@ public class CreateOrderUseCase {
             BillingWallets wallets,
             OrderSubmission submission,
             Clock clock,
+            IdGenerator ids,
             Duration reservationTtl) {
         this.catalog = catalog;
         this.customers = customers;
@@ -54,6 +57,7 @@ public class CreateOrderUseCase {
         this.wallets = wallets;
         this.submission = submission;
         this.clock = clock;
+        this.ids = ids;
         this.reservationTtl = reservationTtl;
     }
 
@@ -78,7 +82,7 @@ public class CreateOrderUseCase {
 
         String quantity = command.quantity() == null || command.quantity().isBlank() ? "1" : command.quantity();
         Long events = eventCount(plan, quantity, command.events());
-        Instant now = clock.instant();
+        Instant now = clock.now();
         String reference = "order:" + customer.id() + ":" + UUID.randomUUID();
         String reservationId = null;
         String subscriptionId = null;
@@ -102,6 +106,7 @@ public class CreateOrderUseCase {
         }
 
         Order order = Order.queued(
+                ids,
                 customer.id(),
                 customer.billingCustomerId(),
                 wallet.id(),

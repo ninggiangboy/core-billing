@@ -1,10 +1,11 @@
 package dev.ngb.sampletenant.customer.application;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
 import dev.ngb.sampletenant.customer.domain.Customer;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import dev.ngb.sampletenant.shared.error.UpstreamUnavailableException;
-import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,11 +19,13 @@ public class RegisterCustomerUseCase {
     private final CustomerRepository customers;
     private final CustomerMapping mapping;
     private final Clock clock;
+    private final IdGenerator ids;
 
-    public RegisterCustomerUseCase(CustomerRepository customers, CustomerMapping mapping, Clock clock) {
+    public RegisterCustomerUseCase(CustomerRepository customers, CustomerMapping mapping, Clock clock, IdGenerator ids) {
         this.customers = customers;
         this.mapping = mapping;
         this.clock = clock;
+        this.ids = ids;
     }
 
     public Customer register(UUID userId, String displayName, String email) {
@@ -30,7 +33,7 @@ public class RegisterCustomerUseCase {
         if (existing.isPresent()) {
             return existing.get();
         }
-        Customer pending = Customer.pending(userId, displayName, email, clock.instant());
+        Customer pending = Customer.pending(ids, userId, displayName, email, clock.now());
         customers.save(pending);
         return tryMap(pending);
     }

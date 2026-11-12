@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.resource.domain;
 
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
-import dev.ngb.sampletenant.shared.id.Ids;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -32,6 +32,7 @@ public record Order(
         Instant updatedAt) {
 
     public static Order queued(
+            IdGenerator ids,
             UUID customerId,
             String billingCustomerId,
             String walletId,
@@ -47,7 +48,7 @@ public record Order(
             String reservationId,
             String subscriptionId,
             Instant now) {
-        UUID id = Ids.newId();
+        UUID id = ids.newId();
         return new Order(
                 id,
                 customerId,

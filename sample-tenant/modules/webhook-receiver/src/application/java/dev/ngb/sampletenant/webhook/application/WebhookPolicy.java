@@ -1,9 +1,9 @@
 package dev.ngb.sampletenant.webhook.application;
 
+import dev.ngb.core.runtime.Clock;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.webhook.application.port.CustomerPeriods;
 import dev.ngb.sampletenant.webhook.application.port.DebtBook;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
 
@@ -35,7 +35,7 @@ public class WebhookPolicy {
     }
 
     public Decision apply(WebhookEnvelope event) {
-        Instant now = clock.instant();
+        Instant now = clock.now();
         return switch (event.type()) {
             case "payment.failed" -> recordDebt(event, now);
             case "invoice.paid" -> clearDebt(event, now);

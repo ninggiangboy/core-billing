@@ -1,5 +1,7 @@
 package dev.ngb.sampletenant.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingCustomers;
 import dev.ngb.sampletenant.billing.api.BillingInvoices;
 import dev.ngb.sampletenant.billing.api.BillingPayments;
@@ -17,7 +19,6 @@ import dev.ngb.sampletenant.customer.application.RegisterCustomerUseCase;
 import dev.ngb.sampletenant.customer.application.port.CustomerRepository;
 import dev.ngb.sampletenant.customer.application.port.WalletSettingRepository;
 import dev.ngb.sampletenant.identity.application.port.AccountListener;
-import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -43,8 +44,8 @@ class CustomerConfiguration {
 
     @Bean
     RegisterCustomerUseCase registerCustomerUseCase(
-            CustomerRepository customers, CustomerMapping mapping, Clock clock) {
-        return new RegisterCustomerUseCase(customers, mapping, clock);
+            CustomerRepository customers, CustomerMapping mapping, Clock clock, IdGenerator ids) {
+        return new RegisterCustomerUseCase(customers, mapping, clock, ids);
     }
 
     @Bean

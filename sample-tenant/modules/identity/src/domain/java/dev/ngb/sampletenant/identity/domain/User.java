@@ -1,8 +1,8 @@
 package dev.ngb.sampletenant.identity.domain;
 
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.identity.api.Role;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
-import dev.ngb.sampletenant.shared.id.Ids;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
@@ -29,8 +29,8 @@ public record User(
         }
     }
 
-    public static User register(String email, String displayName, String passwordHash, Role role, Instant now) {
-        return new User(Ids.newId(), email.trim().toLowerCase(Locale.ROOT), displayName.trim(), passwordHash, role, UserStatus.ACTIVE, now);
+    public static User register(IdGenerator ids, String email, String displayName, String passwordHash, Role role, Instant now) {
+        return new User(ids.newId(), email.trim().toLowerCase(Locale.ROOT), displayName.trim(), passwordHash, role, UserStatus.ACTIVE, now);
     }
 
     public User withRole(Role next) {

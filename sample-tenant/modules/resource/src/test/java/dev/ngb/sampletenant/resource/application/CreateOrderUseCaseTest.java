@@ -3,6 +3,8 @@ package dev.ngb.sampletenant.resource.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
@@ -23,10 +25,8 @@ import dev.ngb.sampletenant.resource.domain.OrderStatus;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import dev.ngb.sampletenant.shared.error.PaymentRequiredException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +46,7 @@ class CreateOrderUseCaseTest {
     private final CapturingSubmission submission = new CapturingSubmission();
     private final CreateOrderUseCase create = new CreateOrderUseCase(
             catalog, customers, pricing, subscriptions, wallets, submission,
-            Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofMinutes(15));
+            () -> NOW, () -> UUID.randomUUID(), Duration.ofMinutes(15));
 
     @Test
     void estimatesReservesAndOnlyThenQueuesTheOrder() {

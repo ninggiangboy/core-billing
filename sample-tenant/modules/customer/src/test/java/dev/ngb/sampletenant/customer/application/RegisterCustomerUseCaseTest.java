@@ -2,11 +2,11 @@ package dev.ngb.sampletenant.customer.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.customer.domain.Customer;
 import dev.ngb.sampletenant.customer.domain.CustomerStatus;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,10 @@ class RegisterCustomerUseCaseTest {
     private final Fakes.Customers customers = new Fakes.Customers();
     private final Fakes.Billing billing = new Fakes.Billing();
     private final RegisterCustomerUseCase register = new RegisterCustomerUseCase(
-            customers, new CustomerMapping(customers, billing, "sys_1"), Clock.fixed(NOW, ZoneOffset.UTC));
+            customers,
+            new CustomerMapping(customers, billing, "sys_1"),
+            () -> NOW,
+            () -> UUID.randomUUID());
 
     @Test
     void registerMapsAndStoresTheBillingCustomer() {

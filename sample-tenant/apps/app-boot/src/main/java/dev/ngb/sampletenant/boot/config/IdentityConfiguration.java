@@ -1,5 +1,7 @@
 package dev.ngb.sampletenant.boot.config;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.identity.adapter.persistence.JdbcSessionRepository;
 import dev.ngb.sampletenant.identity.adapter.persistence.JdbcUserRepository;
 import dev.ngb.sampletenant.identity.adapter.persistence.SessionJdbcRepository;
@@ -13,7 +15,6 @@ import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
 import dev.ngb.sampletenant.identity.application.port.SessionRepository;
 import dev.ngb.sampletenant.identity.application.port.UserRepository;
-import java.time.Clock;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -41,8 +42,8 @@ class IdentityConfiguration {
 
     @Bean
     RegisterUserUseCase registerUserUseCase(
-            UserRepository users, PasswordHasher hasher, Clock clock, AccountListener listener) {
-        return new RegisterUserUseCase(users, hasher, clock, listener);
+            UserRepository users, PasswordHasher hasher, Clock clock, IdGenerator ids, AccountListener listener) {
+        return new RegisterUserUseCase(users, hasher, clock, ids, listener);
     }
 
     @Bean
@@ -51,8 +52,9 @@ class IdentityConfiguration {
             SessionRepository sessions,
             PasswordHasher hasher,
             Clock clock,
+            IdGenerator ids,
             @Value("${sampletenant.identity.session-ttl:PT12H}") Duration sessionTtl) {
-        return new AuthenticateUseCase(users, sessions, hasher, clock, sessionTtl);
+        return new AuthenticateUseCase(users, sessions, hasher, clock, ids, sessionTtl);
     }
 
     @Bean

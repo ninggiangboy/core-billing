@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.usage.domain;
 
-import dev.ngb.sampletenant.shared.id.Ids;
+import dev.ngb.core.runtime.IdGenerator;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,6 +18,7 @@ public record UsageRecord(
         Instant recordedAt) {
 
     public static UsageRecord recorded(
+            IdGenerator ids,
             UUID orderId,
             String billingCustomerId,
             String metric,
@@ -28,7 +29,7 @@ public record UsageRecord(
             Instant occurredAt,
             Instant recordedAt) {
         return new UsageRecord(
-                Ids.newId(),
+                ids.newId(),
                 orderId,
                 billingCustomerId,
                 metric,

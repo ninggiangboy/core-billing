@@ -42,7 +42,7 @@ public class JdbcWebhookRepository implements WebhookRepository {
     public Optional<WebhookEvent> findByBillingEventId(String billingEventId) {
         return jdbc.query(
                         "select * from webhook_events where billing_event_id = ?",
-                        (rs, row) -> new WebhookEvent(
+                        (rs, row) -> WebhookEvent.restore(
                                 rs.getObject("id", UUID.class),
                                 rs.getString("billing_event_id"),
                                 rs.getString("type"),

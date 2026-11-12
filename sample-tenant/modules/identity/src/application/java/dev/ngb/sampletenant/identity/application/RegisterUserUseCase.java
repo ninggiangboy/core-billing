@@ -1,5 +1,7 @@
 package dev.ngb.sampletenant.identity.application;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.identity.api.Role;
 import dev.ngb.sampletenant.identity.application.port.AccountListener;
 import dev.ngb.sampletenant.identity.application.port.PasswordHasher;
@@ -7,7 +9,6 @@ import dev.ngb.sampletenant.identity.application.port.UserRepository;
 import dev.ngb.sampletenant.identity.domain.User;
 import dev.ngb.sampletenant.shared.error.BadRequestException;
 import dev.ngb.sampletenant.shared.error.ConflictException;
-import java.time.Clock;
 
 /** Registers a local account with its own credentials. */
 public class RegisterUserUseCase {
@@ -19,12 +20,15 @@ public class RegisterUserUseCase {
     private final UserRepository users;
     private final PasswordHasher hasher;
     private final Clock clock;
+    private final IdGenerator ids;
     private final AccountListener listener;
 
-    public RegisterUserUseCase(UserRepository users, PasswordHasher hasher, Clock clock, AccountListener listener) {
+    public RegisterUserUseCase(
+            UserRepository users, PasswordHasher hasher, Clock clock, IdGenerator ids, AccountListener listener) {
         this.users = users;
         this.hasher = hasher;
         this.clock = clock;
+        this.ids = ids;
         this.listener = listener;
     }
 
@@ -39,7 +43,8 @@ public class RegisterUserUseCase {
             throw new ConflictException("an account with this email already exists");
         }
         Role role = command.role() == null ? Role.VIEWER : command.role();
-        User user = User.register(command.email(), command.displayName(), hasher.hash(command.password()), role, clock.instant());
+        User user = User.register(
+                ids, command.email(), command.displayName(), hasher.hash(command.password()), role, clock.now());
         users.save(user);
         listener.registered(user);
         return user;

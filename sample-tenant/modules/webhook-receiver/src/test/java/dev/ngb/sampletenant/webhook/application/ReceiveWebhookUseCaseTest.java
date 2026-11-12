@@ -3,6 +3,8 @@ package dev.ngb.sampletenant.webhook.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.ngb.core.runtime.Clock;
+import dev.ngb.core.runtime.IdGenerator;
 import dev.ngb.sampletenant.resource.api.ExecutionOrders;
 import dev.ngb.sampletenant.shared.error.UnauthorizedException;
 import dev.ngb.sampletenant.webhook.application.port.CustomerPeriods;
@@ -12,10 +14,8 @@ import dev.ngb.sampletenant.webhook.domain.WebhookEvent;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -37,9 +37,9 @@ class ReceiveWebhookUseCaseTest {
     private final FakeDebts debts = new FakeDebts();
     private final FakePeriods periods = new FakePeriods();
     private final FakeOrders orders = new FakeOrders();
-    private final WebhookPolicy policy = new WebhookPolicy(debts, periods, orders, Clock.fixed(NOW, ZoneOffset.UTC));
+    private final WebhookPolicy policy = new WebhookPolicy(debts, periods, orders, () -> NOW);
     private final ReceiveWebhookUseCase receive = new ReceiveWebhookUseCase(
-            events, policy, Clock.fixed(NOW, ZoneOffset.UTC), SECRET, Duration.ofMinutes(5));
+            events, policy, () -> NOW, () -> UUID.randomUUID(), SECRET, Duration.ofMinutes(5));
 
     @Test
     void acceptsAFreshDeliveryAndAppliesThePolicy() {

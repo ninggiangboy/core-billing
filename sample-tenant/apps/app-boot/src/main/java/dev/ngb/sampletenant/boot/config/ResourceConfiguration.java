@@ -6,7 +6,7 @@ import dev.ngb.core.runtime.UnitOfWork;
 import dev.ngb.sampletenant.billing.api.BillingPricing;
 import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
 import dev.ngb.sampletenant.billing.api.BillingWallets;
-import dev.ngb.sampletenant.catalog.api.CatalogLookup;
+import dev.ngb.sampletenant.catalog.api.lookup.CatalogLookup;
 import dev.ngb.sampletenant.customer.api.CustomerDirectory;
 import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderRepository;
 import dev.ngb.sampletenant.resource.adapter.persistence.JdbcOrderSubmission;

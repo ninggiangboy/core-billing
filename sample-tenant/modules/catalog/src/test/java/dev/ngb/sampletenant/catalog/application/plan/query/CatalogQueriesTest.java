@@ -1,11 +1,12 @@
-package dev.ngb.sampletenant.catalog.application;
+package dev.ngb.sampletenant.catalog.application.plan.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.ngb.sampletenant.catalog.application.port.CatalogPlanRepository;
-import dev.ngb.sampletenant.catalog.domain.CatalogPlan;
-import dev.ngb.sampletenant.catalog.domain.ResourceType;
+import dev.ngb.sampletenant.catalog.application.plan.command.AttachBillingPlanUseCase;
+import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
+import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
+import dev.ngb.sampletenant.catalog.domain.plan.ResourceType;
 import dev.ngb.sampletenant.shared.error.NotFoundException;
 import java.time.Instant;
 import java.util.LinkedHashMap;

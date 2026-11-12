@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.catalog.adapter.web;
+package dev.ngb.sampletenant.catalog.adapter.plan.web;
 
-import dev.ngb.sampletenant.catalog.application.CatalogQueries;
-import dev.ngb.sampletenant.catalog.domain.CatalogPlan;
-import dev.ngb.sampletenant.catalog.domain.ResourceType;
+import dev.ngb.sampletenant.catalog.application.plan.query.CatalogQueries;
+import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
+import dev.ngb.sampletenant.catalog.domain.plan.ResourceType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;

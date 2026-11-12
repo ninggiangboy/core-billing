@@ -1,8 +1,8 @@
-package dev.ngb.sampletenant.catalog.adapter.persistence;
+package dev.ngb.sampletenant.catalog.adapter.plan.persistence;
 
-import dev.ngb.sampletenant.catalog.application.port.CatalogPlanRepository;
-import dev.ngb.sampletenant.catalog.domain.CatalogPlan;
-import dev.ngb.sampletenant.catalog.domain.ResourceType;
+import dev.ngb.sampletenant.catalog.application.plan.port.CatalogPlanRepository;
+import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
+import dev.ngb.sampletenant.catalog.domain.plan.ResourceType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

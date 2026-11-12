@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.catalog.adapter.persistence;
+package dev.ngb.sampletenant.catalog.adapter.plan.persistence;
 
 import java.time.Instant;
 import java.util.UUID;

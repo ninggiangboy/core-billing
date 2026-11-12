@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.catalog.domain;
+package dev.ngb.sampletenant.catalog.domain.plan;
 
 /** The seven resources the reference tenant rents, each with the metric it reports to Billing. */
 public enum ResourceType {

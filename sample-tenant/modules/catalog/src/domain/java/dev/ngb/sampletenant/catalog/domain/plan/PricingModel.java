@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.catalog.domain;
+package dev.ngb.sampletenant.catalog.domain.plan;
 
 /** The pricing models Billing supports; this system names the one each resource type uses. */
 public enum PricingModel {

@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.catalog.domain;
+package dev.ngb.sampletenant.catalog.domain.plan;
 
 import java.time.Instant;
 import java.util.UUID;

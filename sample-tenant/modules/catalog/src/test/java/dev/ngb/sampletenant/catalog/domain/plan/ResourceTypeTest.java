@@ -1,9 +1,9 @@
-package dev.ngb.sampletenant.catalog;
+package dev.ngb.sampletenant.catalog.domain.plan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import dev.ngb.sampletenant.catalog.domain.PricingModel;
-import dev.ngb.sampletenant.catalog.domain.ResourceType;
+import dev.ngb.sampletenant.catalog.domain.plan.PricingModel;
+import dev.ngb.sampletenant.catalog.domain.plan.ResourceType;
 import org.junit.jupiter.api.Test;
 
 class ResourceTypeTest {

@@ -1,6 +1,6 @@
-package dev.ngb.sampletenant.catalog.application.port;
+package dev.ngb.sampletenant.catalog.application.plan.port;
 
-import dev.ngb.sampletenant.catalog.domain.CatalogPlan;
+import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

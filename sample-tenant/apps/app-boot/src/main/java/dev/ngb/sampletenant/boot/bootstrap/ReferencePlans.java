@@ -3,7 +3,7 @@ package dev.ngb.sampletenant.boot.bootstrap;
 import dev.ngb.sampletenant.billing.api.BillingAdmin;
 import dev.ngb.sampletenant.billing.api.model.Rule;
 import dev.ngb.sampletenant.billing.api.model.Tier;
-import dev.ngb.sampletenant.catalog.domain.CatalogPlan;
+import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;
 import java.util.List;
 
 /** The reference rules the bootstrap publishes for the seven catalog plans. USD, monthly, half-up. */

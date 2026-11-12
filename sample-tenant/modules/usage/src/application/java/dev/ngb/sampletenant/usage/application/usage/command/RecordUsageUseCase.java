@@ -2,7 +2,7 @@ package dev.ngb.sampletenant.usage.application.usage.command;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.billing.api.BillingUsage;
+import dev.ngb.sampletenant.billing.api.client.BillingUsage;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
 import dev.ngb.sampletenant.billing.api.model.UsageEventRequest;
 import dev.ngb.sampletenant.usage.api.recording.UsageRecorder;

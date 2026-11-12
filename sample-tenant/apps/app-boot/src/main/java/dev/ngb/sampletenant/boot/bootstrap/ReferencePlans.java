@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.boot.bootstrap;
 
-import dev.ngb.sampletenant.billing.api.BillingAdmin;
+import dev.ngb.sampletenant.billing.api.client.BillingAdmin;
 import dev.ngb.sampletenant.billing.api.model.Rule;
 import dev.ngb.sampletenant.billing.api.model.Tier;
 import dev.ngb.sampletenant.catalog.domain.plan.CatalogPlan;

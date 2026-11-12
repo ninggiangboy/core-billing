@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.customer.application.billing.command;
 
-import dev.ngb.sampletenant.billing.api.BillingSessions;
+import dev.ngb.sampletenant.billing.api.client.BillingSessions;
 import dev.ngb.sampletenant.billing.api.model.BillingSession;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.shared.error.BadRequestException;

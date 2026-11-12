@@ -1,14 +1,14 @@
-package dev.ngb.sampletenant.billing.adapter;
+package dev.ngb.sampletenant.billing.adapter.client.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import dev.ngb.sampletenant.billing.api.BillingCharges.CaptureRequest;
-import dev.ngb.sampletenant.billing.api.BillingCustomers.NewCustomer;
-import dev.ngb.sampletenant.billing.api.BillingPricing.EstimateRequest;
-import dev.ngb.sampletenant.billing.api.BillingPricing.ReserveRequest;
+import dev.ngb.sampletenant.billing.api.client.BillingCharges.CaptureRequest;
+import dev.ngb.sampletenant.billing.api.client.BillingCustomers.NewCustomer;
+import dev.ngb.sampletenant.billing.api.client.BillingPricing.EstimateRequest;
+import dev.ngb.sampletenant.billing.api.client.BillingPricing.ReserveRequest;
 import dev.ngb.sampletenant.billing.api.model.Charge;
 import dev.ngb.sampletenant.billing.api.model.Customer;
 import dev.ngb.sampletenant.billing.api.model.Estimate;
@@ -151,7 +151,7 @@ class HttpBillingClientTest {
         billing.respond(402, "{\"detail\":\"The wallet cannot cover this amount.\"}");
 
         assertThatThrownBy(() -> client.get("cus_missing")).isInstanceOf(NotFoundException.class);
-        assertThatThrownBy(() -> client.charge("key", new dev.ngb.sampletenant.billing.api.BillingCharges.ChargeRequest(
+        assertThatThrownBy(() -> client.charge("key", new dev.ngb.sampletenant.billing.api.client.BillingCharges.ChargeRequest(
                         "wal_1", 9999, "USD", null, "order-1")))
                 .isInstanceOf(PaymentRequiredException.class);
     }

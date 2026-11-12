@@ -2,7 +2,7 @@ package dev.ngb.sampletenant.boot.config;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.billing.api.BillingUsage;
+import dev.ngb.sampletenant.billing.api.client.BillingUsage;
 import dev.ngb.sampletenant.usage.adapter.usage.persistence.JdbcUsageRepository;
 import dev.ngb.sampletenant.usage.adapter.usage.persistence.UsageJdbcRepository;
 import dev.ngb.sampletenant.usage.application.usage.command.RecordUsageUseCase;

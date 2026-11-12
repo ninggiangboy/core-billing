@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.billing.api.BillingPricing;
-import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
-import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.billing.api.client.BillingPricing;
+import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
+import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.Estimate;
 import dev.ngb.sampletenant.billing.api.model.PricingPlan;

@@ -2,11 +2,11 @@ package dev.ngb.sampletenant.boot.config;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.billing.api.BillingCustomers;
-import dev.ngb.sampletenant.billing.api.BillingInvoices;
-import dev.ngb.sampletenant.billing.api.BillingPayments;
-import dev.ngb.sampletenant.billing.api.BillingSessions;
-import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.billing.api.client.BillingCustomers;
+import dev.ngb.sampletenant.billing.api.client.BillingInvoices;
+import dev.ngb.sampletenant.billing.api.client.BillingPayments;
+import dev.ngb.sampletenant.billing.api.client.BillingSessions;
+import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.customer.adapter.customer.identity.CustomerAccountListener;
 import dev.ngb.sampletenant.customer.adapter.customer.persistence.CustomerJdbcRepository;

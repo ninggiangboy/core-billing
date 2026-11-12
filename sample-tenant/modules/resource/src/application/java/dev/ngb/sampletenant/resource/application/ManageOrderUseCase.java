@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.resource.application;
 
 import dev.ngb.core.runtime.Clock;
-import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
+import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
 import dev.ngb.sampletenant.resource.application.port.OrderRepository;
 import dev.ngb.sampletenant.resource.domain.Order;
 import dev.ngb.sampletenant.shared.error.BadRequestException;

@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.billing.api;
+package dev.ngb.sampletenant.billing.api.client;
 
 import java.time.Instant;
 import java.util.List;

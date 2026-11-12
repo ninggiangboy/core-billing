@@ -1,9 +1,9 @@
 package dev.ngb.sampletenant.customer.application.billing;
 
-import dev.ngb.sampletenant.billing.api.BillingInvoices;
-import dev.ngb.sampletenant.billing.api.BillingPayments;
-import dev.ngb.sampletenant.billing.api.BillingSessions;
-import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.billing.api.client.BillingInvoices;
+import dev.ngb.sampletenant.billing.api.client.BillingPayments;
+import dev.ngb.sampletenant.billing.api.client.BillingSessions;
+import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Amount;
 import dev.ngb.sampletenant.billing.api.model.BillingSession;
 import dev.ngb.sampletenant.billing.api.model.Invoice;

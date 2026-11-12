@@ -1,6 +1,6 @@
 package dev.ngb.sampletenant.customer.application.customer.service;
 
-import dev.ngb.sampletenant.billing.api.BillingCustomers;
+import dev.ngb.sampletenant.billing.api.client.BillingCustomers;
 import dev.ngb.sampletenant.billing.api.model.Customer;
 import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
 import dev.ngb.sampletenant.shared.error.BadRequestException;

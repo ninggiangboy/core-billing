@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.boot.config;
 
 import dev.ngb.core.runtime.Clock;
-import dev.ngb.sampletenant.billing.api.BillingCharges;
+import dev.ngb.sampletenant.billing.api.client.BillingCharges;
 import dev.ngb.sampletenant.execution.adapter.queue.persistence.JdbcExecutionQueue;
 import dev.ngb.sampletenant.execution.application.queue.command.ExecuteOrdersUseCase;
 import dev.ngb.sampletenant.execution.application.queue.port.ExecutionQueue;

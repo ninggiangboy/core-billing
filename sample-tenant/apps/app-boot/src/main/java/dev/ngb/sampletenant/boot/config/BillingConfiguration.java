@@ -1,16 +1,16 @@
 package dev.ngb.sampletenant.boot.config;
 
-import dev.ngb.sampletenant.billing.adapter.HttpBillingClient;
-import dev.ngb.sampletenant.billing.adapter.HttpBillingSettings;
-import dev.ngb.sampletenant.billing.api.BillingCharges;
-import dev.ngb.sampletenant.billing.api.BillingCustomers;
-import dev.ngb.sampletenant.billing.api.BillingInvoices;
-import dev.ngb.sampletenant.billing.api.BillingPayments;
-import dev.ngb.sampletenant.billing.api.BillingPricing;
-import dev.ngb.sampletenant.billing.api.BillingSessions;
-import dev.ngb.sampletenant.billing.api.BillingSubscriptions;
-import dev.ngb.sampletenant.billing.api.BillingUsage;
-import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.billing.adapter.client.http.HttpBillingClient;
+import dev.ngb.sampletenant.billing.adapter.client.http.HttpBillingSettings;
+import dev.ngb.sampletenant.billing.api.client.BillingCharges;
+import dev.ngb.sampletenant.billing.api.client.BillingCustomers;
+import dev.ngb.sampletenant.billing.api.client.BillingInvoices;
+import dev.ngb.sampletenant.billing.api.client.BillingPayments;
+import dev.ngb.sampletenant.billing.api.client.BillingPricing;
+import dev.ngb.sampletenant.billing.api.client.BillingSessions;
+import dev.ngb.sampletenant.billing.api.client.BillingSubscriptions;
+import dev.ngb.sampletenant.billing.api.client.BillingUsage;
+import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

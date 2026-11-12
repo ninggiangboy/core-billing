@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.execution.application.queue.command;
 
 import dev.ngb.core.runtime.Clock;
-import dev.ngb.sampletenant.billing.api.BillingCharges;
+import dev.ngb.sampletenant.billing.api.client.BillingCharges;
 import dev.ngb.sampletenant.billing.api.model.Charge;
 import dev.ngb.sampletenant.billing.api.model.ChargeUsageRequest;
 import dev.ngb.sampletenant.execution.application.queue.port.ExecutionQueue;

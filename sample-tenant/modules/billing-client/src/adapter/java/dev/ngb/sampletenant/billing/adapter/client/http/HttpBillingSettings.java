@@ -1,4 +1,4 @@
-package dev.ngb.sampletenant.billing.adapter;
+package dev.ngb.sampletenant.billing.adapter.client.http;
 
 import java.time.Duration;
 

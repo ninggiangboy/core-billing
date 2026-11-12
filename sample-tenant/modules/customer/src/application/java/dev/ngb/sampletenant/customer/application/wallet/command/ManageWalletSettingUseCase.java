@@ -1,7 +1,7 @@
 package dev.ngb.sampletenant.customer.application.wallet.command;
 
 import dev.ngb.core.runtime.Clock;
-import dev.ngb.sampletenant.billing.api.BillingWallets;
+import dev.ngb.sampletenant.billing.api.client.BillingWallets;
 import dev.ngb.sampletenant.billing.api.model.Wallet;
 import dev.ngb.sampletenant.customer.api.lookup.CustomerDirectory;
 import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;

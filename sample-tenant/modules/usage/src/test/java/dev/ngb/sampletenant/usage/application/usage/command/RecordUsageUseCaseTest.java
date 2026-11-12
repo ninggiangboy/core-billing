@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.ngb.core.runtime.Clock;
 import dev.ngb.core.runtime.IdGenerator;
-import dev.ngb.sampletenant.billing.api.BillingUsage;
+import dev.ngb.sampletenant.billing.api.client.BillingUsage;
 import dev.ngb.sampletenant.billing.api.model.RecordedUsage;
 import dev.ngb.sampletenant.billing.api.model.UsageEvent;
 import dev.ngb.sampletenant.billing.api.model.UsageEventRequest;

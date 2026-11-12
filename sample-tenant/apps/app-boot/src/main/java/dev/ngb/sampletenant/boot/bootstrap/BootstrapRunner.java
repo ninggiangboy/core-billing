@@ -1,9 +1,9 @@
 package dev.ngb.sampletenant.boot.bootstrap;
 
-import dev.ngb.sampletenant.billing.adapter.HttpBillingClient;
-import dev.ngb.sampletenant.billing.adapter.HttpBillingSettings;
-import dev.ngb.sampletenant.billing.api.BillingAdmin;
-import dev.ngb.sampletenant.billing.api.BillingWebhooks;
+import dev.ngb.sampletenant.billing.adapter.client.http.HttpBillingClient;
+import dev.ngb.sampletenant.billing.adapter.client.http.HttpBillingSettings;
+import dev.ngb.sampletenant.billing.api.client.BillingAdmin;
+import dev.ngb.sampletenant.billing.api.client.BillingWebhooks;
 import dev.ngb.sampletenant.billing.api.model.PricingPlan;
 import dev.ngb.sampletenant.catalog.application.plan.command.AttachBillingPlanUseCase;
 import dev.ngb.sampletenant.catalog.application.plan.query.CatalogQueries;

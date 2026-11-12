@@ -40,6 +40,24 @@ class JooqCatalogPlanRepositoryIntegrationTest extends HttpIntegrationTest {
     }
 
     @Test
+    void savingAnExistingPlanOnlyChangesItsBillingBindingAndActiveFlag() {
+        CatalogPlan plan = plan(true, null);
+        plans.save(plan);
+
+        plans.save(new CatalogPlan(
+                plan.id(), "renamed-" + plan.code(), "Renamed", ResourceType.STORAGE, "other", "bplan_9", false, NOW.plusSeconds(1)));
+
+        CatalogPlan loaded = plans.findById(plan.id()).orElseThrow();
+        assertThat(loaded.billingPlanId()).isEqualTo("bplan_9");
+        assertThat(loaded.active()).isFalse();
+        assertThat(loaded.code()).isEqualTo(plan.code());
+        assertThat(loaded.name()).isEqualTo("Compute");
+        assertThat(loaded.resourceType()).isEqualTo(ResourceType.COMPUTE);
+        assertThat(loaded.description()).isEqualTo("description");
+        assertThat(loaded.createdAt()).isEqualTo(NOW);
+    }
+
+    @Test
     void theReadSideSelectsIntoViews() {
         CatalogPlan active = plan(true, "bplan_1");
         CatalogPlan inactive = plan(false, null);

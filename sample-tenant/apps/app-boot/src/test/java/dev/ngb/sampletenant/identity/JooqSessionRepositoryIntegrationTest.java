@@ -48,6 +48,23 @@ class JooqSessionRepositoryIntegrationTest extends HttpIntegrationTest {
     }
 
     @Test
+    void savingAnExistingSessionOnlyMovesItsExpiry() {
+        String hash = "hash-" + UUID.randomUUID();
+        UUID userId = userId();
+        UserSession session = UserSession.open(ids, userId, hash, NOW, NOW.plusSeconds(60));
+        sessions.save(session);
+
+        sessions.save(new UserSession(session.id(), userId(), "other-" + hash, NOW.plusSeconds(5), NOW.plusSeconds(600)));
+
+        UserSession loaded = sessions.findByTokenHash(hash).orElseThrow();
+        assertThat(loaded.id()).isEqualTo(session.id());
+        assertThat(loaded.userId()).isEqualTo(userId);
+        assertThat(loaded.createdAt()).isEqualTo(NOW);
+        assertThat(loaded.expiresAt()).isEqualTo(NOW.plusSeconds(600));
+        assertThat(sessions.findByTokenHash("other-" + hash)).isEmpty();
+    }
+
+    @Test
     void deleteExpiredRemovesOnlyPastSessions() {
         String expiredHash = "hash-" + UUID.randomUUID();
         String activeHash = "hash-" + UUID.randomUUID();

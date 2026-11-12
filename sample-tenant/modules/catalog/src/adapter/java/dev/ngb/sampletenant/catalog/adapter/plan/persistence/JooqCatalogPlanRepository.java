@@ -44,11 +44,6 @@ public class JooqCatalogPlanRepository implements CatalogPlanRepository {
                         plan.createdAt())
                 .onConflict(CATALOG_PLANS.ID)
                 .doUpdate()
-                .set(CATALOG_PLANS.CODE, DSL.excluded(CATALOG_PLANS.CODE))
-                .set(CATALOG_PLANS.NAME, DSL.excluded(CATALOG_PLANS.NAME))
-                .set(CATALOG_PLANS.RESOURCE_TYPE, DSL.excluded(CATALOG_PLANS.RESOURCE_TYPE))
-                .set(CATALOG_PLANS.PRICING_MODEL, DSL.excluded(CATALOG_PLANS.PRICING_MODEL))
-                .set(CATALOG_PLANS.DESCRIPTION, DSL.excluded(CATALOG_PLANS.DESCRIPTION))
                 .set(CATALOG_PLANS.BILLING_PLAN_ID, DSL.excluded(CATALOG_PLANS.BILLING_PLAN_ID))
                 .set(CATALOG_PLANS.ACTIVE, DSL.excluded(CATALOG_PLANS.ACTIVE))
                 .execute();

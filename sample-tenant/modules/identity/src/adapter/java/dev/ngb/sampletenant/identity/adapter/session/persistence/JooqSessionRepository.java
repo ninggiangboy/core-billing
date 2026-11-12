@@ -7,6 +7,7 @@ import dev.ngb.sampletenant.identity.domain.session.UserSession;
 import java.time.Instant;
 import java.util.Optional;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 
 /** The write side: one insert, one indexed lookup and the two deletes. */
 public class JooqSessionRepository implements SessionRepository {
@@ -33,7 +34,8 @@ public class JooqSessionRepository implements SessionRepository {
                         session.createdAt(),
                         session.expiresAt())
                 .onConflict(USER_SESSIONS.ID)
-                .doNothing()
+                .doUpdate()
+                .set(USER_SESSIONS.EXPIRES_AT, DSL.excluded(USER_SESSIONS.EXPIRES_AT))
                 .execute();
     }
 

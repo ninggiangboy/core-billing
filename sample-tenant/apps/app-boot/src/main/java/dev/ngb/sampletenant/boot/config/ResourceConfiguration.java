@@ -19,6 +19,7 @@ import dev.ngb.sampletenant.resource.application.order.query.OrderQueries;
 import dev.ngb.sampletenant.resource.application.order.port.OrderRepository;
 import dev.ngb.sampletenant.resource.application.order.port.OrderSubmission;
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +43,9 @@ class ResourceConfiguration {
     CreateOrderUseCase createOrderUseCase(
             CatalogLookup catalog,
             CustomerDirectory customers,
-            BillingPricing pricing,
-            BillingSubscriptions subscriptions,
-            BillingWallets wallets,
+            @Qualifier("billingPricing") BillingPricing pricing,
+            @Qualifier("billingSubscriptions") BillingSubscriptions subscriptions,
+            @Qualifier("billingWallets") BillingWallets wallets,
             OrderSubmission submission,
             Clock clock,
             IdGenerator ids,
@@ -57,7 +58,7 @@ class ResourceConfiguration {
     ManageOrderUseCase manageOrderUseCase(
             OrderQueries queries,
             OrderRepository orders,
-            BillingSubscriptions subscriptions,
+            @Qualifier("billingSubscriptions") BillingSubscriptions subscriptions,
             Clock clock) {
         return new ManageOrderUseCase(queries, orders, subscriptions, clock);
     }

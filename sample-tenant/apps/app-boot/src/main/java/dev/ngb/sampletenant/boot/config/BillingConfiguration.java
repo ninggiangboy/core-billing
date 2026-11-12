@@ -15,12 +15,14 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * One HTTP client for every call to Billing. The holder keeps that client out of the bean type graph,
  * so injecting one interface does not see the other interfaces the same object implements.
  */
 @Configuration(proxyBeanMethods = false)
+@Profile("!test")
 class BillingConfiguration {
 
     record BillingClientHolder(HttpBillingClient client) {}

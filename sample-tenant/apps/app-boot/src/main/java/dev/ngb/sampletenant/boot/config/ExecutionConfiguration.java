@@ -8,6 +8,7 @@ import dev.ngb.sampletenant.execution.application.queue.port.ExecutionQueue;
 import dev.ngb.sampletenant.resource.api.execution.ExecutionOrders;
 import dev.ngb.sampletenant.usage.api.recording.UsageRecorder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +27,7 @@ class ExecutionConfiguration {
             ExecutionQueue queue,
             ExecutionOrders orders,
             UsageRecorder usage,
-            BillingCharges charges,
+            @Qualifier("billingCharges") BillingCharges charges,
             Clock clock,
             @Value("${sampletenant.execution.max-attempts:3}") int maxAttempts) {
         return new ExecuteOrdersUseCase(queue, orders, usage, charges, clock, maxAttempts);

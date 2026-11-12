@@ -5,7 +5,7 @@ import dev.ngb.sampletenant.identity.api.security.AuthenticatedUser;
 import dev.ngb.sampletenant.identity.api.security.Permission;
 import dev.ngb.sampletenant.identity.api.security.RequiresPermission;
 import dev.ngb.sampletenant.usage.application.usage.query.UsageQueries;
-import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
+import dev.ngb.sampletenant.usage.application.usage.query.UsageRecordView;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +28,7 @@ public class UsageController {
             String billingEventId,
             Instant occurredAt,
             Instant recordedAt) {
-        static UsageResponse of(UsageRecord record) {
+        static UsageResponse of(UsageRecordView record) {
             return new UsageResponse(
                     record.id(),
                     record.orderId(),

@@ -91,10 +91,5 @@ class RecordUsageUseCaseTest {
                     .filter(row -> row.orderId().equals(orderId) && row.metric().equals(metric))
                     .findFirst();
         }
-
-        @Override
-        public List<UsageRecord> findByBillingCustomerId(String billingCustomerId) {
-            return rows.values().stream().filter(row -> row.billingCustomerId().equals(billingCustomerId)).toList();
-        }
     }
 }

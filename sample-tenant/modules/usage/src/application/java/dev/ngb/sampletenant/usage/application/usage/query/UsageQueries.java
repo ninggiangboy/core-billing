@@ -1,19 +1,17 @@
 package dev.ngb.sampletenant.usage.application.usage.query;
 
-import dev.ngb.sampletenant.usage.application.usage.port.UsageRepository;
-import dev.ngb.sampletenant.usage.domain.usage.UsageRecord;
 import java.util.List;
 
 /** Read side of local usage. */
 public class UsageQueries {
 
-    private final UsageRepository usage;
+    private final UsageReadRepository usage;
 
-    public UsageQueries(UsageRepository usage) {
+    public UsageQueries(UsageReadRepository usage) {
         this.usage = usage;
     }
 
-    public List<UsageRecord> forBillingCustomer(String billingCustomerId) {
-        return usage.findByBillingCustomerId(billingCustomerId);
+    public List<UsageRecordView> forBillingCustomer(String billingCustomerId) {
+        return usage.forBillingCustomer(billingCustomerId);
     }
 }

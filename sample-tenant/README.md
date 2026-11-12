@@ -53,8 +53,8 @@ and `ArchitectureTest` re-checks the same boundaries on the classpath.
 | 8 | Top up through Stripe | `customer` | `POST /api/billing/session`, portal redirect | `CustomerBillingViewsTest` |
 | 9 | Stripe Direct and Connect unchanged | `customer` | same session call for both | `CustomerBillingViewsTest` |
 | 10 | View invoices and transaction history | `customer` | `GET /api/billing/invoices`, `GET /api/billing/payments` | `CustomerBillingViewsTest` |
-| 11 | Handle Billing webhooks | `webhook-receiver` | `POST /webhooks/billing` | `ReceiveWebhookUseCaseTest`, `WebhookSignatureTest` |
-| 12 | Subscriptions and combined pricing | `resource`, `execution`, `webhook-receiver` | `POST /api/orders` (Managed Service, Cloud Package), subscription webhooks | `CreateOrderUseCaseTest`, `ExecuteOrdersUseCaseTest`, `ReceiveWebhookUseCaseTest` |
+| 11 | Handle Billing webhooks | `webhook` | `POST /webhooks/billing` | `ReceiveWebhookUseCaseTest`, `WebhookSignatureTest` |
+| 12 | Subscriptions and combined pricing | `resource`, `execution`, `webhook` | `POST /api/orders` (Managed Service, Cloud Package), subscription webhooks | `CreateOrderUseCaseTest`, `ExecuteOrdersUseCaseTest`, `ReceiveWebhookUseCaseTest` |
 | 13 | Prepaid and Postpaid customers | `customer` | `PUT /api/customers/me/wallet-settings` | `ManageWalletSettingUseCaseTest` |
 
 Scenarios 14 (data isolation between tenants) and 15 (the same email in independent tenants) are

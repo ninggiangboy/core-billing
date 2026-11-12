@@ -20,7 +20,7 @@ include(
     "modules:execution",
     "modules:usage",
     "modules:billing-client",
-    "modules:webhook-receiver",
+    "modules:webhook",
     "apps:app-boot",
     "testing:arch-fixtures",
 )

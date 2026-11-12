@@ -8,7 +8,6 @@ import dev.ngb.sampletenant.usage.adapter.usage.persistence.UsageJdbcRepository;
 import dev.ngb.sampletenant.usage.application.usage.command.RecordUsageUseCase;
 import dev.ngb.sampletenant.usage.application.usage.query.UsageQueries;
 import dev.ngb.sampletenant.usage.application.usage.port.UsageRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,7 +23,7 @@ class UsageConfiguration {
 
     @Bean
     RecordUsageUseCase recordUsageUseCase(
-            UsageRepository usage, @Qualifier("billingUsage") BillingUsage billing, Clock clock, IdGenerator ids) {
+            UsageRepository usage, BillingUsage billing, Clock clock, IdGenerator ids) {
         return new RecordUsageUseCase(usage, billing, clock, ids);
     }
 

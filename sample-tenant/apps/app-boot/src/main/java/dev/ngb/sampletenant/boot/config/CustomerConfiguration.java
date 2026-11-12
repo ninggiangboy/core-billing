@@ -23,7 +23,6 @@ import dev.ngb.sampletenant.customer.application.customer.command.RegisterCustom
 import dev.ngb.sampletenant.customer.application.customer.port.CustomerRepository;
 import dev.ngb.sampletenant.customer.application.wallet.port.WalletSettingRepository;
 import dev.ngb.sampletenant.identity.api.account.AccountListener;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +40,7 @@ class CustomerConfiguration {
     @Bean
     CustomerMapping customerMapping(
             CustomerRepository customers,
-            @Qualifier("billingCustomers") BillingCustomers billing,
+            BillingCustomers billing,
             @Value("${sampletenant.billing.tenant-system-id:}") String tenantSystemId) {
         return new CustomerMapping(customers, billing, tenantSystemId);
     }
@@ -65,7 +64,7 @@ class CustomerConfiguration {
     @Bean
     OpenBillingSessionUseCase openBillingSessionUseCase(
             CustomerDirectory customers,
-            @Qualifier("billingSessions") BillingSessions sessions,
+            BillingSessions sessions,
             @Value("${sampletenant.portal.return-url:}") String defaultReturnUrl) {
         return new OpenBillingSessionUseCase(customers, sessions, defaultReturnUrl);
     }
@@ -73,17 +72,17 @@ class CustomerConfiguration {
     @Bean
     TopUpUseCase topUpUseCase(
             CustomerDirectory customers,
-            @Qualifier("billingWallets") BillingWallets wallets,
-            @Qualifier("billingPayments") BillingPayments payments) {
+            BillingWallets wallets,
+            BillingPayments payments) {
         return new TopUpUseCase(customers, wallets, payments);
     }
 
     @Bean
     CustomerBillingQueries customerBillingQueries(
             CustomerDirectory customers,
-            @Qualifier("billingInvoices") BillingInvoices invoices,
-            @Qualifier("billingPayments") BillingPayments payments,
-            @Qualifier("billingWallets") BillingWallets wallets) {
+            BillingInvoices invoices,
+            BillingPayments payments,
+            BillingWallets wallets) {
         return new CustomerBillingQueries(customers, invoices, payments, wallets);
     }
 
@@ -96,7 +95,7 @@ class CustomerConfiguration {
     ManageWalletSettingUseCase manageWalletSettingUseCase(
             CustomerDirectory customers,
             WalletSettingRepository settings,
-            @Qualifier("billingWallets") BillingWallets wallets,
+            BillingWallets wallets,
             Clock clock) {
         return new ManageWalletSettingUseCase(customers, settings, wallets, clock);
     }

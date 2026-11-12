@@ -1,5 +1,5 @@
 {
-  "realm": "corebilling",
+  "realm": "billing",
   "displayName": "Core Billing",
   "enabled": true,
   "sslRequired": "external",
@@ -60,12 +60,12 @@
           }
         },
         {
-          "name": "core-billing-audience",
+          "name": "billing-audience",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.custom.audience": "core-billing",
+            "included.custom.audience": "billing",
             "id.token.claim": "false",
             "access.token.claim": "true"
           }

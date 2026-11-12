@@ -110,7 +110,7 @@ call enable_tenant_rls('ledger_entries');
 
 -- The ledger is append-only. The application role may insert and read only; the trigger stops everyone else,
 -- including the table owner, from updating, deleting or truncating an entry.
-revoke update, delete on ledger_entries from corebilling_app;
+revoke update, delete on ledger_entries from billing_app;
 
 create function ledger_entries_append_only() returns trigger
     language plpgsql

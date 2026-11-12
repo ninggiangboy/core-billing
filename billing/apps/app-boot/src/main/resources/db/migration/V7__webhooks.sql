@@ -79,4 +79,4 @@ create table webhook_delivery_attempts (
 );
 
 call enable_tenant_rls('webhook_delivery_attempts');
-revoke update, delete on webhook_delivery_attempts from corebilling_app;
+revoke update, delete on webhook_delivery_attempts from billing_app;

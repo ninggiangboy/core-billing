@@ -9,6 +9,6 @@ dependencyResolutionManagement {
     repositories { mavenCentral() }
 }
 
-rootProject.name = "core-billing"
+rootProject.name = "billing"
 
 include("libs:shared-kernel", "libs:jooq-schema", "contexts:platform", "contexts:customer", "contexts:money", "contexts:webhook", "contexts:usage", "contexts:pricing", "contexts:payment", "contexts:invoicing", "contexts:session", "apps:app-boot", "testing:arch-fixtures")

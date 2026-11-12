@@ -1,0 +1,22 @@
+package dev.ngb.billing.pricing.application.metric.service;
+
+import dev.ngb.core.runtime.UnitOfWork;
+import dev.ngb.billing.pricing.api.metric.MetricCatalog;
+import dev.ngb.billing.pricing.application.metric.query.MetricReadRepository;
+import java.util.Optional;
+
+public class MetricCatalogService implements MetricCatalog {
+
+    private final UnitOfWork unitOfWork;
+    private final MetricReadRepository metrics;
+
+    public MetricCatalogService(UnitOfWork unitOfWork, MetricReadRepository metrics) {
+        this.unitOfWork = unitOfWork;
+        this.metrics = metrics;
+    }
+
+    @Override
+    public Optional<String> unitOf(String metric) {
+        return unitOfWork.transactional(() -> metrics.unitOf(metric));
+    }
+}

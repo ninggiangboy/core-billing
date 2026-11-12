@@ -1,0 +1,18 @@
+package dev.ngb.billing.platform.application.tenant.port;
+
+import dev.ngb.core.id.TenantId;
+import dev.ngb.billing.platform.domain.tenant.Tenant;
+import dev.ngb.billing.platform.domain.tenant.TenantCode;
+import java.util.Optional;
+
+public interface TenantRepository {
+
+    /** @throws TenantCodeAlreadyUsedException when the unique code constraint rejects the insert */
+    void add(Tenant tenant);
+
+    void update(Tenant tenant);
+
+    Optional<Tenant> findById(TenantId id);
+
+    Optional<Tenant> findByCode(TenantCode code);
+}

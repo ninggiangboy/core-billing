@@ -1,23 +1,23 @@
 -- Roles, the row-level-security template and the tenant model.
 --
 -- The migration owner (the role Flyway connects as) owns every table. The application connects as
--- corebilling_app, which owns nothing and cannot bypass row-level security, so a mis-wired
+-- billing_app, which owns nothing and cannot bypass row-level security, so a mis-wired
 -- connection fails closed instead of reading across tenants.
 
 do $$
 begin
-    if not exists (select from pg_roles where rolname = 'corebilling_app') then
-        create role corebilling_app login password '${appDbPassword}'
+    if not exists (select from pg_roles where rolname = 'billing_app') then
+        create role billing_app login password '${appDbPassword}'
             nosuperuser nocreatedb nocreaterole nobypassrls;
     end if;
 end
 $$;
 
-grant usage on schema public to corebilling_app;
+grant usage on schema public to billing_app;
 alter default privileges in schema public
-    grant select, insert, update, delete on tables to corebilling_app;
+    grant select, insert, update, delete on tables to billing_app;
 alter default privileges in schema public
-    grant usage, select on sequences to corebilling_app;
+    grant usage, select on sequences to billing_app;
 
 -- The tenant of the current transaction. set_config(..., true) is transaction-local, and after the
 -- first use PostgreSQL reports an unset value as '' rather than NULL, hence the nullif.

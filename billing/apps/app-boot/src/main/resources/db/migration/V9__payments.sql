@@ -93,7 +93,7 @@ create table payment_attempts (
 );
 
 call enable_tenant_rls('payment_attempts');
-revoke update, delete on payment_attempts from corebilling_app;
+revoke update, delete on payment_attempts from billing_app;
 
 create table refunds (
     id                uuid primary key,
@@ -167,7 +167,7 @@ create table stripe_event_attempts (
 );
 
 call enable_tenant_rls('stripe_event_attempts');
-revoke update, delete on stripe_event_attempts from corebilling_app;
+revoke update, delete on stripe_event_attempts from billing_app;
 
 -- Things a person should look at: a webhook whose signature failed, an event for an account we do not know, a
 -- payment that disagrees with Stripe. Repeats of the same open finding are counted, not duplicated.

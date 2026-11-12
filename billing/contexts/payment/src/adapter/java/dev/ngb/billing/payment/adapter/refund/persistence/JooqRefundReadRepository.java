@@ -1,0 +1,69 @@
+package dev.ngb.billing.payment.adapter.refund.persistence;
+
+import static dev.ngb.billing_jooq.Tables.PAYMENTS;
+import static dev.ngb.billing_jooq.Tables.REFUNDS;
+import static org.jooq.impl.DSL.noCondition;
+
+import dev.ngb.billing.payment.application.refund.query.RefundReadRepository;
+import dev.ngb.billing.payment.application.refund.query.RefundView;
+import dev.ngb.billing.payment.domain.refund.RefundStatus;
+import dev.ngb.billing.sharedkernel.money.Currency;
+import dev.ngb.billing.sharedkernel.money.Money;
+import dev.ngb.billing_jooq.tables.records.RefundsRecord;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.jooq.DSLContext;
+
+/** Selects refunds straight into views. */
+public class JooqRefundReadRepository implements RefundReadRepository {
+
+    private final DSLContext dsl;
+
+    public JooqRefundReadRepository(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    @Override
+    public List<RefundView> byPayment(UUID paymentId) {
+        return dsl.selectFrom(REFUNDS)
+                .where(REFUNDS.PAYMENT_ID.eq(paymentId))
+                .orderBy(REFUNDS.ID)
+                .fetch(JooqRefundReadRepository::toView);
+    }
+
+    @Override
+    public Optional<RefundView> findById(UUID id) {
+        return dsl.selectFrom(REFUNDS)
+                .where(REFUNDS.ID.eq(id))
+                .fetchOptional(JooqRefundReadRepository::toView);
+    }
+
+    @Override
+    public List<RefundView> listByCustomer(UUID customerId, UUID before, int limit) {
+        return dsl.select(REFUNDS.fields())
+                .from(REFUNDS)
+                .join(PAYMENTS).on(PAYMENTS.ID.eq(REFUNDS.PAYMENT_ID))
+                .where(PAYMENTS.CUSTOMER_ID.eq(customerId))
+                .and(before == null ? noCondition() : REFUNDS.ID.lt(before))
+                .orderBy(REFUNDS.ID.desc())
+                .limit(limit)
+                .fetchInto(REFUNDS)
+                .stream()
+                .map(JooqRefundReadRepository::toView)
+                .toList();
+    }
+
+    private static RefundView toView(RefundsRecord row) {
+        return new RefundView(
+                row.getId(),
+                row.getPaymentId(),
+                RefundStatus.valueOf(row.getStatus()),
+                Money.of(row.getAmount(), Currency.of(row.getCurrency().strip())),
+                row.getReason(),
+                row.getFailureReason(),
+                row.getLedgerEntryId(),
+                row.getCreatedAt(),
+                row.getCompletedAt());
+    }
+}

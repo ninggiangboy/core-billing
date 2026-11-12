@@ -1,6 +1,6 @@
 package archfixtures.customer.adapter.persistence;
 
-import static dev.ngb.core_billing_jooq.Tables.USAGE_EVENTS;
+import static dev.ngb.billing_jooq.Tables.USAGE_EVENTS;
 
 import org.jooq.DSLContext;
 import org.jooq.Query;

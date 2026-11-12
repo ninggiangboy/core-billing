@@ -1,6 +1,6 @@
 spring:
   application:
-    name: core-billing
+    name: billing
   profiles:
     # With no active profile (dev, bootRun and every default-mode test) both runtime profiles are active, which
     # keeps the all-in-one behaviour from before the split. The two profile files stay out of that run: each one
@@ -10,23 +10,23 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/corebilling}
-          jwk-set-uri: ${BILLING_OIDC_JWK_SET_URI:${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/corebilling}/protocol/openid-connect/certs}
-          audiences: core-billing
+          issuer-uri: ${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/billing}
+          jwk-set-uri: ${BILLING_OIDC_JWK_SET_URI:${BILLING_OIDC_ISSUER_URI:http://localhost:8081/realms/billing}/protocol/openid-connect/certs}
+          audiences: billing
   task:
     scheduling:
       # Money jobs, the outbox relay and the webhook sender run side by side; a slow receiver must not stall the rest.
       pool:
         size: 4
   datasource:
-    url: ${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}
-    username: ${BILLING_DB_USER:corebilling_app}
+    url: ${BILLING_DB_URL:jdbc:postgresql://localhost:5432/billing}
+    username: ${BILLING_DB_USER:billing_app}
     password: ${BILLING_DB_PASSWORD}
   flyway:
     locations: classpath:db/migration
-    # Migrations run as the table owner; the application runs as corebilling_app.
-    url: ${BILLING_MIGRATION_DB_URL:${BILLING_DB_URL:jdbc:postgresql://localhost:5432/corebilling}}
-    user: ${BILLING_MIGRATION_DB_USER:corebilling}
+    # Migrations run as the table owner; the application runs as billing_app.
+    url: ${BILLING_MIGRATION_DB_URL:${BILLING_DB_URL:jdbc:postgresql://localhost:5432/billing}}
+    user: ${BILLING_MIGRATION_DB_USER:billing}
     password: ${BILLING_MIGRATION_DB_PASSWORD}
     placeholders:
       appDbPassword: ${BILLING_DB_PASSWORD}
@@ -37,7 +37,7 @@ billing:
     base-domain: ${BILLING_BASE_DOMAIN:localhost}
   keycloak:
     base-url: ${BILLING_KEYCLOAK_URL:http://localhost:8081}
-    realm: corebilling
+    realm: billing
     admin-client-id: billing-admin
     admin-client-secret: ${BILLING_KEYCLOAK_ADMIN_CLIENT_SECRET}
   bootstrap:

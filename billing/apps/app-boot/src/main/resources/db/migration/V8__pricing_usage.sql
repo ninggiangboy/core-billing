@@ -53,7 +53,7 @@ create table pricing_plan_versions (
 );
 
 call enable_tenant_rls('pricing_plan_versions');
-revoke update, delete on pricing_plan_versions from corebilling_app;
+revoke update, delete on pricing_plan_versions from billing_app;
 
 create function immutable_rows() returns trigger
     language plpgsql
@@ -89,7 +89,7 @@ create table usage_events (
 
 create index usage_events_aggregate_idx on usage_events (tenant_id, customer_id, metric, occurred_at);
 call enable_tenant_rls('usage_events');
-revoke update, delete on usage_events from corebilling_app;
+revoke update, delete on usage_events from billing_app;
 
 create trigger usage_events_no_change
     before update or delete on usage_events

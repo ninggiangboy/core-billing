@@ -1,0 +1,27 @@
+package dev.ngb.billing.boot.jobs;
+
+import org.springframework.context.annotation.Profile;
+import dev.ngb.billing.boot.infrastructure.messaging.OutboxRelay;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+/** Relays outbox events to the in-process consumers for every active tenant. */
+@Profile("worker")
+@Component
+@ConditionalOnProperty(name = "billing.jobs.enabled", havingValue = "true", matchIfMissing = true)
+public class OutboxJobs {
+
+    private final TenantSweep sweep;
+    private final OutboxRelay relay;
+
+    OutboxJobs(TenantSweep sweep, OutboxRelay relay) {
+        this.sweep = sweep;
+        this.relay = relay;
+    }
+
+    @Scheduled(fixedDelayString = "${billing.outbox.poll-delay:PT1S}")
+    public void relay() {
+        sweep.forEachActiveTenant(tenant -> relay.relayDue());
+    }
+}

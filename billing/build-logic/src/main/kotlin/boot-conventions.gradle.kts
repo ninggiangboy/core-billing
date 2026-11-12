@@ -3,4 +3,4 @@ plugins {
     id("org.springframework.boot")
 }
 
-springBoot { mainClass = "dev.ngb.core_billing.Application" }
+springBoot { mainClass = "dev.ngb.billing.Application" }

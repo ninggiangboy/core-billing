@@ -1,0 +1,21 @@
+package dev.ngb.billing.platform.application.credential.port;
+
+import dev.ngb.billing.platform.api.tenant.TenantSystemId;
+import dev.ngb.billing.platform.domain.credential.ApiCredential;
+import dev.ngb.billing.platform.domain.credential.ApiCredentialId;
+import java.util.List;
+import java.util.Optional;
+
+public interface CredentialRepository {
+
+    void add(ApiCredential credential);
+
+    void update(ApiCredential credential);
+
+    Optional<ApiCredential> findById(ApiCredentialId id);
+
+    /** Finds within the current tenant only; another tenant's key id is invisible. */
+    Optional<ApiCredential> findByKeyId(String keyId);
+
+    List<ApiCredential> findByTenantSystem(TenantSystemId tenantSystemId);
+}

@@ -52,4 +52,4 @@ create policy audit_scope on audit_log
     with check ((scope = 'TENANT' and tenant_id = app_tenant_id()) or (scope = 'PLATFORM' and app_tenant_id() is null));
 
 -- The audit trail is append-only for the application.
-revoke update, delete on audit_log from corebilling_app;
+revoke update, delete on audit_log from billing_app;

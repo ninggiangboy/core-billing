@@ -82,4 +82,4 @@ begin
 end;
 $$;
 
-grant execute on function try_acquire_rate_limit(text, double precision, double precision, integer) to corebilling_app;
+grant execute on function try_acquire_rate_limit(text, double precision, double precision, integer) to billing_app;
